@@ -7,7 +7,7 @@ on:
       - synchronize
       - ready_for_review
   workflow_dispatch:
-      
+
 jobs:
   pre-commit:
     name: pre-commit
