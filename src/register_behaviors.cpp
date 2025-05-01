@@ -17,6 +17,8 @@ public:
   {
     moveit_studio::behaviors::registerBehavior<GetPoseStampedFromTopic>(factory, "GetPoseStampedFromTopic",
                                                                         shared_resources);
+    moveit_studio::behaviors::registerBehavior<TriggerServer>(factory, "TriggerServer", shared_resources);
+    moveit_studio::behaviors::registerBehavior<SetBoolServer>(factory, "SetBoolServer", shared_resources);
   }
 };
 }  // namespace experimental_behaviors
