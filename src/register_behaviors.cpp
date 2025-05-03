@@ -2,6 +2,7 @@
 #include <moveit_studio_behavior_interface/behavior_context.hpp>
 #include <moveit_studio_behavior_interface/shared_resources_node_loader.hpp>
 
+#include "experimental_behaviors/execute_tracked_trajectory.hpp"
 #include "experimental_behaviors/get_pose_stamped_from_topic.hpp"
 
 #include <pluginlib/class_list_macros.hpp>
@@ -17,6 +18,8 @@ public:
   {
     moveit_studio::behaviors::registerBehavior<GetPoseStampedFromTopic>(factory, "GetPoseStampedFromTopic",
                                                                         shared_resources);
+    moveit_studio::behaviors::registerBehavior<moveit_studio::behaviors::ExecuteAndTrackJointTrajectory>(
+        factory, "ExecuteAndTrackJointTrajectory", shared_resources);
   }
 };
 }  // namespace experimental_behaviors
