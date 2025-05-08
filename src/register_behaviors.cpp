@@ -20,6 +20,8 @@ public:
                                                                         shared_resources);
     moveit_studio::behaviors::registerBehavior<moveit_studio::behaviors::ExecuteAndTrackJointTrajectory>(
         factory, "ExecuteAndTrackJointTrajectory", shared_resources);
+    moveit_studio::behaviors::registerBehavior<TriggerServer>(factory, "TriggerServer", shared_resources);
+    moveit_studio::behaviors::registerBehavior<SetBoolServer>(factory, "SetBoolServer", shared_resources);
   }
 };
 }  // namespace experimental_behaviors
