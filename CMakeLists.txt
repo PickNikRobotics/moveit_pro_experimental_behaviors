@@ -14,6 +14,7 @@ add_library(
   SHARED
   src/get_pose_stamped_from_topic.cpp
   src/execute_tracked_trajectory.cpp
+  src/service_server_examples.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   experimental_behaviors

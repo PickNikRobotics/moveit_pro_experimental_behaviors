@@ -4,6 +4,7 @@
 
 #include "experimental_behaviors/execute_tracked_trajectory.hpp"
 #include "experimental_behaviors/get_pose_stamped_from_topic.hpp"
+#include "experimental_behaviors/service_server_examples.hpp"
 
 #include <pluginlib/class_list_macros.hpp>
 
