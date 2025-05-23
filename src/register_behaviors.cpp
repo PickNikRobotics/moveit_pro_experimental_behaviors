@@ -3,6 +3,7 @@
 #include <moveit_studio_behavior_interface/shared_resources_node_loader.hpp>
 
 #include "experimental_behaviors/get_pose_stamped_from_topic.hpp"
+#include "experimental_behaviors/offset_joint_state.hpp"
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -17,6 +18,7 @@ public:
   {
     moveit_studio::behaviors::registerBehavior<GetPoseStampedFromTopic>(factory, "GetPoseStampedFromTopic",
                                                                         shared_resources);
+    moveit_studio::behaviors::registerBehavior<OffsetJointState>(factory, "OffsetJointState");
   }
 };
 }  // namespace experimental_behaviors
