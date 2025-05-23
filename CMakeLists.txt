@@ -13,6 +13,7 @@ add_library(
   experimental_behaviors
   SHARED
   src/get_pose_stamped_from_topic.cpp
+  src/offset_joint_state.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   experimental_behaviors

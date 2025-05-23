@@ -26,6 +26,8 @@ TEST(BehaviorTests, test_load_behavior_plugins)
   // Test that ClassLoader is able to find and instantiate each behavior using the package's plugin description info.
   EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_get_pose_stamped_from_topic", "GetPoseStampedFromTopic",
                                                     BT::NodeConfiguration()));
+  EXPECT_NO_THROW(
+      (void)factory.instantiateTreeNode("test_offset_joint_state", "OffsetJointState", BT::NodeConfiguration()));
 }
 
 int main(int argc, char** argv)
