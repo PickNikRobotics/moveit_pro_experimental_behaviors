@@ -82,8 +82,7 @@ OffsetJointState::OffsetJointState(const std::string& name, const BT::NodeConfig
 
 BT::PortsList OffsetJointState::providedPorts()
 {
-  return { BT::InputPort<moveit_studio_agent_msgs::msg::RobotJointState>(kPortIDJointStateMsg,
-                                                                         "Input joint state message"),
+  return { BT::InputPort<sensor_msgs::msg::JointState>(kPortIDJointStateMsg, "Input joint state message"),
            BT::InputPort<std::vector<std::string>>(kPortIDJointNames, "Joint names to offset"),
            BT::InputPort<std::vector<double>>(kPortIDPositionDeltas, "Position deltas for the joints"),
            BT::OutputPort<moveit_studio_agent_msgs::msg::RobotJointState>(kPortIDOffsetJointStateMsg,
@@ -99,9 +98,10 @@ BT::KeyValueVector OffsetJointState::metadata()
 BT::NodeStatus OffsetJointState::tick()
 {
   // Get required inputs
-  const auto ports = moveit_studio::behaviors::getRequiredInputs(
-      getInput<moveit_studio_agent_msgs::msg::RobotJointState>(kPortIDJointStateMsg),
-      getInput<std::vector<std::string>>(kPortIDJointNames), getInput<std::vector<double>>(kPortIDPositionDeltas));
+  const auto ports =
+      moveit_studio::behaviors::getRequiredInputs(getInput<sensor_msgs::msg::JointState>(kPortIDJointStateMsg),
+                                                  getInput<std::vector<std::string>>(kPortIDJointNames),
+                                                  getInput<std::vector<double>>(kPortIDPositionDeltas));
 
   if (!ports.has_value())
   {
@@ -112,14 +112,15 @@ BT::NodeStatus OffsetJointState::tick()
   const auto& [input_msg, names, deltas] = ports.value();
 
   // Validate inputs
-  if (auto maybe_ok = checkInputs(names, deltas, input_msg.joint_state); !maybe_ok.has_value())
+  if (auto maybe_ok = checkInputs(names, deltas, input_msg); !maybe_ok.has_value())
   {
     spdlog::error("Input validation failed: {}", maybe_ok.error());
     return BT::NodeStatus::FAILURE;
   }
 
   // Copy input message to output
-  auto output_msg = input_msg;
+  moveit_studio_agent_msgs::msg::RobotJointState output_msg;
+  output_msg.joint_state = input_msg;
 
   // Offset the positions
   for (std::size_t i = 0; i < names.size(); ++i)
