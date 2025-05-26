@@ -90,6 +90,12 @@ BT::PortsList OffsetJointState::providedPorts()
                                                                           "Resulting joint state message") };
 }
 
+BT::KeyValueVector OffsetJointState::metadata()
+{
+  return { { moveit_studio::behaviors::kSubcategoryMetadataKey, "Motion - Planning" },
+           { moveit_studio::behaviors::kDescriptionMetadataKey, "Apply an offset to a joint state." } };
+}
+
 BT::NodeStatus OffsetJointState::tick()
 {
   // Get required inputs
