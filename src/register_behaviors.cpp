@@ -3,6 +3,8 @@
 #include <moveit_studio_behavior_interface/shared_resources_node_loader.hpp>
 
 #include "experimental_behaviors/get_pose_stamped_from_topic.hpp"
+#include <experimental_behaviors/mtc_debug_stage.hpp>
+#include <experimental_behaviors/setup_mtc_debug_stage.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -17,6 +19,8 @@ public:
   {
     moveit_studio::behaviors::registerBehavior<GetPoseStampedFromTopic>(factory, "GetPoseStampedFromTopic",
                                                                         shared_resources);
+    moveit_studio::behaviors::registerBehavior<moveit_studio::behaviors::SetupMTCDebugStage>(factory, "SetupMTCDebugStage", shared_resources);
+    moveit_studio::behaviors::registerBehavior<moveit_studio::behaviors::examples::SetupMTCRotateExample>(factory, "SetupMTCRotateExample", shared_resources);
   }
 };
 }  // namespace experimental_behaviors
