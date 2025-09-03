@@ -4,7 +4,7 @@ project(experimental_behaviors CXX)
 find_package(moveit_studio_common REQUIRED)
 moveit_studio_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS geometry_msgs moveit_studio_behavior_interface pluginlib moveit_studio_common behaviortree_cpp tl_expected)
+set(THIS_PACKAGE_INCLUDE_DEPENDS geometry_msgs moveit_studio_behavior_interface pluginlib moveit_studio_common behaviortree_cpp tl_expected rclcpp moveit_core)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -13,6 +13,7 @@ add_library(
   experimental_behaviors
   SHARED
   src/get_pose_stamped_from_topic.cpp
+  src/generate_yaw_poses.cpp
   src/mtc_stage_debug.cpp
   src/register_behaviors.cpp)
 target_include_directories(
