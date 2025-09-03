@@ -2,6 +2,8 @@
 #include <experimental_behaviors/setup_mtc_debug_stage.hpp>
 #include <moveit/task_constructor/stages.h>
 #include <moveit/task_constructor/stages/passthrough.h>
+#include <moveit/task_constructor/solvers.h>
+#include <geometry_msgs/msg/twist_stamped.hpp>
 
 namespace moveit_studio::behaviors {
 
@@ -23,7 +25,6 @@ private:
 BT::PortsList SetupMTCDebugStage::providedPorts() {
   return MTCCommonPorts::mergePorts({
     BT::InputPort<double>(kPortIDCustomParam, 1.0, "Stage cost"),
-    BT::InputPort<std::string>("planning_group_name", "manipulator", "Planning group name"),
     BT::InputPort<std::string>("ik_frame", "grasp_link", "IK frame (robot link)"),
     BT::InputPort<std::string>("direction_frame", "world", "Frame for direction"),
     BT::InputPort<double>("linear_x", 0.0, "Direction linear x"),
@@ -39,7 +40,7 @@ BT::PortsList SetupMTCDebugStage::providedPorts() {
 }
 
 tl::expected<std::unique_ptr<moveit::task_constructor::Stage>, std::string> 
-SetupMTCDebugStage::createStage([[maybe_unused]] const StageInputs& inputs) {
+SetupMTCDebugStage::createStage(const StageInputs& inputs) {
   // Extract all required inputs
   auto custom_ports = getRequiredInputs(
     getInput<double>(kPortIDCustomParam),
@@ -57,6 +58,17 @@ SetupMTCDebugStage::createStage([[maybe_unused]] const StageInputs& inputs) {
   const auto& [stage_cost, planning_group, ik_frame, direction_frame,
     linear_x, linear_y, linear_z, angular_x, angular_y, angular_z,
     min_distance, max_distance, custom_comment] = custom_ports.value();
+
+  // Validate frames and planning group
+  if (auto res = MTCValidation::validateFrame(inputs.task->getRobotModel(), ik_frame, "IK frame"); !res) {
+    return tl::make_unexpected(res.error());
+  }
+  if (auto res = MTCValidation::validateFrame(inputs.task->getRobotModel(), direction_frame, "Direction frame"); !res) {
+    return tl::make_unexpected(res.error());
+  }
+  if (auto res = MTCValidation::validatePlanningGroup(inputs.task->getRobotModel(), planning_group); !res) {
+    return tl::make_unexpected(res.error());
+  }
 
   auto planner = std::make_shared<moveit::task_constructor::solvers::CartesianPath>();
 

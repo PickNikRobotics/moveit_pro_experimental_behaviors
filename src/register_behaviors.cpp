@@ -4,7 +4,7 @@
 
 #include "experimental_behaviors/get_pose_stamped_from_topic.hpp"
 #include <experimental_behaviors/mtc_debug_stage.hpp>
-#include <experimental_behaviors/setup_mtc_debug_stage.hpp>
+#include <experimental_behaviors/setup_mtc_rotate_example.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
 
