@@ -1,16 +1,19 @@
 // BSD-3-Clause
 #pragma once
 
-#include <moveit/task_constructor/stages/monitoring_generator.h>
+#include <moveit/task_constructor/stages/generate_pose.h>  // brings in MonitoringGenerator
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <queue>
+
+namespace moveit { namespace task_constructor { class SolutionBase; }}
 
 namespace moveit { namespace task_constructor { namespace stages {
 
 // Generator that spawns multiple target poses by rotating a base pose around the Z axis
-class GenerateYawPoses : public MonitoringGenerator
+class GeneratePlanarPoses : public MonitoringGenerator
 {
 public:
-  GenerateYawPoses(const std::string& name = "GenerateYawPoses");
+  GeneratePlanarPoses(const std::string& name = "GeneratePlanarPoses");
 
   void reset() override;
   void onNewSolution(const SolutionBase& s) override;
@@ -18,8 +21,7 @@ public:
   void compute() override;
 
 private:
-  utils::SolutionBaseQueue upstream_solutions_;
+  std::queue<const moveit::task_constructor::SolutionBase*> upstream_solutions_;
 };
 
 }}}  // namespace moveit::task_constructor::stages
-

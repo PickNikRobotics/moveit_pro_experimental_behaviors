@@ -6,6 +6,7 @@
 #include <experimental_behaviors/mtc_debug_stage.hpp>
 #include <experimental_behaviors/setup_mtc_rotate_example.hpp>
 #include <experimental_behaviors/mtc_generate_yaw_poses.hpp>
+#include <experimental_behaviors/is_object_attached_example.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -22,7 +23,8 @@ public:
                                                                         shared_resources);
     moveit_studio::behaviors::registerBehavior<moveit_studio::behaviors::SetupMTCDebugStage>(factory, "SetupMTCDebugStage", shared_resources);
     moveit_studio::behaviors::registerBehavior<moveit_studio::behaviors::examples::SetupMTCRotateExample>(factory, "SetupMTCRotateExample", shared_resources);
-    moveit_studio::behaviors::registerBehavior<moveit_studio::behaviors::SetupMTCGenerateYawPoses>(factory, "SetupMTCGenerateYawPoses", shared_resources);
+    moveit_studio::behaviors::registerBehavior<moveit_studio::behaviors::SetupMTCGeneratePlanarPoses>(factory, "SetupMTCGeneratePlanarPoses", shared_resources);
+    moveit_studio::behaviors::registerBehavior<moveit_studio::behaviors::IsObjectAttachedTo>(factory, "IsObjectAttachedTo");
   }
 };
 }  // namespace experimental_behaviors

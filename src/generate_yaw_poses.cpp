@@ -12,9 +12,9 @@
 
 namespace moveit { namespace task_constructor { namespace stages {
 
-static const rclcpp::Logger LOGGER = rclcpp::get_logger("GenerateYawPoses");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("GeneratePlanarPoses");
 
-GenerateYawPoses::GenerateYawPoses(const std::string& name) : MonitoringGenerator(name)
+GeneratePlanarPoses::GeneratePlanarPoses(const std::string& name) : MonitoringGenerator(name)
 {
   setCostTerm(std::make_unique<cost::Constant>(0.0));
 
@@ -25,28 +25,29 @@ GenerateYawPoses::GenerateYawPoses(const std::string& name) : MonitoringGenerato
   p.declare<double>("sweep", 6.283185307179586, "total sweep [rad] about +Z");
 }
 
-void GenerateYawPoses::reset()
+void GeneratePlanarPoses::reset()
 {
-  upstream_solutions_.clear();
+  while (!upstream_solutions_.empty()) upstream_solutions_.pop();
   MonitoringGenerator::reset();
 }
 
-void GenerateYawPoses::onNewSolution(const SolutionBase& s)
+void GeneratePlanarPoses::onNewSolution(const SolutionBase& s)
 {
   upstream_solutions_.push(&s);
 }
 
-bool GenerateYawPoses::canCompute() const
+bool GeneratePlanarPoses::canCompute() const
 {
   return !upstream_solutions_.empty();
 }
 
-void GenerateYawPoses::compute()
+void GeneratePlanarPoses::compute()
 {
   if (upstream_solutions_.empty())
     return;
 
-  const SolutionBase& s = *upstream_solutions_.pop();
+  const SolutionBase& s = *upstream_solutions_.front();
+  upstream_solutions_.pop();
   planning_scene::PlanningSceneConstPtr scene = s.end()->scene()->diff();
 
   auto base_pose = properties().get<geometry_msgs::msg::PoseStamped>("pose");

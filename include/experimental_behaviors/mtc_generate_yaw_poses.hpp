@@ -7,9 +7,9 @@
 
 namespace moveit_studio::behaviors {
 
-class SetupMTCGenerateYawPoses final : public MTCStageHelper<SetupMTCGenerateYawPoses>
+class SetupMTCGeneratePlanarPoses final : public MTCStageHelper<SetupMTCGeneratePlanarPoses>
 {
-  MTC_STAGE_BEHAVIOR_INTERFACE(SetupMTCGenerateYawPoses,
+  MTC_STAGE_BEHAVIOR_INTERFACE(SetupMTCGeneratePlanarPoses,
                                "Generate Yaw Poses",
                                "to spawn multiple target poses by sampling yaw about the +Z axis.")
 
@@ -30,7 +30,7 @@ public:
   }
 
   tl::expected<std::unique_ptr<moveit::task_constructor::Stage>, std::string>
-  createStage(const StageInputs& inputs)
+  createStage([[maybe_unused]] const StageInputs& inputs)
   {
     const auto custom_ports = getRequiredInputs(
       getInput<geometry_msgs::msg::PoseStamped>(kPortIDPose),
@@ -46,7 +46,7 @@ public:
     if (num_poses == 0)
       return tl::make_unexpected("num_poses must be > 0");
 
-    auto stage = std::make_unique<moveit::task_constructor::stages::GenerateYawPoses>(kDefaultStageName);
+    auto stage = std::make_unique<moveit::task_constructor::stages::GeneratePlanarPoses>(kDefaultStageName);
     auto& p = stage->properties();
     p.set("pose", pose);
     p.set("num_poses", num_poses);
