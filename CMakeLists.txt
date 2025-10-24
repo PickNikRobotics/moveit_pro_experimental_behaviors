@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.22)
 project(experimental_behaviors CXX)
 
-find_package(moveit_studio_common REQUIRED)
-moveit_studio_package()
+find_package(moveit_pro_package REQUIRED)
+moveit_pro_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS geometry_msgs moveit_studio_behavior_interface pluginlib moveit_studio_common behaviortree_cpp tl_expected)
+set(THIS_PACKAGE_INCLUDE_DEPENDS geometry_msgs moveit_studio_behavior_interface pluginlib moveit_pro_package behaviortree_cpp tl_expected)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
