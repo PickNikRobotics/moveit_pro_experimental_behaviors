@@ -28,7 +28,7 @@ namespace experimental_behaviors
  * # List of resource interface names
  */
 
-class CreateInterfaceValue final : public SharedResourcesNode<BT::SyncActionNode>
+class CreateInterfaceValue final : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
   /**

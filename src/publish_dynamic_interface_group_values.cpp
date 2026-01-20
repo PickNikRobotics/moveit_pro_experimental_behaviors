@@ -16,8 +16,8 @@ inline constexpr auto kDescriptionPublishDynamicInterfaceGroupValues = R"(
             )";
 
 PublishDynamicInterfaceGroupValues::PublishDynamicInterfaceGroupValues(const std::string& name, const BT::NodeConfiguration& config,
-                           const std::shared_ptr<BehaviorContext>& shared_resources)
-  : SendMessageToTopicBehaviorBase<control_msgs::msg::DynamicInterfaceGroupValues>(name, config, shared_resources)
+                           const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
+  : moveit_studio::behaviors::SendMessageToTopicBehaviorBase<control_msgs::msg::DynamicInterfaceGroupValues>(name, config, shared_resources)
 {
 }
 
@@ -34,13 +34,13 @@ BT::PortsList PublishDynamicInterfaceGroupValues::providedPorts()
 
 BT::KeyValueVector PublishDynamicInterfaceGroupValues::metadata()
 {
-  return { { kSubcategoryMetadataKey, "ROS Messaging" }, { kDescriptionMetadataKey, kDescriptionPublishDynamicInterfaceGroupValues } };
+  return { { moveit_studio::behaviors::kSubcategoryMetadataKey, "ROS Messaging" }, { moveit_studio::behaviors::kDescriptionMetadataKey, kDescriptionPublishDynamicInterfaceGroupValues } };
 }
 
 PublishDynamicInterfaceGroupValues::PublishDynamicInterfaceGroupValues(const std::string& name, const BT::NodeConfiguration& config,
-                           const std::shared_ptr<BehaviorContext>& shared_resources,
-                           std::unique_ptr<PublisherInterfaceBase<control_msgs::msg::DynamicInterfaceGroupValues>> publisher_interface)
-  : SendMessageToTopicBehaviorBase<control_msgs::msg::DynamicInterfaceGroupValues>(name, config, shared_resources, std::move(publisher_interface))
+                           const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources,
+                           std::unique_ptr<moveit_studio::behaviors::PublisherInterfaceBase<control_msgs::msg::DynamicInterfaceGroupValues>> publisher_interface)
+  : moveit_studio::behaviors::SendMessageToTopicBehaviorBase<control_msgs::msg::DynamicInterfaceGroupValues>(name, config, shared_resources, std::move(publisher_interface))
 {
 }
 

@@ -28,7 +28,7 @@ namespace experimental_behaviors
 {
 CreateDynamicInterfaceGroupValues::CreateDynamicInterfaceGroupValues(const std::string& name, const BT::NodeConfiguration& config,
                                        const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+  : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
@@ -46,12 +46,12 @@ BT::PortsList CreateDynamicInterfaceGroupValues::providedPorts()
 
 BT::KeyValueVector CreateDynamicInterfaceGroupValues::metadata()
 {
-  return { { kSubcategoryMetadataKey, "Conversions" }, { kDescriptionMetadataKey, kDescriptionCreateDynamicInterfaceGroupValues } };
+  return { { moveit_studio::behaviors::kSubcategoryMetadataKey, "Conversions" }, { moveit_studio::behaviors::kDescriptionMetadataKey, kDescriptionCreateDynamicInterfaceGroupValues } };
 }
 
 BT::NodeStatus CreateDynamicInterfaceGroupValues::tick()
 {
-  const auto ports = getRequiredInputs(getInput<std::string>(kPortIDReferenceFrame),
+  const auto ports = moveit_studio::behaviors::getRequiredInputs(getInput<std::string>(kPortIDReferenceFrame),
                                        getInput<std::vector<std::string>>(kPortIDInterfaceGroups),
                                        getInput<std::vector<control_msgs::msg::InterfaceValue>>(kPortIDInterfaceValues));
   if (!ports.has_value())

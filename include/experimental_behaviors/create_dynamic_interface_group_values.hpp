@@ -28,7 +28,7 @@ namespace experimental_behaviors
  * The Behavior checks to see if the input values `interface_groups` and `interface_values` are of the same and non-zero size.
  */
 
-class CreateDynamicInterfaceGroupValues final : public SharedResourcesNode<BT::SyncActionNode>
+class CreateDynamicInterfaceGroupValues final : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
   /**

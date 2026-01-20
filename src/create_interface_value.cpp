@@ -25,7 +25,7 @@ namespace experimental_behaviors
 {
 CreateInterfaceValue::CreateInterfaceValue(const std::string& name, const BT::NodeConfiguration& config,
                                        const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+  : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
@@ -41,12 +41,12 @@ BT::PortsList CreateInterfaceValue::providedPorts()
 
 BT::KeyValueVector CreateInterfaceValue::metadata()
 {
-  return { { kSubcategoryMetadataKey, "Conversions" }, { kDescriptionMetadataKey, kDescriptionCreateInterfaceValue } };
+  return { { moveit_studio::behaviors::kSubcategoryMetadataKey, "Conversions" }, { moveit_studio::behaviors::kDescriptionMetadataKey, kDescriptionCreateInterfaceValue } };
 }
 
 BT::NodeStatus CreateInterfaceValue::tick()
 {
-  const auto ports = getRequiredInputs(getInput<std::vector<std::string>>(kPortIDInterfaceNames),
+  const auto ports = moveit_studio::behaviors::getRequiredInputs(getInput<std::vector<std::string>>(kPortIDInterfaceNames),
                                        getInput<std::vector<double>>(kPortIDValues));
   if (!ports.has_value())
   {
