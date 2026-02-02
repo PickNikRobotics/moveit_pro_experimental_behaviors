@@ -14,6 +14,9 @@ add_library(
   SHARED
   src/create_interface_value.cpp
   src/create_dynamic_interface_group_values.cpp
+  src/get_dynamic_interface_group_values.cpp
+  src/get_interface_value_from_group.cpp
+  src/access_interface_value_from_group.cpp
   src/get_pose_stamped_from_topic.cpp
   src/publish_dynamic_interface_group_values.cpp
   src/register_behaviors.cpp)
