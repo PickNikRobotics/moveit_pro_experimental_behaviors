@@ -4,7 +4,7 @@ project(experimental_behaviors CXX)
 find_package(moveit_studio_common REQUIRED)
 moveit_studio_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS control_msgs geometry_msgs moveit_studio_behavior_interface pluginlib moveit_studio_common behaviortree_cpp tl_expected)
+set(THIS_PACKAGE_INCLUDE_DEPENDS control_msgs geometry_msgs moveit_pro_behavior_interface pluginlib moveit_studio_common behaviortree_cpp tl_expected)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -45,7 +45,7 @@ endif()
 # plugin loaders that load the behavior base class library from the
 # moveit_studio_behavior package.
 pluginlib_export_plugin_description_file(
-  moveit_studio_behavior_interface experimental_behaviors_plugin_description.xml)
+  moveit_pro_behavior_interface experimental_behaviors_plugin_description.xml)
 
 ament_export_targets(experimental_behaviorsTargets HAS_LIBRARY_TARGET)
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})

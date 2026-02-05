@@ -6,8 +6,8 @@
 
 #include <experimental_behaviors/access_interface_value_from_group.hpp>
 
-#include <moveit_studio_behavior_interface/get_required_ports.hpp>
-#include <moveit_studio_behavior_interface/metadata_fields.hpp>
+#include <moveit_pro_behavior_interface/get_required_ports.hpp>
+#include <moveit_pro_behavior_interface/metadata_fields.hpp>
 
 namespace
 {
@@ -23,31 +23,31 @@ constexpr auto kPortIDInterfaceValue = "dynamic_interface_value";
 
 namespace experimental_behaviors
 {
-AccessInterfaceValueFromGroup::AccessInterfaceValueFromGroup(const std::string& name, const BT::NodeConfiguration& config,
-                                       const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+AccessInterfaceValueFromGroup::AccessInterfaceValueFromGroup(
+    const std::string& name, const BT::NodeConfiguration& config,
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
 BT::PortsList AccessInterfaceValueFromGroup::providedPorts()
 {
-  return { BT::InputPort<std::string>(kPortIDInterfaceName,
-                                              "Interface name."),
-           BT::OutputPort<double>(kPortIDValue,
-                                              "value of interface listed as `interface_name`."),
+  return { BT::InputPort<std::string>(kPortIDInterfaceName, "Interface name."),
+           BT::OutputPort<double>(kPortIDValue, "value of interface listed as `interface_name`."),
            BT::InputPort<control_msgs::msg::InterfaceValue>(kPortIDInterfaceValue, "{interface_value}",
                                                             "The control_msgs::msg::InterfaceValue message.") };
 }
 
 BT::KeyValueVector AccessInterfaceValueFromGroup::metadata()
 {
-  return { { moveit_studio::behaviors::kSubcategoryMetadataKey, "Conversions" }, { moveit_studio::behaviors::kDescriptionMetadataKey, kDescriptionAccessInterfaceValueFromGroup } };
+  return { { moveit_pro::behaviors::kSubcategoryMetadataKey, "Conversions" },
+           { moveit_pro::behaviors::kDescriptionMetadataKey, kDescriptionAccessInterfaceValueFromGroup } };
 }
 
 BT::NodeStatus AccessInterfaceValueFromGroup::tick()
 {
-  const auto ports = moveit_studio::behaviors::getRequiredInputs(getInput<std::string>(kPortIDInterfaceName),
-                                       getInput<control_msgs::msg::InterfaceValue>(kPortIDInterfaceValue));
+  const auto ports = moveit_pro::behaviors::getRequiredInputs(
+      getInput<std::string>(kPortIDInterfaceName), getInput<control_msgs::msg::InterfaceValue>(kPortIDInterfaceValue));
   if (!ports.has_value())
   {
     shared_resources_->logger->publishFailureMessage(name(), "Failed to get required value from input data port: " +
@@ -56,10 +56,13 @@ BT::NodeStatus AccessInterfaceValueFromGroup::tick()
   }
 
   const auto& [interface_name, interface] = ports.value();
-  
-  for (size_t i = 0; i < interface.interface_names.size(); ++i) {
-    if (interface.interface_names[i] == interface_name) {
-      if (i >= interface.values.size()) {
+
+  for (size_t i = 0; i < interface.interface_names.size(); ++i)
+  {
+    if (interface.interface_names[i] == interface_name)
+    {
+      if (i >= interface.values.size())
+      {
         shared_resources_->logger->publishFailureMessage(name(), "Interface value index out of range");
         return BT::NodeStatus::FAILURE;
       }
@@ -71,4 +74,4 @@ BT::NodeStatus AccessInterfaceValueFromGroup::tick()
   return BT::NodeStatus::FAILURE;
 }
 
-}  // experimental_behaviors
+}  // namespace experimental_behaviors

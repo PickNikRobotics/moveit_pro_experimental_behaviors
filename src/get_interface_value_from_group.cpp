@@ -6,8 +6,8 @@
 
 #include <experimental_behaviors/get_interface_value_from_group.hpp>
 
-#include <moveit_studio_behavior_interface/get_required_ports.hpp>
-#include <moveit_studio_behavior_interface/metadata_fields.hpp>
+#include <moveit_pro_behavior_interface/get_required_ports.hpp>
+#include <moveit_pro_behavior_interface/metadata_fields.hpp>
 
 namespace
 {
@@ -23,34 +23,34 @@ constexpr auto kPortIDInterfaceValue = "interface_value";
 
 namespace experimental_behaviors
 {
-GetInterfaceValueFromGroup::GetInterfaceValueFromGroup(const std::string& name, const BT::NodeConfiguration& config,
-                                       const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+GetInterfaceValueFromGroup::GetInterfaceValueFromGroup(
+    const std::string& name, const BT::NodeConfiguration& config,
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
 BT::PortsList GetInterfaceValueFromGroup::providedPorts()
 {
-  return { BT::InputPort<control_msgs::msg::DynamicInterfaceGroupValues>(kPortIDGroupValues,
-                                                            "The control_msgs::msg::DynamicInterfaceGroupValues message."),
-           BT::InputPort<std::string>(kPortIDInterfaceGroupName,
-                                      "The name of the interface group to retrieve."),
+  return { BT::InputPort<control_msgs::msg::DynamicInterfaceGroupValues>(
+               kPortIDGroupValues, "The control_msgs::msg::DynamicInterfaceGroupValues message."),
+           BT::InputPort<std::string>(kPortIDInterfaceGroupName, "The name of the interface group to retrieve."),
            BT::OutputPort<control_msgs::msg::InterfaceValue>(kPortIDInterfaceValue, "{interface_value}",
-                                                            "The control_msgs::msg::InterfaceValue message.") };
+                                                             "The control_msgs::msg::InterfaceValue message.") };
 }
 
 BT::KeyValueVector GetInterfaceValueFromGroup::metadata()
 {
-  return { { moveit_studio::behaviors::kSubcategoryMetadataKey, "Conversions" }, 
-           { moveit_studio::behaviors::kDescriptionMetadataKey, kDescriptionGetInterfaceValueFromGroup } };
+  return { { moveit_pro::behaviors::kSubcategoryMetadataKey, "Conversions" },
+           { moveit_pro::behaviors::kDescriptionMetadataKey, kDescriptionGetInterfaceValueFromGroup } };
 }
 
 BT::NodeStatus GetInterfaceValueFromGroup::tick()
 {
-  const auto ports = moveit_studio::behaviors::getRequiredInputs(
+  const auto ports = moveit_pro::behaviors::getRequiredInputs(
       getInput<control_msgs::msg::DynamicInterfaceGroupValues>(kPortIDGroupValues),
       getInput<std::string>(kPortIDInterfaceGroupName));
-  
+
   if (!ports.has_value())
   {
     shared_resources_->logger->publishFailureMessage(name(), "Failed to get required value from input data port: " +
@@ -61,14 +61,12 @@ BT::NodeStatus GetInterfaceValueFromGroup::tick()
   const auto& [group_values, interface_group_name] = ports.value();
 
   // Search for the interface group name
-  auto it = std::find(group_values.interface_groups.begin(), 
-                      group_values.interface_groups.end(), 
-                      interface_group_name);
+  auto it = std::find(group_values.interface_groups.begin(), group_values.interface_groups.end(), interface_group_name);
 
   if (it == group_values.interface_groups.end())
   {
-    shared_resources_->logger->publishFailureMessage(
-        name(), "Interface group '" + interface_group_name + "' not found in DynamicInterfaceGroupValues message");
+    shared_resources_->logger->publishFailureMessage(name(), "Interface group '" + interface_group_name +
+                                                                 "' not found in DynamicInterfaceGroupValues message");
     return BT::NodeStatus::FAILURE;
   }
 

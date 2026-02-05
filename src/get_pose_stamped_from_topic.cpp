@@ -1,21 +1,16 @@
 #include "experimental_behaviors/get_pose_stamped_from_topic.hpp"
 
-#include <moveit_studio_behavior_interface/get_required_ports.hpp>
-#include <moveit_studio_behavior_interface/impl/get_message_from_topic_impl.hpp>
+#include <moveit_pro_behavior_interface/get_required_ports.hpp>
+#include <moveit_pro_behavior_interface/impl/get_message_from_topic_impl.hpp>
 
 namespace experimental_behaviors
 {
 
-namespace
-{
-constexpr auto kPortIDTimeoutDuration = "timeout_sec";
-}  // namespace
-
 GetPoseStampedFromTopic::GetPoseStampedFromTopic(
     const std::string& name, const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::GetMessageFromTopicBehaviorBase<geometry_msgs::msg::PoseStamped>(name, config,
-                                                                                               shared_resources)
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::GetMessageFromTopicBehaviorBase<geometry_msgs::msg::PoseStamped>(name, config,
+                                                                                            shared_resources)
 {
 }
 
@@ -32,7 +27,7 @@ BT::PortsList GetPoseStampedFromTopic::providedPorts()
 
 tl::expected<std::chrono::duration<double>, std::string> GetPoseStampedFromTopic::getWaitForMessageTimeout()
 {
-  const auto port = moveit_studio::behaviors::getRequiredInputs(getInput<double>(kPortIDTimeoutDuration));
+  const auto port = moveit_pro::behaviors::getRequiredInputs(getInput<double>(kPortIDTimeoutDuration));
 
   // Check that input data ports were set.
   if (!port.has_value())
@@ -48,4 +43,4 @@ tl::expected<std::chrono::duration<double>, std::string> GetPoseStampedFromTopic
 }
 }  // namespace experimental_behaviors
 
-template class moveit_studio::behaviors::GetMessageFromTopicBehaviorBase<geometry_msgs::msg::PoseStamped>;
+template class moveit_pro::behaviors::GetMessageFromTopicBehaviorBase<geometry_msgs::msg::PoseStamped>;

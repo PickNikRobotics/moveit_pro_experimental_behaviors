@@ -8,9 +8,9 @@
 
 #include <control_msgs/msg/dynamic_interface_group_values.hpp>
 
-#include <moveit_studio_behavior_interface/behavior_context.hpp>
-#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
-#include "moveit_studio_behavior_interface/async_behavior_base.hpp"
+#include <moveit_pro_behavior_interface/behavior_context.hpp>
+#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
+#include "moveit_pro_behavior_interface/async_behavior_base.hpp"
 
 namespace experimental_behaviors
 {
@@ -28,7 +28,7 @@ namespace experimental_behaviors
  * The Behavior checks to see if the input values `interface_groups` and `interface_values` are of the same and non-zero size.
  */
 
-class CreateDynamicInterfaceGroupValues final : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class CreateDynamicInterfaceGroupValues final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
   /**
@@ -39,7 +39,7 @@ public:
    * @param shared_resources See \ref SharedResourcesNode
    */
   CreateDynamicInterfaceGroupValues(const std::string& name, const BT::NodeConfiguration& config,
-                     const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+                                    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   /**
    * @brief Returns list of ports for this behavior.

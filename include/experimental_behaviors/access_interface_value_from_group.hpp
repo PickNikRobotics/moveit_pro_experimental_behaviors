@@ -8,9 +8,9 @@
 
 #include <control_msgs/msg/interface_value.hpp>
 
-#include <moveit_studio_behavior_interface/behavior_context.hpp>
-#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
-#include "moveit_studio_behavior_interface/async_behavior_base.hpp"
+#include <moveit_pro_behavior_interface/behavior_context.hpp>
+#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
+#include "moveit_pro_behavior_interface/async_behavior_base.hpp"
 
 namespace experimental_behaviors
 {
@@ -28,7 +28,7 @@ namespace experimental_behaviors
  * # List of resource interface names
  */
 
-class AccessInterfaceValueFromGroup final : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class AccessInterfaceValueFromGroup final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
   /**
@@ -39,7 +39,7 @@ public:
    * @param shared_resources See \ref SharedResourcesNode
    */
   AccessInterfaceValueFromGroup(const std::string& name, const BT::NodeConfiguration& config,
-                     const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+                                const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   /**
    * @brief Returns list of ports for this behavior.

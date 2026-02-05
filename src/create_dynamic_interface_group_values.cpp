@@ -8,8 +8,8 @@
 
 #include <control_msgs/msg/interface_value.hpp>
 
-#include <moveit_studio_behavior_interface/get_required_ports.hpp>
-#include <moveit_studio_behavior_interface/metadata_fields.hpp>
+#include <moveit_pro_behavior_interface/get_required_ports.hpp>
+#include <moveit_pro_behavior_interface/metadata_fields.hpp>
 
 namespace
 {
@@ -26,34 +26,38 @@ constexpr auto kPortIDGroupValues = "group_values";
 
 namespace experimental_behaviors
 {
-CreateDynamicInterfaceGroupValues::CreateDynamicInterfaceGroupValues(const std::string& name, const BT::NodeConfiguration& config,
-                                       const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+CreateDynamicInterfaceGroupValues::CreateDynamicInterfaceGroupValues(
+    const std::string& name, const BT::NodeConfiguration& config,
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
 BT::PortsList CreateDynamicInterfaceGroupValues::providedPorts()
 {
-  return { BT::InputPort<std::string>(kPortIDReferenceFrame, "world",
-                                      "The reference frame of the control_msgs::msg::DynamicInterfaceGroupValues message."),
-           BT::InputPort<std::vector<std::string>>(kPortIDInterfaceGroups,
-                                              "List of interface group names , e.g. `flange_analog_IOs; flange_vacuum`."),
-           BT::InputPort<std::vector<control_msgs::msg::InterfaceValue>>(kPortIDInterfaceValues,
-                                              "List of corresponding InterfaceValue for each group listed in `interface_groups`."),
-           BT::OutputPort<control_msgs::msg::DynamicInterfaceGroupValues>(kPortIDGroupValues, "{group_values}",
-                                                            "The control_msgs::msg::DynamicInterfaceGroupValues message.") };
+  return {
+    BT::InputPort<std::string>(kPortIDReferenceFrame, "world",
+                               "The reference frame of the control_msgs::msg::DynamicInterfaceGroupValues message."),
+    BT::InputPort<std::vector<std::string>>(kPortIDInterfaceGroups,
+                                            "List of interface group names , e.g. `flange_analog_IOs; flange_vacuum`."),
+    BT::InputPort<std::vector<control_msgs::msg::InterfaceValue>>(
+        kPortIDInterfaceValues, "List of corresponding InterfaceValue for each group listed in `interface_groups`."),
+    BT::OutputPort<control_msgs::msg::DynamicInterfaceGroupValues>(
+        kPortIDGroupValues, "{group_values}", "The control_msgs::msg::DynamicInterfaceGroupValues message.")
+  };
 }
 
 BT::KeyValueVector CreateDynamicInterfaceGroupValues::metadata()
 {
-  return { { moveit_studio::behaviors::kSubcategoryMetadataKey, "Conversions" }, { moveit_studio::behaviors::kDescriptionMetadataKey, kDescriptionCreateDynamicInterfaceGroupValues } };
+  return { { moveit_pro::behaviors::kSubcategoryMetadataKey, "Conversions" },
+           { moveit_pro::behaviors::kDescriptionMetadataKey, kDescriptionCreateDynamicInterfaceGroupValues } };
 }
 
 BT::NodeStatus CreateDynamicInterfaceGroupValues::tick()
 {
-  const auto ports = moveit_studio::behaviors::getRequiredInputs(getInput<std::string>(kPortIDReferenceFrame),
-                                       getInput<std::vector<std::string>>(kPortIDInterfaceGroups),
-                                       getInput<std::vector<control_msgs::msg::InterfaceValue>>(kPortIDInterfaceValues));
+  const auto ports = moveit_pro::behaviors::getRequiredInputs(
+      getInput<std::string>(kPortIDReferenceFrame), getInput<std::vector<std::string>>(kPortIDInterfaceGroups),
+      getInput<std::vector<control_msgs::msg::InterfaceValue>>(kPortIDInterfaceValues));
   if (!ports.has_value())
   {
     shared_resources_->logger->publishFailureMessage(name(), "Failed to get required value from input data port: " +
@@ -90,4 +94,4 @@ BT::NodeStatus CreateDynamicInterfaceGroupValues::tick()
   return BT::NodeStatus::SUCCESS;
 }
 
-}  // experimental_behaviors
+}  // namespace experimental_behaviors

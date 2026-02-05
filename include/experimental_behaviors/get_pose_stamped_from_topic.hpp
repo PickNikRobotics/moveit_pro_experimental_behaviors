@@ -1,7 +1,7 @@
 #pragma once
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
-#include <moveit_studio_behavior_interface/get_message_from_topic.hpp>
+#include <moveit_pro_behavior_interface/get_message_from_topic.hpp>
 
 namespace experimental_behaviors
 {
@@ -9,11 +9,11 @@ namespace experimental_behaviors
  * @brief Subscribe to PoseStamped message and write received message to the blackboard.
  */
 class GetPoseStampedFromTopic final
-  : public moveit_studio::behaviors::GetMessageFromTopicBehaviorBase<geometry_msgs::msg::PoseStamped>
+  : public moveit_pro::behaviors::GetMessageFromTopicBehaviorBase<geometry_msgs::msg::PoseStamped>
 {
 public:
   GetPoseStampedFromTopic(const std::string& name, const BT::NodeConfiguration& config,
-                          const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+                          const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   static BT::PortsList providedPorts();
   tl::expected<std::chrono::duration<double>, std::string> getWaitForMessageTimeout() override;

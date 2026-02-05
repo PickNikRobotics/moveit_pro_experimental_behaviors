@@ -1,7 +1,7 @@
 #pragma once
 
-#include <moveit_studio_behavior_interface/get_message_from_topic.hpp>
 #include <control_msgs/msg/dynamic_interface_group_values.hpp>
+#include <moveit_pro_behavior_interface/get_message_from_topic.hpp>
 
 namespace experimental_behaviors
 {
@@ -9,11 +9,11 @@ namespace experimental_behaviors
  * @brief Subscribe to DynamicJointState message and write received message to the blackboard.
  */
 class GetDynamicInterfaceGroupValues final
-  : public moveit_studio::behaviors::GetMessageFromTopicBehaviorBase<control_msgs::msg::DynamicInterfaceGroupValues>
+  : public moveit_pro::behaviors::GetMessageFromTopicBehaviorBase<control_msgs::msg::DynamicInterfaceGroupValues>
 {
 public:
   GetDynamicInterfaceGroupValues(const std::string& name, const BT::NodeConfiguration& config,
-                          const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+                                 const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   static BT::PortsList providedPorts();
 
