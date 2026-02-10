@@ -2,7 +2,10 @@
 #include <moveit_studio_behavior_interface/behavior_context.hpp>
 #include <moveit_studio_behavior_interface/shared_resources_node_loader.hpp>
 
+#include "experimental_behaviors/create_dynamic_interface_group_values.hpp"
+#include "experimental_behaviors/create_interface_value.hpp"
 #include "experimental_behaviors/get_pose_stamped_from_topic.hpp"
+#include "experimental_behaviors/publish_dynamic_interface_group_values.hpp"
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -17,6 +20,11 @@ public:
   {
     moveit_studio::behaviors::registerBehavior<GetPoseStampedFromTopic>(factory, "GetPoseStampedFromTopic",
                                                                         shared_resources);
+    moveit_studio::behaviors::registerBehavior<CreateDynamicInterfaceGroupValues>(
+        factory, "CreateDynamicInterfaceGroupValues", shared_resources);
+    moveit_studio::behaviors::registerBehavior<PublishDynamicInterfaceGroupValues>(
+        factory, "PublishDynamicInterfaceGroupValues", shared_resources);
+    moveit_studio::behaviors::registerBehavior<CreateInterfaceValue>(factory, "CreateInterfaceValue", shared_resources);
   }
 };
 }  // namespace experimental_behaviors

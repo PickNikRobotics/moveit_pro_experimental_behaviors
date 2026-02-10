@@ -4,7 +4,7 @@ project(experimental_behaviors CXX)
 find_package(moveit_studio_common REQUIRED)
 moveit_studio_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS geometry_msgs moveit_studio_behavior_interface pluginlib moveit_studio_common behaviortree_cpp tl_expected)
+set(THIS_PACKAGE_INCLUDE_DEPENDS control_msgs geometry_msgs moveit_studio_behavior_interface pluginlib moveit_studio_common behaviortree_cpp tl_expected)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -12,7 +12,10 @@ endforeach()
 add_library(
   experimental_behaviors
   SHARED
+  src/create_interface_value.cpp
+  src/create_dynamic_interface_group_values.cpp
   src/get_pose_stamped_from_topic.cpp
+  src/publish_dynamic_interface_group_values.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   experimental_behaviors
