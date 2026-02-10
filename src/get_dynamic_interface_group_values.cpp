@@ -1,3 +1,9 @@
+// Copyright 2026 PickNik Inc.
+// All rights reserved.
+//
+// Unauthorized copying of this code base via any medium is strictly prohibited.
+// Proprietary and confidential.
+
 #include "experimental_behaviors/get_dynamic_interface_group_values.hpp"
 
 #include <moveit_pro_behavior_interface/get_required_ports.hpp>
