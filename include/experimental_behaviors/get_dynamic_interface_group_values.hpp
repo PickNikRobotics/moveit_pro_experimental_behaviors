@@ -1,3 +1,9 @@
+// Copyright 2026 PickNik Inc.
+// All rights reserved.
+//
+// Unauthorized copying of this code base via any medium is strictly prohibited.
+// Proprietary and confidential.
+
 #pragma once
 
 #include <control_msgs/msg/dynamic_interface_group_values.hpp>
