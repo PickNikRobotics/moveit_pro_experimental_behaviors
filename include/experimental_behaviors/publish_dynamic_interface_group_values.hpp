@@ -27,19 +27,22 @@ namespace experimental_behaviors
  * | queue_size      | Input     | size_t               |
  * | use_best_effort | Input     | bool                 |
  */
-class PublishDynamicInterfaceGroupValues final : public moveit_studio::behaviors::SendMessageToTopicBehaviorBase<control_msgs::msg::DynamicInterfaceGroupValues>
+class PublishDynamicInterfaceGroupValues final
+  : public moveit_studio::behaviors::SendMessageToTopicBehaviorBase<control_msgs::msg::DynamicInterfaceGroupValues>
 {
 public:
   PublishDynamicInterfaceGroupValues(const std::string& name, const BT::NodeConfiguration& config,
-               const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+                                     const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
   static BT::PortsList providedPorts();
 
   static BT::KeyValueVector metadata();
 
-  PublishDynamicInterfaceGroupValues(const std::string& name, const BT::NodeConfiguration& config,
-               const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources,
-               std::unique_ptr<moveit_studio::behaviors::PublisherInterfaceBase<control_msgs::msg::DynamicInterfaceGroupValues>> publisher_interface);
+  PublishDynamicInterfaceGroupValues(
+      const std::string& name, const BT::NodeConfiguration& config,
+      const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources,
+      std::unique_ptr<moveit_studio::behaviors::PublisherInterfaceBase<control_msgs::msg::DynamicInterfaceGroupValues>>
+          publisher_interface);
 };
 
 }  // namespace experimental_behaviors

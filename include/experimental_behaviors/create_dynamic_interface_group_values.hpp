@@ -39,7 +39,7 @@ public:
    * @param shared_resources See \ref SharedResourcesNode
    */
   CreateDynamicInterfaceGroupValues(const std::string& name, const BT::NodeConfiguration& config,
-                     const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+                                    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
   /**
    * @brief Returns list of ports for this behavior.

@@ -23,31 +23,32 @@ constexpr auto kPortIDInterfaceValue = "interface_value";
 
 namespace experimental_behaviors
 {
-CreateInterfaceValue::CreateInterfaceValue(const std::string& name, const BT::NodeConfiguration& config,
-                                       const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
+CreateInterfaceValue::CreateInterfaceValue(
+    const std::string& name, const BT::NodeConfiguration& config,
+    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
   : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
 BT::PortsList CreateInterfaceValue::providedPorts()
 {
-  return { BT::InputPort<std::vector<std::string>>(kPortIDInterfaceNames,
-                                              "List of interface names."),
-           BT::InputPort<std::vector<double>>(kPortIDValues,
-                                              "List of corresponding value for each interface listed in `interface_names`."),
+  return { BT::InputPort<std::vector<std::string>>(kPortIDInterfaceNames, "List of interface names."),
+           BT::InputPort<std::vector<double>>(kPortIDValues, "List of corresponding value for each interface listed in "
+                                                             "`interface_names`."),
            BT::OutputPort<control_msgs::msg::InterfaceValue>(kPortIDInterfaceValue, "{interface_value}",
-                                                            "The control_msgs::msg::InterfaceValue message.") };
+                                                             "The control_msgs::msg::InterfaceValue message.") };
 }
 
 BT::KeyValueVector CreateInterfaceValue::metadata()
 {
-  return { { moveit_studio::behaviors::kSubcategoryMetadataKey, "Conversions" }, { moveit_studio::behaviors::kDescriptionMetadataKey, kDescriptionCreateInterfaceValue } };
+  return { { moveit_studio::behaviors::kSubcategoryMetadataKey, "Conversions" },
+           { moveit_studio::behaviors::kDescriptionMetadataKey, kDescriptionCreateInterfaceValue } };
 }
 
 BT::NodeStatus CreateInterfaceValue::tick()
 {
-  const auto ports = moveit_studio::behaviors::getRequiredInputs(getInput<std::vector<std::string>>(kPortIDInterfaceNames),
-                                       getInput<std::vector<double>>(kPortIDValues));
+  const auto ports = moveit_studio::behaviors::getRequiredInputs(
+      getInput<std::vector<std::string>>(kPortIDInterfaceNames), getInput<std::vector<double>>(kPortIDValues));
   if (!ports.has_value())
   {
     shared_resources_->logger->publishFailureMessage(name(), "Failed to get required value from input data port: " +
@@ -81,4 +82,4 @@ BT::NodeStatus CreateInterfaceValue::tick()
   return BT::NodeStatus::SUCCESS;
 }
 
-}  // experimental_behaviors
+}  // namespace experimental_behaviors
