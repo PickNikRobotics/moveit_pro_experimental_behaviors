@@ -13,8 +13,9 @@
 
   <build_depend>moveit_studio_common</build_depend>
 
+  <depend>control_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>moveit_studio_behavior_interface</depend>
+  <depend>moveit_pro_behavior_interface</depend>
   <depend>pluginlib</depend>
   <depend>behaviortree_cpp</depend>
   <depend>tl_expected</depend>

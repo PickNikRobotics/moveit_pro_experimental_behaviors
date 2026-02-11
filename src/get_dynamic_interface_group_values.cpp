@@ -4,7 +4,7 @@
 // Unauthorized copying of this code base via any medium is strictly prohibited.
 // Proprietary and confidential.
 
-#include "experimental_behaviors/get_pose_stamped_from_topic.hpp"
+#include "experimental_behaviors/get_dynamic_interface_group_values.hpp"
 
 #include <moveit_pro_behavior_interface/get_required_ports.hpp>
 #include <moveit_pro_behavior_interface/impl/get_message_from_topic_impl.hpp>
@@ -12,26 +12,28 @@
 namespace experimental_behaviors
 {
 
-GetPoseStampedFromTopic::GetPoseStampedFromTopic(
+GetDynamicInterfaceGroupValues::GetDynamicInterfaceGroupValues(
     const std::string& name, const BT::NodeConfiguration& config,
     const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
-  : moveit_pro::behaviors::GetMessageFromTopicBehaviorBase<geometry_msgs::msg::PoseStamped>(name, config,
-                                                                                            shared_resources)
+  : moveit_pro::behaviors::GetMessageFromTopicBehaviorBase<control_msgs::msg::DynamicInterfaceGroupValues>(
+        name, config, shared_resources)
 {
 }
 
-BT::PortsList GetPoseStampedFromTopic::providedPorts()
+BT::PortsList GetDynamicInterfaceGroupValues::providedPorts()
 {
   return BT::PortsList({
-      BT::InputPort<std::string>(kPortIDTopicName, "", "PoseStamped topic name."),
+      BT::InputPort<std::string>(kPortIDTopicName, "", "DynamicInterfaceGroupValues topic name."),
       BT::InputPort<double>(kPortIDTimeoutDuration, -1.0,
-                            "Maximum duration in seconds to wait for pose message to be published before "
+                            "Maximum duration in seconds to wait for dynamic interface group values message to be "
+                            "published before "
                             "failing. Set to -1.0 to wait indefinitely."),
-      BT::OutputPort<geometry_msgs::msg::PoseStamped>(kPortIDMessageOut, "PoseStamped message."),
+      BT::OutputPort<control_msgs::msg::DynamicInterfaceGroupValues>(kPortIDMessageOut,
+                                                                     "DynamicInterfaceGroupValues message."),
   });
 }
 
-tl::expected<std::chrono::duration<double>, std::string> GetPoseStampedFromTopic::getWaitForMessageTimeout()
+tl::expected<std::chrono::duration<double>, std::string> GetDynamicInterfaceGroupValues::getWaitForMessageTimeout()
 {
   const auto port = moveit_pro::behaviors::getRequiredInputs(getInput<double>(kPortIDTimeoutDuration));
 
@@ -48,5 +50,3 @@ tl::expected<std::chrono::duration<double>, std::string> GetPoseStampedFromTopic
   return std::chrono::duration<double>{ timeout };
 }
 }  // namespace experimental_behaviors
-
-template class moveit_pro::behaviors::GetMessageFromTopicBehaviorBase<geometry_msgs::msg::PoseStamped>;
