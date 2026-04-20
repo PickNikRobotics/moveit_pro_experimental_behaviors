@@ -28,9 +28,8 @@ constexpr auto kPortIDValue = "value";
 
 namespace experimental_behaviors
 {
-GetBlackboardByKey::GetBlackboardByKey(
-    const std::string& name, const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+GetBlackboardByKey::GetBlackboardByKey(const std::string& name, const BT::NodeConfiguration& config,
+                                       const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
   : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
@@ -61,35 +60,27 @@ BT::NodeStatus GetBlackboardByKey::tick()
   auto src_entry = config().blackboard->getEntry(key);
   if (!src_entry)
   {
-    shared_resources_->logger->publishFailureMessage(
-        name(), "Blackboard entry '" + key + "' does not exist (cache miss).");
+    shared_resources_->logger->publishFailureMessage(name(),
+                                                     "Blackboard entry '" + key + "' does not exist (cache miss).");
     return BT::NodeStatus::FAILURE;
   }
 
   if (src_entry->value.empty())
   {
-    shared_resources_->logger->publishFailureMessage(
-        name(), "Blackboard entry '" + key + "' exists but holds no value.");
+    shared_resources_->logger->publishFailureMessage(name(),
+                                                     "Blackboard entry '" + key + "' exists but holds no value.");
     return BT::NodeStatus::FAILURE;
   }
 
-  // Route through the blackboard directly so the stored BT::Any is copied
-  // without forcing a concrete type — the consumer's input port decides the
-  // type at read time. Mirrors the pattern of BT.CPP's SetBlackboardNode
-  // (see include/behaviortree_cpp/actions/set_blackboard_node.h) in reverse.
-  const auto output_remap = config().output_ports.find(kPortIDValue);
-  if (output_remap == config().output_ports.end())
+  // Pass the stored BT::Any through the canonical setOutput path so SubTree
+  // auto-remapping and blackboard-pointer validation are handled consistently
+  // with the rest of BT.CPP (see tree_node.h setOutput).
+  const auto result = setOutput<BT::Any>(kPortIDValue, src_entry->value);
+  if (!result)
   {
-    shared_resources_->logger->publishFailureMessage(name(), "Output port [value] is not connected.");
+    shared_resources_->logger->publishFailureMessage(name(), result.error());
     return BT::NodeStatus::FAILURE;
   }
-  std::string dst_key = output_remap->second;
-  // Strip leading/trailing braces from blackboard pointer syntax "{name}".
-  if (dst_key.size() >= 2 && dst_key.front() == '{' && dst_key.back() == '}')
-  {
-    dst_key = dst_key.substr(1, dst_key.size() - 2);
-  }
-  config().blackboard->set(dst_key, src_entry->value);
 
   return BT::NodeStatus::SUCCESS;
 }

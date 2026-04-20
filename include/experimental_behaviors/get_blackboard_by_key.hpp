@@ -21,13 +21,18 @@ namespace experimental_behaviors
  * already supports a dynamic `output_key` port but has no corresponding
  * read-by-dynamic-key primitive.
  *
- * | Data Port Name | Port Type | Object Type   |
- * | -------------- | --------- | ------------- |
- * | key            | input     | std::string   |
- * | value          | output    | any (BT::Any) |
+ * | Data Port Name | Port Type | Object Type          |
+ * | -------------- | --------- | -------------------- |
+ * | key            | input     | std::string          |
+ * | value          | output    | any (AnyTypeAllowed) |
  *
  * The `key` port accepts both literal strings and root-scope references
  * prefixed with `@`. Returns FAILURE if the key is missing or empty.
+ *
+ * An entry that exists but holds an empty value is also treated as a cache
+ * miss and reported as FAILURE. Callers that need to distinguish "declared
+ * but uninitialized" from "never declared" should populate the entry with
+ * an explicit sentinel before reading.
  */
 class GetBlackboardByKey final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
