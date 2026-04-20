@@ -20,6 +20,7 @@ add_library(
   src/get_pose_stamped_from_topic.cpp
   src/publish_dynamic_interface_group_values.cpp
   src/get_blackboard_by_key.cpp
+  src/set_blackboard_by_key.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   experimental_behaviors

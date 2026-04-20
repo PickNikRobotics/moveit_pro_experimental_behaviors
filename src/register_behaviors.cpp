@@ -16,6 +16,7 @@
 #include "experimental_behaviors/get_interface_value_from_group.hpp"
 #include "experimental_behaviors/get_pose_stamped_from_topic.hpp"
 #include "experimental_behaviors/publish_dynamic_interface_group_values.hpp"
+#include "experimental_behaviors/set_blackboard_by_key.hpp"
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -42,6 +43,7 @@ public:
     moveit_pro::behaviors::registerBehavior<AccessInterfaceValueFromGroup>(factory, "AccessInterfaceValue",
                                                                            shared_resources);
     moveit_pro::behaviors::registerBehavior<GetBlackboardByKey>(factory, "GetBlackboardByKey", shared_resources);
+    moveit_pro::behaviors::registerBehavior<SetBlackboardByKey>(factory, "SetBlackboardByKey", shared_resources);
   }
 };
 }  // namespace experimental_behaviors
