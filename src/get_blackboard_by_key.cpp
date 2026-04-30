@@ -17,8 +17,9 @@ inline constexpr auto kDescriptionGetBlackboardByKey = R"(
                     output port. The key may be prefixed with '@' to address the root blackboard.
                 </p>
                 <p>
-                    Returns FAILURE if the key refers to a missing blackboard entry. This is the read-side
-                    complement to BT.CPP's native SetBlackboard.
+                    Returns FAILURE if the input <code>key</code> port is missing or empty, if the key
+                    refers to a blackboard entry that does not exist, or if the referenced entry exists
+                    but holds no value. This is the read-side complement to BT.CPP's native SetBlackboard.
                 </p>
             )";
 
