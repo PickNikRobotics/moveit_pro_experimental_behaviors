@@ -1,0 +1,88 @@
+// Copyright 2026 PickNik Inc.
+// All rights reserved.
+//
+// Unauthorized copying of this code base via any medium is strictly prohibited.
+// Proprietary and confidential.
+
+#include <experimental_behaviors/get_blackboard_by_key.hpp>
+
+#include <moveit_pro_behavior_interface/metadata_fields.hpp>
+
+namespace
+{
+inline constexpr auto kDescriptionGetBlackboardByKey = R"(
+                <p>
+                    Reads a blackboard entry whose key is computed at runtime (typically via a Script node
+                    building a string from other blackboard variables) and copies the entry's value to an
+                    output port. The key may be prefixed with '@' to address the root blackboard.
+                </p>
+                <p>
+                    Returns FAILURE if the input <code>key</code> port is missing or empty, if the key
+                    refers to a blackboard entry that does not exist, or if the referenced entry exists
+                    but holds no value. This is the read-side complement to BT.CPP's native SetBlackboard.
+                </p>
+            )";
+
+constexpr auto kPortIDKey = "key";
+constexpr auto kPortIDValue = "value";
+}  // namespace
+
+namespace experimental_behaviors
+{
+GetBlackboardByKey::GetBlackboardByKey(const std::string& name, const BT::NodeConfiguration& config,
+                                       const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+{
+}
+
+BT::PortsList GetBlackboardByKey::providedPorts()
+{
+  return { BT::InputPort<std::string>(kPortIDKey,
+                                      "Blackboard key to read from. May be constructed dynamically via Script. "
+                                      "Prefix with '@' for root-scope access."),
+           BT::OutputPort(kPortIDValue, "Value read from the blackboard entry referenced by `key`.") };
+}
+
+BT::KeyValueVector GetBlackboardByKey::metadata()
+{
+  return { { moveit_pro::behaviors::kSubcategoryMetadataKey, "Blackboard" },
+           { moveit_pro::behaviors::kDescriptionMetadataKey, kDescriptionGetBlackboardByKey } };
+}
+
+BT::NodeStatus GetBlackboardByKey::tick()
+{
+  std::string key;
+  if (!getInput<std::string>(kPortIDKey, key) || key.empty())
+  {
+    shared_resources_->logger->publishFailureMessage(name(), "Missing or empty input port [key]");
+    return BT::NodeStatus::FAILURE;
+  }
+
+  auto src_entry = config().blackboard->getEntry(key);
+  if (!src_entry)
+  {
+    shared_resources_->logger->publishFailureMessage(name(),
+                                                     "Blackboard entry '" + key + "' does not exist (cache miss).");
+    return BT::NodeStatus::FAILURE;
+  }
+
+  if (src_entry->value.empty())
+  {
+    shared_resources_->logger->publishFailureMessage(name(),
+                                                     "Blackboard entry '" + key + "' exists but holds no value.");
+    return BT::NodeStatus::FAILURE;
+  }
+
+  // Pass the stored BT::Any through the canonical setOutput path so SubTree
+  // auto-remapping and blackboard-pointer validation are handled consistently
+  // with the rest of BT.CPP (see tree_node.h setOutput).
+  const auto result = setOutput<BT::Any>(kPortIDValue, src_entry->value);
+  if (!result)
+  {
+    shared_resources_->logger->publishFailureMessage(name(), result.error());
+    return BT::NodeStatus::FAILURE;
+  }
+
+  return BT::NodeStatus::SUCCESS;
+}
+}  // namespace experimental_behaviors
