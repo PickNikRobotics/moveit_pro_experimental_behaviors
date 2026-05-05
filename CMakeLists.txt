@@ -4,7 +4,7 @@ project(experimental_behaviors CXX)
 find_package(moveit_studio_common REQUIRED)
 moveit_studio_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS control_msgs geometry_msgs moveit_pro_behavior_interface pluginlib moveit_studio_common behaviortree_cpp tl_expected)
+set(THIS_PACKAGE_INCLUDE_DEPENDS control_msgs geometry_msgs moveit_pro_behavior_interface pluginlib moveit_studio_common behaviortree_cpp tl_expected trajectory_msgs moveit_pro_base)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -21,6 +21,7 @@ add_library(
   src/publish_dynamic_interface_group_values.cpp
   src/get_blackboard_by_key.cpp
   src/set_blackboard_by_key.cpp
+  src/trajectory_to_path.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   experimental_behaviors
