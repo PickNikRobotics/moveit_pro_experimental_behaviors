@@ -34,6 +34,7 @@ namespace experimental_behaviors
  *
  * Output poses are stamped with the robot model's root frame
  * (`robot_model->getModelFrame()`) and the current node clock.
+ * All output poses share a single timestamp captured once per tick.
  */
 class TrajectoryToPath final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {

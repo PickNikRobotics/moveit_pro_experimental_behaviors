@@ -23,8 +23,8 @@ inline constexpr auto kDescriptionTrajectoryToPath = R"(
                 </p>
                 <p>
                     The output port <code>path</code> is shaped to plug directly into <code>VisualizePath</code>'s
-                    input, allowing a joint-space trajectory to be visualized before being passed to
-                    <code>ExecuteTrajectory</code>. Joints absent from the trajectory keep their current planning
+                    <code>path</code> input, allowing a joint-space trajectory to be visualized before being passed
+                    to <code>ExecuteTrajectory</code>. Joints absent from the trajectory keep their current planning
                     scene values during FK.
                 </p>
             )";
@@ -104,7 +104,9 @@ BT::NodeStatus TrajectoryToPath::tick()
     }
   }
 
-  // Base state: planning scene's current state. Joints absent from the trajectory keep these values.
+  // Seed FK from the planning scene's current state (not URDF defaults) so joints
+  // absent from the trajectory — e.g. the rail or the other arm in dual-arm setups —
+  // keep their actual current values rather than snapping to neutral.
   moveit_pro::base::planning_scene::PlanningScene planning_scene(robot_model);
   const moveit_pro::base::RobotState base_state = planning_scene.getCurrentState();
 
@@ -113,6 +115,11 @@ BT::NodeStatus TrajectoryToPath::tick()
 
   const auto stamp = shared_resources_->node->get_clock()->now();
   const auto& frame_id = robot_model->getModelFrame();
+
+  // Reuse a single RobotState across iterations: setVariablePositions only touches
+  // the variables in joint_names, so non-trajectory joints retain their seeded values
+  // and we avoid a per-point deep copy of the full state.
+  moveit_pro::base::RobotState state = base_state;
 
   for (const auto& point : trajectory.points)
   {
@@ -124,7 +131,6 @@ BT::NodeStatus TrajectoryToPath::tick()
       return BT::NodeStatus::FAILURE;
     }
 
-    moveit_pro::base::RobotState state = base_state;
     try
     {
       state.setVariablePositions(trajectory.joint_names, point.positions);
