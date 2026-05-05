@@ -41,12 +41,11 @@ TrajectoryToPath::TrajectoryToPath(const std::string& name, const BT::NodeConfig
 BT::PortsList TrajectoryToPath::providedPorts()
 {
   return {
-    BT::InputPort<trajectory_msgs::msg::JointTrajectory>(
-        kPortIDJointTrajectory, "{joint_trajectory}",
-        "Joint-space trajectory to convert. Same type ExecuteTrajectory consumes."),
-    BT::InputPort<std::string>(
-        kPortIDTipLink, "{tip_link}",
-        "Robot link whose Cartesian pose is reported once per trajectory point."),
+    BT::InputPort<trajectory_msgs::msg::JointTrajectory>(kPortIDJointTrajectory, "{joint_trajectory}",
+                                                         "Joint-space trajectory to convert. Same type "
+                                                         "ExecuteTrajectory consumes."),
+    BT::InputPort<std::string>(kPortIDTipLink, "{tip_link}",
+                               "Robot link whose Cartesian pose is reported once per trajectory point."),
     BT::OutputPort<std::vector<geometry_msgs::msg::PoseStamped>>(
         kPortIDPath, "{path}",
         "One stamped pose per trajectory point, in the robot model's root frame. "
@@ -98,8 +97,8 @@ BT::NodeStatus TrajectoryToPath::tick()
   {
     if (!robot_model->hasJointModel(joint_name))
     {
-      shared_resources_->logger->publishFailureMessage(
-          name(), "Trajectory contains joint '" + joint_name + "' which is not in the robot model.");
+      shared_resources_->logger->publishFailureMessage(name(), "Trajectory contains joint '" + joint_name +
+                                                                   "' which is not in the robot model.");
       return BT::NodeStatus::FAILURE;
     }
   }
@@ -126,8 +125,8 @@ BT::NodeStatus TrajectoryToPath::tick()
     if (point.positions.size() != trajectory.joint_names.size())
     {
       shared_resources_->logger->publishFailureMessage(
-          name(), "Trajectory point has " + std::to_string(point.positions.size()) +
-                      " positions but " + std::to_string(trajectory.joint_names.size()) + " joint names.");
+          name(), "Trajectory point has " + std::to_string(point.positions.size()) + " positions but " +
+                      std::to_string(trajectory.joint_names.size()) + " joint names.");
       return BT::NodeStatus::FAILURE;
     }
 
@@ -154,9 +153,9 @@ BT::NodeStatus TrajectoryToPath::tick()
 
   if (path.size() < 2)
   {
-    shared_resources_->logger->publishWarnMessage(
-        name(), "Trajectory has fewer than 2 points (" + std::to_string(path.size()) +
-                    "); the resulting path will not render as a polyline.");
+    shared_resources_->logger->publishWarnMessage(name(), "Trajectory has fewer than 2 points (" +
+                                                              std::to_string(path.size()) +
+                                                              "); the resulting path will not render as a polyline.");
   }
 
   setOutput(kPortIDPath, path);
