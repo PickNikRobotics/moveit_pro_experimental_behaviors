@@ -15,10 +15,12 @@
 
   <depend>control_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>moveit_pro_base</depend>
   <depend>moveit_pro_behavior_interface</depend>
   <depend>pluginlib</depend>
   <depend>behaviortree_cpp</depend>
   <depend>tl_expected</depend>
+  <depend>trajectory_msgs</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>
