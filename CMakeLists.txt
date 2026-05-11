@@ -4,7 +4,7 @@ project(experimental_behaviors CXX)
 find_package(moveit_studio_common REQUIRED)
 moveit_studio_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS control_msgs geometry_msgs moveit_pro_behavior_interface pluginlib moveit_studio_common behaviortree_cpp tl_expected trajectory_msgs moveit_pro_base)
+set(THIS_PACKAGE_INCLUDE_DEPENDS control_msgs geometry_msgs moveit_pro_behavior_interface pluginlib moveit_studio_common behaviortree_cpp nav_msgs std_msgs tl_expected trajectory_msgs moveit_pro_base)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -22,6 +22,16 @@ add_library(
   src/get_blackboard_by_key.cpp
   src/set_blackboard_by_key.cpp
   src/trajectory_to_path.cpp
+  src/pose_to_vectors.cpp
+  src/vectors_to_pose.cpp
+  src/convert_odom_to_pose_stamped.cpp
+  src/convert_pose_stamped_to_odom.cpp
+  src/get_odom_latest.cpp
+  src/publish_bool.cpp
+  src/get_bool.cpp
+  src/get_bool_instance.cpp
+  src/get_empty_instance.cpp
+  src/get_odom_instance.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   experimental_behaviors

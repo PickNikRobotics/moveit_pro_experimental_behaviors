@@ -30,6 +30,8 @@ TEST(BehaviorTests, test_load_behavior_plugins)
       (void)factory.instantiateTreeNode("test_get_blackboard_by_key", "GetBlackboardByKey", BT::NodeConfiguration()));
   EXPECT_NO_THROW(
       (void)factory.instantiateTreeNode("test_trajectory_to_path", "TrajectoryToPath", BT::NodeConfiguration()));
+  EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_pose_to_vectors", "PoseToVectors", BT::NodeConfiguration()));
+  EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_vectors_to_pose", "VectorsToPose", BT::NodeConfiguration()));
 }
 
 int main(int argc, char** argv)
