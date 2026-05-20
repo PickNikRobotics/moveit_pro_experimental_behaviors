@@ -4,14 +4,16 @@ project(experimental_behaviors CXX)
 find_package(moveit_studio_common REQUIRED)
 moveit_studio_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS control_msgs geometry_msgs moveit_pro_behavior_interface pluginlib moveit_studio_common behaviortree_cpp tl_expected trajectory_msgs moveit_pro_base)
+set(THIS_PACKAGE_INCLUDE_DEPENDS ament_index_cpp control_msgs geometry_msgs moveit_pro_behavior_interface pluginlib moveit_studio_common behaviortree_cpp tl_expected trajectory_msgs moveit_pro_base)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
+find_package(yaml-cpp REQUIRED)
 
 add_library(
   experimental_behaviors
   SHARED
+  src/append_yaml_list_item.cpp
   src/create_interface_value.cpp
   src/create_dynamic_interface_group_values.cpp
   src/get_dynamic_interface_group_values.cpp
@@ -22,11 +24,13 @@ add_library(
   src/get_blackboard_by_key.cpp
   src/set_blackboard_by_key.cpp
   src/trajectory_to_path.cpp
+  src/write_yaml_value.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   experimental_behaviors
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
          $<INSTALL_INTERFACE:include>)
+target_link_libraries(experimental_behaviors yaml-cpp)
 ament_target_dependencies(experimental_behaviors
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
