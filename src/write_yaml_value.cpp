@@ -149,20 +149,31 @@ BT::NodeStatus WriteYamlValue::tick()
     return BT::NodeStatus::FAILURE;
   }
 
-  // Traverse to the parent of the leaf key, creating empty maps along the way
-  // for any missing intermediate nodes.
-  YAML::Node node = root;
-  for (size_t i = 0; i + 1 < keys.size(); ++i)
+  // yaml-cpp gotcha: `YAML::Node node = root; node = node[k]; node[k2] = v` does
+  // NOT propagate the write to root — the intermediate `node = node[k]` rebinds
+  // to a detached node. Use chained subscript instead, which yaml-cpp handles
+  // correctly because the whole path is evaluated as a single expression.
+  switch (keys.size())
   {
-    const auto& k = keys[i];
-    if (!node[k] || node[k].IsNull())
-    {
-      node[k] = YAML::Node(YAML::NodeType::Map);
-    }
-    node = node[k];
+    case 1:
+      root[keys[0]] = parsed_value;
+      break;
+    case 2:
+      root[keys[0]][keys[1]] = parsed_value;
+      break;
+    case 3:
+      root[keys[0]][keys[1]][keys[2]] = parsed_value;
+      break;
+    case 4:
+      root[keys[0]][keys[1]][keys[2]][keys[3]] = parsed_value;
+      break;
+    case 5:
+      root[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] = parsed_value;
+      break;
+    default:
+      RCLCPP_ERROR(logger, "WriteYamlValue: unsupported key depth %zu (max 5).", keys.size());
+      return BT::NodeStatus::FAILURE;
   }
-
-  node[keys.back()] = parsed_value;
 
   try
   {
