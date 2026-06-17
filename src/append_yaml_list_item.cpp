@@ -145,30 +145,75 @@ BT::NodeStatus AppendYamlListItem::tick()
     return BT::NodeStatus::FAILURE;
   }
 
-  // Traverse to the parent of the leaf key, creating intermediate maps as needed.
-  YAML::Node node = root;
-  for (size_t i = 0; i + 1 < keys.size(); ++i)
-  {
-    const auto& k = keys[i];
-    if (!node[k] || node[k].IsNull())
+  // yaml-cpp gotcha: `YAML::Node node = root; node = node[k]; ... ` does NOT
+  // propagate writes back to root — the intermediate `node = node[k]` rebinds
+  // to a detached node. Use chained subscript instead (yaml-cpp evaluates the
+  // whole path correctly when it's a single expression).
+  //
+  // Strategy: read the existing leaf value via chained subscript (auto-creating
+  // intermediates as Maps if absent), validate it's a Sequence (or absent),
+  // build a new Sequence with the appended item, and re-assign at the same
+  // chained path. The explicit re-assignment guarantees propagation.
+  auto get_leaf = [&]() -> YAML::Node {
+    switch (keys.size())
     {
-      node[k] = YAML::Node(YAML::NodeType::Map);
+      case 1:
+        return root[keys[0]];
+      case 2:
+        return root[keys[0]][keys[1]];
+      case 3:
+        return root[keys[0]][keys[1]][keys[2]];
+      case 4:
+        return root[keys[0]][keys[1]][keys[2]][keys[3]];
+      case 5:
+        return root[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]];
+      default:
+        return YAML::Node();
     }
-    node = node[k];
+  };
+  if (keys.size() > 5)
+  {
+    RCLCPP_ERROR(logger, "AppendYamlListItem: unsupported key depth %zu (max 5).", keys.size());
+    return BT::NodeStatus::FAILURE;
   }
 
-  // Ensure the leaf is a sequence (creating it if absent).
-  const auto& leaf = keys.back();
-  if (!node[leaf] || node[leaf].IsNull())
-  {
-    node[leaf] = YAML::Node(YAML::NodeType::Sequence);
-  }
-  if (!node[leaf].IsSequence())
+  YAML::Node existing = get_leaf();
+  if (existing.IsDefined() && !existing.IsNull() && !existing.IsSequence())
   {
     RCLCPP_ERROR(logger, "AppendYamlListItem: target at the keyed location exists and is not a sequence.");
     return BT::NodeStatus::FAILURE;
   }
-  node[leaf].push_back(parsed_value);
+
+  // Build a fresh sequence with the existing items (if any) plus the new one.
+  YAML::Node new_seq(YAML::NodeType::Sequence);
+  if (existing.IsSequence())
+  {
+    for (const auto& item : existing)
+    {
+      new_seq.push_back(item);
+    }
+  }
+  new_seq.push_back(parsed_value);
+
+  // Re-assign at the chained path so the write propagates to root.
+  switch (keys.size())
+  {
+    case 1:
+      root[keys[0]] = new_seq;
+      break;
+    case 2:
+      root[keys[0]][keys[1]] = new_seq;
+      break;
+    case 3:
+      root[keys[0]][keys[1]][keys[2]] = new_seq;
+      break;
+    case 4:
+      root[keys[0]][keys[1]][keys[2]][keys[3]] = new_seq;
+      break;
+    case 5:
+      root[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] = new_seq;
+      break;
+  }
 
   try
   {
