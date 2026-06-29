@@ -30,6 +30,8 @@ TEST(BehaviorTests, test_load_behavior_plugins)
       (void)factory.instantiateTreeNode("test_get_blackboard_by_key", "GetBlackboardByKey", BT::NodeConfiguration()));
   EXPECT_NO_THROW(
       (void)factory.instantiateTreeNode("test_trajectory_to_path", "TrajectoryToPath", BT::NodeConfiguration()));
+  EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_retime_joint_trajectory", "RetimeJointTrajectory",
+                                                    BT::NodeConfiguration()));
 }
 
 int main(int argc, char** argv)

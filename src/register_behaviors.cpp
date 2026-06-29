@@ -16,6 +16,7 @@
 #include "experimental_behaviors/get_interface_value_from_group.hpp"
 #include "experimental_behaviors/get_pose_stamped_from_topic.hpp"
 #include "experimental_behaviors/publish_dynamic_interface_group_values.hpp"
+#include "experimental_behaviors/retime_joint_trajectory.hpp"
 #include "experimental_behaviors/set_blackboard_by_key.hpp"
 #include "experimental_behaviors/trajectory_to_path.hpp"
 
@@ -46,6 +47,7 @@ public:
     moveit_pro::behaviors::registerBehavior<GetBlackboardByKey>(factory, "GetBlackboardByKey", shared_resources);
     moveit_pro::behaviors::registerBehavior<SetBlackboardByKey>(factory, "SetBlackboardByKey", shared_resources);
     moveit_pro::behaviors::registerBehavior<TrajectoryToPath>(factory, "TrajectoryToPath", shared_resources);
+    moveit_pro::behaviors::registerBehavior<RetimeJointTrajectory>(factory, "RetimeJointTrajectory", shared_resources);
   }
 };
 }  // namespace experimental_behaviors

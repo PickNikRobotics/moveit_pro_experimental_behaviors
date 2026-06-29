@@ -22,6 +22,7 @@ add_library(
   src/get_blackboard_by_key.cpp
   src/set_blackboard_by_key.cpp
   src/trajectory_to_path.cpp
+  src/retime_joint_trajectory.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   experimental_behaviors
