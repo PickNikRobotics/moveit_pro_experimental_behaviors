@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.22)
 project(experimental_behaviors CXX)
 
-find_package(moveit_studio_common REQUIRED)
-moveit_studio_package()
+find_package(moveit_pro_package REQUIRED)
+moveit_pro_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS control_msgs geometry_msgs moveit_pro_behavior_interface pluginlib moveit_studio_common behaviortree_cpp tl_expected trajectory_msgs moveit_pro_base)
+set(THIS_PACKAGE_INCLUDE_DEPENDS control_msgs geometry_msgs moveit_pro_behavior_interface pluginlib behaviortree_cpp tl_expected trajectory_msgs moveit_pro_base)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -46,7 +46,7 @@ endif()
 
 # Export the behavior plugins defined in this package so they are available to
 # plugin loaders that load the behavior base class library from the
-# moveit_studio_behavior package.
+# moveit_pro_behavior package.
 pluginlib_export_plugin_description_file(
   moveit_pro_behavior_interface experimental_behaviors_plugin_description.xml)
 
