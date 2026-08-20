@@ -11,7 +11,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>moveit_studio_common</build_depend>
+  <buildtool_depend>moveit_pro_package</buildtool_depend>
 
   <depend>control_msgs</depend>
   <depend>geometry_msgs</depend>
