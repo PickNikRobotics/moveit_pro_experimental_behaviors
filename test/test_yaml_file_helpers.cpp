@@ -9,6 +9,8 @@
 #include <experimental_behaviors/atomic_file_write.hpp>
 #include <experimental_behaviors/path_expansion.hpp>
 
+#include <unistd.h>
+
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -151,12 +153,52 @@ TEST_F(AtomicFileWrite, PreservesTheDestinationsPermissions)
   std::string error;
   ASSERT_TRUE(writeFileAtomically(target_, "first: 1\n", error)) << error;
 
-  const auto mode = std::filesystem::perms::owner_read | std::filesystem::perms::owner_write |
-                    std::filesystem::perms::group_read;
+  const auto mode =
+      std::filesystem::perms::owner_read | std::filesystem::perms::owner_write | std::filesystem::perms::group_read;
   std::filesystem::permissions(target_, mode);
 
   ASSERT_TRUE(writeFileAtomically(target_, "second: 2\n", error)) << error;
   EXPECT_EQ(std::filesystem::status(target_).permissions() & std::filesystem::perms::mask, mode);
+}
+
+TEST_F(AtomicFileWrite, ReplacesTheTargetOfASymlinkedDestinationAndKeepsTheLink)
+{
+  const auto real = dir_ / "real.yaml";
+  const auto link = dir_ / "link.yaml";
+  std::string error;
+  ASSERT_TRUE(writeFileAtomically(real, "first: 1\n", error)) << error;
+  std::filesystem::create_symlink(real, link);
+
+  ASSERT_TRUE(writeFileAtomically(link, "second: 2\n", error)) << error;
+
+  // The link is still a link, and it is the file it names that changed.
+  EXPECT_TRUE(std::filesystem::is_symlink(link));
+  EXPECT_EQ(readAll(real), "second: 2\n");
+}
+
+TEST_F(AtomicFileWrite, DoesNotWriteThroughAPlantedTemporary)
+{
+  std::string error;
+  ASSERT_TRUE(writeFileAtomically(target_, "first: 1\n", error)) << error;
+
+  // The temporary's name is predictable, so pre-create every name the next call
+  // could pick as a symlink pointing somewhere it must not write. O_EXCL and
+  // O_NOFOLLOW have to make the call either skip them or fail — never follow one.
+  const auto victim = dir_ / "victim.yaml";
+  ASSERT_TRUE(writeFileAtomically(victim, "untouched\n", error)) << error;
+  for (int i = 0; i < 16; ++i)
+  {
+    std::filesystem::create_symlink(
+        victim, dir_ / ("manifest.yaml.tmp." + std::to_string(::getpid()) + "." + std::to_string(i)));
+  }
+
+  // Whether this call finds a free name or gives up, the victim must be intact.
+  (void)writeFileAtomically(target_, "second: 2\n", error);
+  EXPECT_EQ(readAll(victim), "untouched\n");
+  // ...and the destination is either the old or the new document, never the
+  // victim's content.
+  const auto target_contents = readAll(target_);
+  EXPECT_TRUE(target_contents == "first: 1\n" || target_contents == "second: 2\n") << target_contents;
 }
 
 TEST_F(AtomicFileWrite, ReportsFailureAndKeepsTheDestinationWhenTheWriteCannotLand)

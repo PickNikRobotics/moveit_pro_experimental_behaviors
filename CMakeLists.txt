@@ -35,7 +35,14 @@ target_include_directories(
 # ament_export_dependencies, so a consumer could not resolve it). PRIVATE here
 # forces the keyword signature on ament_target_dependencies too, because CMake
 # rejects mixing the plain and keyword forms on one target.
-target_link_libraries(experimental_behaviors PRIVATE yaml-cpp)
+#
+# yaml-cpp::yaml-cpp is the target the modern config exports; the bare name is
+# the fallback for installs whose config predates it.
+if(TARGET yaml-cpp::yaml-cpp)
+  target_link_libraries(experimental_behaviors PRIVATE yaml-cpp::yaml-cpp)
+else()
+  target_link_libraries(experimental_behaviors PRIVATE yaml-cpp)
+endif()
 ament_target_dependencies(experimental_behaviors PUBLIC
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})
 

@@ -11,9 +11,12 @@
 #include <experimental_behaviors/path_expansion.hpp>
 #include <moveit_pro_behavior_interface/metadata_fields.hpp>
 
+#include "yaml_key_path.hpp"
+
 #include <filesystem>
 #include <sstream>
 #include <string>
+#include <system_error>
 #include <vector>
 
 #include <rclcpp/rclcpp.hpp>
@@ -51,21 +54,6 @@ constexpr auto kPortIDKey3 = "key3";
 constexpr auto kPortIDKey4 = "key4";
 constexpr auto kPortIDKey5 = "key5";
 constexpr auto kPortIDValue = "value";
-
-/// Renders keys as "key1.key2..." for error messages.
-std::string keyPathToString(const std::vector<std::string>& keys)
-{
-  std::string joined;
-  for (const auto& key : keys)
-  {
-    if (!joined.empty())
-    {
-      joined += '.';
-    }
-    joined += key;
-  }
-  return joined;
-}
 }  // namespace
 
 namespace experimental_behaviors
@@ -140,9 +128,21 @@ BT::NodeStatus WriteYamlValue::tick()
     }
   }
 
-  if (!std::filesystem::exists(file_path))
+  // The throwing overload of exists() would escape tick() on a status error
+  // (a symlink loop, an unreadable parent directory, a too-long name), so a
+  // missing file and an unanswerable question are distinguished here instead.
+  std::error_code exists_ec;
+  if (!std::filesystem::exists(file_path, exists_ec))
   {
-    RCLCPP_ERROR(logger, "WriteYamlValue: file does not exist: %s", file_path.c_str());
+    if (exists_ec)
+    {
+      RCLCPP_ERROR(logger, "WriteYamlValue: cannot determine whether '%s' exists: %s", file_path.c_str(),
+                   exists_ec.message().c_str());
+    }
+    else
+    {
+      RCLCPP_ERROR(logger, "WriteYamlValue: file does not exist: %s", file_path.c_str());
+    }
     return BT::NodeStatus::FAILURE;
   }
 

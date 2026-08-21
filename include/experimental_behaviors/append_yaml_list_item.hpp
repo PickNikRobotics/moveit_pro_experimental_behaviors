@@ -35,7 +35,10 @@ namespace experimental_behaviors
  * → dump. The dump lands in a temporary file alongside the target and
  * is renamed over it, so a concurrent reader sees either the old
  * document or the new one, never a truncated one, and a crash cannot
- * leave the file half-written. Fails the tick if the file doesn't
+ * leave the file half-written. The replacement is atomic, but the
+ * surrounding load-edit-store is not serialized: two writers editing
+ * the same file concurrently can still lose one of the two edits, so
+ * a given file is expected to have a single writer. Fails the tick if the file doesn't
  * exist, and fails rather than throwing when a key along the path
  * holds a scalar and cannot be descended into.
  */
