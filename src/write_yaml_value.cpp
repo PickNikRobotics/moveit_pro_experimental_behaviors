@@ -224,10 +224,18 @@ BT::NodeStatus WriteYamlValue::tick()
   }
 
   std::string write_error;
-  if (!writeFileAtomically(file_path, serialized, write_error))
+  switch (writeFileAtomically(file_path, serialized, write_error))
   {
-    RCLCPP_ERROR(logger, "WriteYamlValue: %s", write_error.c_str());
-    return BT::NodeStatus::FAILURE;
+    case AtomicWriteResult::kSucceeded:
+      break;
+    case AtomicWriteResult::kSucceededNotDurable:
+      // The file already holds the new document, so failing the tick would
+      // invite a retry that applies the same edit twice. Warn instead.
+      RCLCPP_WARN(logger, "WriteYamlValue: %s", write_error.c_str());
+      break;
+    case AtomicWriteResult::kFailed:
+      RCLCPP_ERROR(logger, "WriteYamlValue: %s", write_error.c_str());
+      return BT::NodeStatus::FAILURE;
   }
 
   return BT::NodeStatus::SUCCESS;

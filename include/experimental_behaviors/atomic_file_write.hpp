@@ -64,6 +64,21 @@ inline std::string errnoMessage(int error_number)
 }
 }  // namespace detail
 
+/// Outcome of writeFileAtomically(). Three states, not two, because a failure
+/// to make the rename durable is not a failure to write: the new contents are
+/// already visible and re-running the write would repeat whatever edit produced
+/// them.
+enum class AtomicWriteResult
+{
+  /// @p file_path holds the new contents, and the replacement is durable.
+  kSucceeded,
+  /// @p file_path holds the new contents, but the directory entry may not
+  /// survive a power loss. Not retriable: the write happened.
+  kSucceededNotDurable,
+  /// @p file_path is unchanged. Retriable.
+  kFailed,
+};
+
 /**
  * @brief Replaces @p file_path with @p contents atomically.
  *
@@ -92,16 +107,15 @@ inline std::string errnoMessage(int error_number)
  *
  * @param file_path Destination file. It need not exist yet.
  * @param contents Bytes to write.
- * @param[out] error Human-readable reason on failure. Untouched on success.
- * @return true if @p file_path now holds @p contents in full.
- *
- * On false the destination is unchanged and any temporary has been removed —
- * with one exception, called out in @p error: if the replacement itself landed
- * and only the final directory flush failed, the new contents are already
- * visible but the directory entry may not survive a power loss. That case
- * cannot be rolled back, so it is reported rather than hidden.
+ * @param[out] error Human-readable reason, set for both `kFailed` (why nothing
+ * was written) and `kSucceededNotDurable` (what could not be flushed). Untouched
+ * on `kSucceeded`.
+ * @return Which of the three outcomes occurred. On `kFailed` the destination is
+ * unchanged and any temporary has been removed, so the caller may retry. On
+ * `kSucceededNotDurable` the write landed and must not be retried.
  */
-inline bool writeFileAtomically(const std::filesystem::path& file_path, std::string_view contents, std::string& error)
+inline AtomicWriteResult writeFileAtomically(const std::filesystem::path& file_path, std::string_view contents,
+                                             std::string& error)
 {
   // Follow a symlinked destination to the file it names: replacing the link
   // itself would silently change what every other reader of that path sees.
@@ -113,7 +127,7 @@ inline bool writeFileAtomically(const std::filesystem::path& file_path, std::str
     if (ec)
     {
       error = "failed to resolve the symlink at '" + destination.string() + "': " + ec.message();
-      return false;
+      return AtomicWriteResult::kFailed;
     }
     destination = resolved;
   }
@@ -151,13 +165,13 @@ inline bool writeFileAtomically(const std::filesystem::path& file_path, std::str
     if (errno != EEXIST)
     {
       error = "failed to create temporary file '" + temp_path.string() + "': " + detail::errnoMessage(errno);
-      return false;
+      return AtomicWriteResult::kFailed;
     }
   }
   if (fd < 0)
   {
     error = "failed to find an unused temporary file name next to '" + destination.string() + "'";
-    return false;
+    return AtomicWriteResult::kFailed;
   }
 
   const auto fail = [&](const std::string& reason) {
@@ -169,7 +183,7 @@ inline bool writeFileAtomically(const std::filesystem::path& file_path, std::str
     }
     std::error_code remove_ec;
     std::filesystem::remove(temp_path, remove_ec);
-    return false;
+    return AtomicWriteResult::kFailed;
   };
 
   if (!detail::writeAll(fd, contents))
@@ -214,7 +228,7 @@ inline bool writeFileAtomically(const std::filesystem::path& file_path, std::str
   {
     error = "wrote '" + destination.string() + "' but could not open '" + directory.string() +
             "' to flush the rename, so the update may not survive a power loss: " + detail::errnoMessage(errno);
-    return false;
+    return AtomicWriteResult::kSucceededNotDurable;
   }
   const bool synced = detail::fsyncRetrying(dir_fd);
   const int sync_errno = errno;
@@ -225,10 +239,10 @@ inline bool writeFileAtomically(const std::filesystem::path& file_path, std::str
   {
     error = "wrote '" + destination.string() + "' but could not flush '" + directory.string() +
             "', so the update may not survive a power loss: " + detail::errnoMessage(sync_errno);
-    return false;
+    return AtomicWriteResult::kSucceededNotDurable;
   }
 
-  return true;
+  return AtomicWriteResult::kSucceeded;
 }
 
 }  // namespace experimental_behaviors

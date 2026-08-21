@@ -20,6 +20,7 @@
 
 namespace
 {
+using experimental_behaviors::AtomicWriteResult;
 using experimental_behaviors::expandPath;
 using experimental_behaviors::writeFileAtomically;
 
@@ -128,17 +129,17 @@ protected:
 TEST_F(AtomicFileWrite, WritesAndThenReplacesTheDestination)
 {
   std::string error;
-  ASSERT_TRUE(writeFileAtomically(target_, "first: 1\n", error)) << error;
+  ASSERT_EQ(writeFileAtomically(target_, "first: 1\n", error), AtomicWriteResult::kSucceeded) << error;
   EXPECT_EQ(readAll(target_), "first: 1\n");
 
-  ASSERT_TRUE(writeFileAtomically(target_, "second: 2\n", error)) << error;
+  ASSERT_EQ(writeFileAtomically(target_, "second: 2\n", error), AtomicWriteResult::kSucceeded) << error;
   EXPECT_EQ(readAll(target_), "second: 2\n");
 }
 
 TEST_F(AtomicFileWrite, LeavesNoTemporaryBehind)
 {
   std::string error;
-  ASSERT_TRUE(writeFileAtomically(target_, "first: 1\n", error)) << error;
+  ASSERT_EQ(writeFileAtomically(target_, "first: 1\n", error), AtomicWriteResult::kSucceeded) << error;
 
   std::vector<std::string> entries;
   for (const auto& entry : std::filesystem::directory_iterator(dir_))
@@ -151,13 +152,13 @@ TEST_F(AtomicFileWrite, LeavesNoTemporaryBehind)
 TEST_F(AtomicFileWrite, PreservesTheDestinationsPermissions)
 {
   std::string error;
-  ASSERT_TRUE(writeFileAtomically(target_, "first: 1\n", error)) << error;
+  ASSERT_EQ(writeFileAtomically(target_, "first: 1\n", error), AtomicWriteResult::kSucceeded) << error;
 
   const auto mode =
       std::filesystem::perms::owner_read | std::filesystem::perms::owner_write | std::filesystem::perms::group_read;
   std::filesystem::permissions(target_, mode);
 
-  ASSERT_TRUE(writeFileAtomically(target_, "second: 2\n", error)) << error;
+  ASSERT_EQ(writeFileAtomically(target_, "second: 2\n", error), AtomicWriteResult::kSucceeded) << error;
   EXPECT_EQ(std::filesystem::status(target_).permissions() & std::filesystem::perms::mask, mode);
 }
 
@@ -166,10 +167,10 @@ TEST_F(AtomicFileWrite, ReplacesTheTargetOfASymlinkedDestinationAndKeepsTheLink)
   const auto real = dir_ / "real.yaml";
   const auto link = dir_ / "link.yaml";
   std::string error;
-  ASSERT_TRUE(writeFileAtomically(real, "first: 1\n", error)) << error;
+  ASSERT_EQ(writeFileAtomically(real, "first: 1\n", error), AtomicWriteResult::kSucceeded) << error;
   std::filesystem::create_symlink(real, link);
 
-  ASSERT_TRUE(writeFileAtomically(link, "second: 2\n", error)) << error;
+  ASSERT_EQ(writeFileAtomically(link, "second: 2\n", error), AtomicWriteResult::kSucceeded) << error;
 
   // The link is still a link, and it is the file it names that changed.
   EXPECT_TRUE(std::filesystem::is_symlink(link));
@@ -179,13 +180,13 @@ TEST_F(AtomicFileWrite, ReplacesTheTargetOfASymlinkedDestinationAndKeepsTheLink)
 TEST_F(AtomicFileWrite, DoesNotWriteThroughAPlantedTemporary)
 {
   std::string error;
-  ASSERT_TRUE(writeFileAtomically(target_, "first: 1\n", error)) << error;
+  ASSERT_EQ(writeFileAtomically(target_, "first: 1\n", error), AtomicWriteResult::kSucceeded) << error;
 
   // The temporary's name is predictable, so pre-create every name the next call
   // could pick as a symlink pointing somewhere it must not write. O_EXCL and
   // O_NOFOLLOW have to make the call either skip them or fail — never follow one.
   const auto victim = dir_ / "victim.yaml";
-  ASSERT_TRUE(writeFileAtomically(victim, "untouched\n", error)) << error;
+  ASSERT_EQ(writeFileAtomically(victim, "untouched\n", error), AtomicWriteResult::kSucceeded) << error;
   for (int i = 0; i < 16; ++i)
   {
     std::filesystem::create_symlink(
@@ -204,11 +205,11 @@ TEST_F(AtomicFileWrite, DoesNotWriteThroughAPlantedTemporary)
 TEST_F(AtomicFileWrite, ReportsFailureAndKeepsTheDestinationWhenTheWriteCannotLand)
 {
   std::string error;
-  ASSERT_TRUE(writeFileAtomically(target_, "first: 1\n", error)) << error;
+  ASSERT_EQ(writeFileAtomically(target_, "first: 1\n", error), AtomicWriteResult::kSucceeded) << error;
 
   // A destination whose parent directory does not exist cannot be written.
   error.clear();
-  EXPECT_FALSE(writeFileAtomically(dir_ / "absent_subdir" / "manifest.yaml", "x", error));
+  EXPECT_EQ(writeFileAtomically(dir_ / "absent_subdir" / "manifest.yaml", "x", error), AtomicWriteResult::kFailed);
   EXPECT_FALSE(error.empty());
 
   // The pre-existing file is untouched.
