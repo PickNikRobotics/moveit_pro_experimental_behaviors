@@ -30,8 +30,13 @@ target_include_directories(
   experimental_behaviors
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
          $<INSTALL_INTERFACE:include>)
-target_link_libraries(experimental_behaviors yaml-cpp)
-ament_target_dependencies(experimental_behaviors
+# yaml-cpp is an implementation detail: no installed header includes it, so it
+# must not reach INTERFACE_LINK_LIBRARIES of the exported target (it is not in
+# ament_export_dependencies, so a consumer could not resolve it). PRIVATE here
+# forces the keyword signature on ament_target_dependencies too, because CMake
+# rejects mixing the plain and keyword forms on one target.
+target_link_libraries(experimental_behaviors PRIVATE yaml-cpp)
+ament_target_dependencies(experimental_behaviors PUBLIC
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 # Install Libraries

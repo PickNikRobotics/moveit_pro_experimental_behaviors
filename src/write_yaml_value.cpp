@@ -7,11 +7,12 @@
 #include <experimental_behaviors/write_yaml_value.hpp>
 
 #include <yaml-cpp/yaml.h>
+#include <experimental_behaviors/atomic_file_write.hpp>
 #include <experimental_behaviors/path_expansion.hpp>
 #include <moveit_pro_behavior_interface/metadata_fields.hpp>
 
 #include <filesystem>
-#include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -36,7 +37,10 @@ inline constexpr auto kDescriptionWriteYamlValue = R"(
                 </p>
                 <p>
                     Round-trips through yaml-cpp on every tick: load existing &rarr; modify &rarr; dump.
-                    Fails the tick if the file does not exist.
+                    The dump is written to a temporary file alongside the target and renamed over it,
+                    so a reader never observes a half-written file. Fails the tick if the file does not
+                    exist, or if a key along <code>key1..key5</code> holds a scalar and so cannot be
+                    descended into.
                 </p>
             )";
 
@@ -47,6 +51,21 @@ constexpr auto kPortIDKey3 = "key3";
 constexpr auto kPortIDKey4 = "key4";
 constexpr auto kPortIDKey5 = "key5";
 constexpr auto kPortIDValue = "value";
+
+/// Renders keys as "key1.key2..." for error messages.
+std::string keyPathToString(const std::vector<std::string>& keys)
+{
+  std::string joined;
+  for (const auto& key : keys)
+  {
+    if (!joined.empty())
+    {
+      joined += '.';
+    }
+    joined += key;
+  }
+  return joined;
+}
 }  // namespace
 
 namespace experimental_behaviors
@@ -153,41 +172,61 @@ BT::NodeStatus WriteYamlValue::tick()
   // NOT propagate the write to root — the intermediate `node = node[k]` rebinds
   // to a detached node. Use chained subscript instead, which yaml-cpp handles
   // correctly because the whole path is evaluated as a single expression.
-  switch (keys.size())
+  //
+  // yaml-cpp throws BadSubscript when an intermediate key holds a scalar (it can
+  // auto-create a map from an absent or null node, but not replace a scalar), so
+  // the traversal is guarded rather than allowed to escape tick().
+  if (keys.size() > 5)
   {
-    case 1:
-      root[keys[0]] = parsed_value;
-      break;
-    case 2:
-      root[keys[0]][keys[1]] = parsed_value;
-      break;
-    case 3:
-      root[keys[0]][keys[1]][keys[2]] = parsed_value;
-      break;
-    case 4:
-      root[keys[0]][keys[1]][keys[2]][keys[3]] = parsed_value;
-      break;
-    case 5:
-      root[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] = parsed_value;
-      break;
-    default:
-      RCLCPP_ERROR(logger, "WriteYamlValue: unsupported key depth %zu (max 5).", keys.size());
-      return BT::NodeStatus::FAILURE;
+    RCLCPP_ERROR(logger, "WriteYamlValue: unsupported key depth %zu (max 5).", keys.size());
+    return BT::NodeStatus::FAILURE;
   }
-
   try
   {
-    std::ofstream out(file_path);
-    if (!out)
+    switch (keys.size())
     {
-      RCLCPP_ERROR(logger, "WriteYamlValue: failed to open '%s' for writing.", file_path.c_str());
-      return BT::NodeStatus::FAILURE;
+      case 1:
+        root[keys[0]] = parsed_value;
+        break;
+      case 2:
+        root[keys[0]][keys[1]] = parsed_value;
+        break;
+      case 3:
+        root[keys[0]][keys[1]][keys[2]] = parsed_value;
+        break;
+      case 4:
+        root[keys[0]][keys[1]][keys[2]][keys[3]] = parsed_value;
+        break;
+      case 5:
+        root[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] = parsed_value;
+        break;
     }
-    out << root;
+  }
+  catch (const YAML::Exception& e)
+  {
+    RCLCPP_ERROR(logger, "WriteYamlValue: cannot write key path '%s' in '%s' (is a key along it a scalar?): %s",
+                 keyPathToString(keys).c_str(), file_path.c_str(), e.what());
+    return BT::NodeStatus::FAILURE;
+  }
+
+  std::string serialized;
+  try
+  {
+    std::ostringstream buffer;
+    buffer << root;
+    serialized = buffer.str();
   }
   catch (const std::exception& e)
   {
-    RCLCPP_ERROR(logger, "WriteYamlValue: failed to write '%s': %s", file_path.c_str(), e.what());
+    RCLCPP_ERROR(logger, "WriteYamlValue: failed to serialize the updated document for '%s': %s", file_path.c_str(),
+                 e.what());
+    return BT::NodeStatus::FAILURE;
+  }
+
+  std::string write_error;
+  if (!writeFileAtomically(file_path, serialized, write_error))
+  {
+    RCLCPP_ERROR(logger, "WriteYamlValue: %s", write_error.c_str());
     return BT::NodeStatus::FAILURE;
   }
 

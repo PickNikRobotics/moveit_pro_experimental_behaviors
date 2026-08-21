@@ -32,10 +32,14 @@ namespace experimental_behaviors
  * all flow through the same string port.
  *
  * Round-trips through yaml-cpp on every tick: load existing → modify
- * → dump. Each call is atomic, so partial files survive crashes
- * mid-operation. Fails the tick if the file doesn't exist (this
- * behavior does not create files; pair with whatever step is
- * responsible for initialization).
+ * → dump. The dump lands in a temporary file alongside the target and
+ * is renamed over it, so a concurrent reader sees either the old
+ * document or the new one, never a truncated one, and a crash cannot
+ * leave the file half-written. Fails the tick if the file doesn't
+ * exist (this behavior does not create files; pair with whatever step
+ * is responsible for initialization), and fails rather than throwing
+ * when a key along the path holds a scalar and cannot be descended
+ * into.
  */
 class WriteYamlValue final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {

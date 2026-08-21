@@ -32,7 +32,12 @@ namespace experimental_behaviors
  * appended, so scalars and inline maps both work.
  *
  * Round-trips through yaml-cpp on every tick: load existing → modify
- * → dump. Fails the tick if the file doesn't exist.
+ * → dump. The dump lands in a temporary file alongside the target and
+ * is renamed over it, so a concurrent reader sees either the old
+ * document or the new one, never a truncated one, and a crash cannot
+ * leave the file half-written. Fails the tick if the file doesn't
+ * exist, and fails rather than throwing when a key along the path
+ * holds a scalar and cannot be descended into.
  */
 class AppendYamlListItem final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {

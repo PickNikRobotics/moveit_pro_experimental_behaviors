@@ -7,11 +7,12 @@
 #include <experimental_behaviors/append_yaml_list_item.hpp>
 
 #include <yaml-cpp/yaml.h>
+#include <experimental_behaviors/atomic_file_write.hpp>
 #include <experimental_behaviors/path_expansion.hpp>
 #include <moveit_pro_behavior_interface/metadata_fields.hpp>
 
 #include <filesystem>
-#include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -36,7 +37,10 @@ inline constexpr auto kDescriptionAppendYamlListItem = R"(
                 </p>
                 <p>
                     Round-trips through yaml-cpp on every tick: load existing &rarr; modify &rarr; dump.
-                    Fails the tick if the file does not exist.
+                    The dump is written to a temporary file alongside the target and renamed over it,
+                    so a reader never observes a half-written file. Fails the tick if the file does not
+                    exist, or if a key along <code>key1..key5</code> holds a scalar and so cannot be
+                    descended into.
                 </p>
             )";
 
@@ -47,6 +51,21 @@ constexpr auto kPortIDKey3 = "key3";
 constexpr auto kPortIDKey4 = "key4";
 constexpr auto kPortIDKey5 = "key5";
 constexpr auto kPortIDValue = "value";
+
+/// Renders keys as "key1.key2..." for error messages.
+std::string keyPathToString(const std::vector<std::string>& keys)
+{
+  std::string joined;
+  for (const auto& key : keys)
+  {
+    if (!joined.empty())
+    {
+      joined += '.';
+    }
+    joined += key;
+  }
+  return joined;
+}
 }  // namespace
 
 namespace experimental_behaviors
@@ -177,57 +196,76 @@ BT::NodeStatus AppendYamlListItem::tick()
     return BT::NodeStatus::FAILURE;
   }
 
-  YAML::Node existing = get_leaf();
-  if (existing.IsDefined() && !existing.IsNull() && !existing.IsSequence())
+  // yaml-cpp throws BadSubscript when an intermediate key holds a scalar (it can
+  // auto-create a map from an absent or null node, but not replace a scalar), so
+  // both the read and the re-assignment are guarded rather than allowed to escape
+  // tick().
+  try
   {
-    RCLCPP_ERROR(logger, "AppendYamlListItem: target at the keyed location exists and is not a sequence.");
+    YAML::Node existing = get_leaf();
+    if (existing.IsDefined() && !existing.IsNull() && !existing.IsSequence())
+    {
+      RCLCPP_ERROR(logger, "AppendYamlListItem: target at key path '%s' in '%s' exists and is not a sequence.",
+                   keyPathToString(keys).c_str(), file_path.c_str());
+      return BT::NodeStatus::FAILURE;
+    }
+
+    // Build a fresh sequence with the existing items (if any) plus the new one.
+    YAML::Node new_seq(YAML::NodeType::Sequence);
+    if (existing.IsSequence())
+    {
+      for (const auto& item : existing)
+      {
+        new_seq.push_back(item);
+      }
+    }
+    new_seq.push_back(parsed_value);
+
+    // Re-assign at the chained path so the write propagates to root.
+    switch (keys.size())
+    {
+      case 1:
+        root[keys[0]] = new_seq;
+        break;
+      case 2:
+        root[keys[0]][keys[1]] = new_seq;
+        break;
+      case 3:
+        root[keys[0]][keys[1]][keys[2]] = new_seq;
+        break;
+      case 4:
+        root[keys[0]][keys[1]][keys[2]][keys[3]] = new_seq;
+        break;
+      case 5:
+        root[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] = new_seq;
+        break;
+    }
+  }
+  catch (const YAML::Exception& e)
+  {
+    RCLCPP_ERROR(logger, "AppendYamlListItem: cannot append at key path '%s' in '%s' (is a key along it a scalar?): %s",
+                 keyPathToString(keys).c_str(), file_path.c_str(), e.what());
     return BT::NodeStatus::FAILURE;
   }
 
-  // Build a fresh sequence with the existing items (if any) plus the new one.
-  YAML::Node new_seq(YAML::NodeType::Sequence);
-  if (existing.IsSequence())
-  {
-    for (const auto& item : existing)
-    {
-      new_seq.push_back(item);
-    }
-  }
-  new_seq.push_back(parsed_value);
-
-  // Re-assign at the chained path so the write propagates to root.
-  switch (keys.size())
-  {
-    case 1:
-      root[keys[0]] = new_seq;
-      break;
-    case 2:
-      root[keys[0]][keys[1]] = new_seq;
-      break;
-    case 3:
-      root[keys[0]][keys[1]][keys[2]] = new_seq;
-      break;
-    case 4:
-      root[keys[0]][keys[1]][keys[2]][keys[3]] = new_seq;
-      break;
-    case 5:
-      root[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] = new_seq;
-      break;
-  }
-
+  std::string serialized;
   try
   {
-    std::ofstream out(file_path);
-    if (!out)
-    {
-      RCLCPP_ERROR(logger, "AppendYamlListItem: failed to open '%s' for writing.", file_path.c_str());
-      return BT::NodeStatus::FAILURE;
-    }
-    out << root;
+    std::ostringstream buffer;
+    buffer << root;
+    serialized = buffer.str();
   }
   catch (const std::exception& e)
   {
-    RCLCPP_ERROR(logger, "AppendYamlListItem: failed to write '%s': %s", file_path.c_str(), e.what());
+    RCLCPP_ERROR(logger, "AppendYamlListItem: failed to serialize the updated document for '%s': %s", file_path.c_str(),
+                 e.what());
+    return BT::NodeStatus::FAILURE;
+  }
+
+  std::string write_error;
+  if (!writeFileAtomically(file_path, serialized, write_error))
+  {
+    RCLCPP_ERROR(logger, "AppendYamlListItem: %s", write_error.c_str());
     return BT::NodeStatus::FAILURE;
   }
 
