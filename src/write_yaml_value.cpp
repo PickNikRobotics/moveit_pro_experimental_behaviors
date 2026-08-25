@@ -1,0 +1,257 @@
+// Copyright 2026 PickNik Inc.
+// All rights reserved.
+//
+// Unauthorized copying of this code base via any medium is strictly prohibited.
+// Proprietary and confidential.
+
+#include <experimental_behaviors/write_yaml_value.hpp>
+
+#include <yaml-cpp/yaml.h>
+#include <experimental_behaviors/atomic_file_write.hpp>
+#include <experimental_behaviors/path_expansion.hpp>
+#include <moveit_pro_behavior_interface/metadata_fields.hpp>
+
+#include "yaml_key_path.hpp"
+
+#include <filesystem>
+#include <sstream>
+#include <string>
+#include <system_error>
+#include <vector>
+
+#include <rclcpp/rclcpp.hpp>
+
+namespace
+{
+inline constexpr auto kDescriptionWriteYamlValue = R"(
+                <p>
+                    Sets a value at a nested key path in a YAML file. Companion to
+                    <code>ReadYamlValue</code>; takes the file location as a single
+                    <code>file_path</code> port that accepts an absolute path, an absolute path
+                    with <code>${VAR}</code> / leading <code>~</code> expansion, or a ROS
+                    <code>package://&lt;pkg&gt;/&lt;rest&gt;</code> URL.
+                </p>
+                <p>
+                    The <code>value</code> port is parsed as YAML before being stored, so scalars
+                    (<code>"B"</code>), inline maps (<code>"{ option: A, success: false }"</code>),
+                    and sequences (<code>"[a, b, c]"</code>) all flow through the same string port.
+                    Intermediate maps along <code>key1..key5</code> are created if missing; an
+                    existing value at the leaf is overwritten.
+                </p>
+                <p>
+                    Round-trips through yaml-cpp on every tick: load existing &rarr; modify &rarr; dump.
+                    The dump is written to a temporary file alongside the target and renamed over it,
+                    so a reader never observes a half-written file. The load-modify-write is held under
+                    an exclusive lock on a <code>&lt;file&gt;.lock</code> sidecar next to the target, so
+                    two writers of one file cannot each load the same document and have the later one
+                    discard the earlier one's edit. Fails the tick if the file does not exist, or if a
+                    key along <code>key1..key5</code> holds a scalar and so cannot be descended into.
+                </p>
+            )";
+
+constexpr auto kPortIDFilePath = "file_path";
+constexpr auto kPortIDKey1 = "key1";
+constexpr auto kPortIDKey2 = "key2";
+constexpr auto kPortIDKey3 = "key3";
+constexpr auto kPortIDKey4 = "key4";
+constexpr auto kPortIDKey5 = "key5";
+constexpr auto kPortIDValue = "value";
+}  // namespace
+
+namespace experimental_behaviors
+{
+WriteYamlValue::WriteYamlValue(const std::string& name, const BT::NodeConfiguration& config,
+                               const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+{
+}
+
+BT::PortsList WriteYamlValue::providedPorts()
+{
+  return {
+    BT::InputPort<std::string>(kPortIDFilePath, "Path to the YAML file. Accepts an absolute path "
+                                                "(/home/user/foo.yaml), an absolute path with shell-style ${VAR} / "
+                                                "leading ~ expansion (${HOME}/foo.yaml), or a ROS package URL "
+                                                "(package://my_pkg/config/foo.yaml resolves via "
+                                                "ament_index_cpp::get_package_share_directory)."),
+    BT::InputPort<std::string>(kPortIDKey1, "First key to traverse YAML structure (mandatory)"),
+    BT::InputPort<std::string>(kPortIDKey2, "", "Second key (optional)"),
+    BT::InputPort<std::string>(kPortIDKey3, "", "Third key (optional)"),
+    BT::InputPort<std::string>(kPortIDKey4, "", "Fourth key (optional)"),
+    BT::InputPort<std::string>(kPortIDKey5, "", "Fifth key (optional)"),
+    BT::InputPort<std::string>(kPortIDValue, "Value to write at the keyed location. Parsed as YAML, so scalars, "
+                                             "inline maps (`{ key: val, ... }`), and sequences (`[a, b, c]`) all "
+                                             "work through the same string port.")
+  };
+}
+
+BT::KeyValueVector WriteYamlValue::metadata()
+{
+  return { { moveit_pro::behaviors::kSubcategoryMetadataKey, "YAML Operations" },
+           { moveit_pro::behaviors::kDescriptionMetadataKey, kDescriptionWriteYamlValue } };
+}
+
+BT::NodeStatus WriteYamlValue::tick()
+{
+  const auto& logger = shared_resources_->node->get_logger();
+
+  const auto file_path_in = getInput<std::string>(kPortIDFilePath);
+  const auto key1_in = getInput<std::string>(kPortIDKey1);
+  const auto value_in = getInput<std::string>(kPortIDValue);
+
+  if (!file_path_in || file_path_in->empty())
+  {
+    RCLCPP_ERROR(logger, "WriteYamlValue: 'file_path' is required.");
+    return BT::NodeStatus::FAILURE;
+  }
+  if (!key1_in || key1_in->empty())
+  {
+    RCLCPP_ERROR(logger, "WriteYamlValue: 'key1' is required.");
+    return BT::NodeStatus::FAILURE;
+  }
+  if (!value_in)
+  {
+    RCLCPP_ERROR(logger, "WriteYamlValue: 'value' is required (empty string allowed).");
+    return BT::NodeStatus::FAILURE;
+  }
+
+  const std::string file_path = expandPath(file_path_in.value());
+
+  // Build keys vector — mirrors ReadYamlValue's logic (skip empty optional
+  // keys, keep order).
+  std::vector<std::string> keys;
+  keys.push_back(key1_in.value());
+  for (const char* port_id : { kPortIDKey2, kPortIDKey3, kPortIDKey4, kPortIDKey5 })
+  {
+    auto v = getInput<std::string>(port_id);
+    if (v && !v->empty())
+    {
+      keys.push_back(v.value());
+    }
+  }
+
+  // The throwing overload of exists() would escape tick() on a status error
+  // (a symlink loop, an unreadable parent directory, a too-long name), so a
+  // missing file and an unanswerable question are distinguished here instead.
+  std::error_code exists_ec;
+  if (!std::filesystem::exists(file_path, exists_ec))
+  {
+    if (exists_ec)
+    {
+      RCLCPP_ERROR(logger, "WriteYamlValue: cannot determine whether '%s' exists: %s", file_path.c_str(),
+                   exists_ec.message().c_str());
+    }
+    else
+    {
+      RCLCPP_ERROR(logger, "WriteYamlValue: file does not exist: %s", file_path.c_str());
+    }
+    return BT::NodeStatus::FAILURE;
+  }
+
+  // Hold an exclusive lock over the whole load-modify-replace cycle. The atomic
+  // replacement below keeps a reader from ever seeing a half-written file, but
+  // only this keeps a second writer from loading the same document and renaming
+  // its own edit over this one.
+  std::string lock_error;
+  const auto lock = FileUpdateLock::acquire(file_path, lock_error);
+  if (!lock)
+  {
+    RCLCPP_ERROR(logger, "WriteYamlValue: %s", lock_error.c_str());
+    return BT::NodeStatus::FAILURE;
+  }
+
+  YAML::Node root;
+  try
+  {
+    root = YAML::LoadFile(file_path);
+  }
+  catch (const YAML::Exception& e)
+  {
+    RCLCPP_ERROR(logger, "WriteYamlValue: failed to parse '%s': %s", file_path.c_str(), e.what());
+    return BT::NodeStatus::FAILURE;
+  }
+
+  YAML::Node parsed_value;
+  try
+  {
+    parsed_value = YAML::Load(value_in.value());
+  }
+  catch (const YAML::Exception& e)
+  {
+    RCLCPP_ERROR(logger, "WriteYamlValue: failed to parse 'value' as YAML: %s", e.what());
+    return BT::NodeStatus::FAILURE;
+  }
+
+  // yaml-cpp gotcha: `YAML::Node node = root; node = node[k]; node[k2] = v` does
+  // NOT propagate the write to root — the intermediate `node = node[k]` rebinds
+  // to a detached node. Use chained subscript instead, which yaml-cpp handles
+  // correctly because the whole path is evaluated as a single expression.
+  //
+  // yaml-cpp throws BadSubscript when an intermediate key holds a scalar (it can
+  // auto-create a map from an absent or null node, but not replace a scalar), so
+  // the traversal is guarded rather than allowed to escape tick().
+  if (keys.size() > 5)
+  {
+    RCLCPP_ERROR(logger, "WriteYamlValue: unsupported key depth %zu (max 5).", keys.size());
+    return BT::NodeStatus::FAILURE;
+  }
+  try
+  {
+    switch (keys.size())
+    {
+      case 1:
+        root[keys[0]] = parsed_value;
+        break;
+      case 2:
+        root[keys[0]][keys[1]] = parsed_value;
+        break;
+      case 3:
+        root[keys[0]][keys[1]][keys[2]] = parsed_value;
+        break;
+      case 4:
+        root[keys[0]][keys[1]][keys[2]][keys[3]] = parsed_value;
+        break;
+      case 5:
+        root[keys[0]][keys[1]][keys[2]][keys[3]][keys[4]] = parsed_value;
+        break;
+    }
+  }
+  catch (const YAML::Exception& e)
+  {
+    RCLCPP_ERROR(logger, "WriteYamlValue: cannot write key path '%s' in '%s' (is a key along it a scalar?): %s",
+                 keyPathToString(keys).c_str(), file_path.c_str(), e.what());
+    return BT::NodeStatus::FAILURE;
+  }
+
+  std::string serialized;
+  try
+  {
+    std::ostringstream buffer;
+    buffer << root;
+    serialized = buffer.str();
+  }
+  catch (const std::exception& e)
+  {
+    RCLCPP_ERROR(logger, "WriteYamlValue: failed to serialize the updated document for '%s': %s", file_path.c_str(),
+                 e.what());
+    return BT::NodeStatus::FAILURE;
+  }
+
+  std::string write_error;
+  switch (writeFileAtomically(file_path, serialized, write_error))
+  {
+    case AtomicWriteResult::kSucceeded:
+      break;
+    case AtomicWriteResult::kSucceededNotDurable:
+      // The file already holds the new document, so failing the tick would
+      // invite a retry that applies the same edit twice. Warn instead.
+      RCLCPP_WARN(logger, "WriteYamlValue: %s", write_error.c_str());
+      break;
+    case AtomicWriteResult::kFailed:
+      RCLCPP_ERROR(logger, "WriteYamlValue: %s", write_error.c_str());
+      return BT::NodeStatus::FAILURE;
+  }
+
+  return BT::NodeStatus::SUCCESS;
+}
+}  // namespace experimental_behaviors

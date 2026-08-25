@@ -30,6 +30,9 @@ TEST(BehaviorTests, test_load_behavior_plugins)
       (void)factory.instantiateTreeNode("test_get_blackboard_by_key", "GetBlackboardByKey", BT::NodeConfiguration()));
   EXPECT_NO_THROW(
       (void)factory.instantiateTreeNode("test_trajectory_to_path", "TrajectoryToPath", BT::NodeConfiguration()));
+  EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_write_yaml_value", "WriteYamlValue", BT::NodeConfiguration()));
+  EXPECT_NO_THROW(
+      (void)factory.instantiateTreeNode("test_append_yaml_list_item", "AppendYamlListItem", BT::NodeConfiguration()));
 }
 
 int main(int argc, char** argv)

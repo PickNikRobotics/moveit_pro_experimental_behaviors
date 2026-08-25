@@ -9,6 +9,7 @@
 #include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
 
 #include "experimental_behaviors/access_interface_value_from_group.hpp"
+#include "experimental_behaviors/append_yaml_list_item.hpp"
 #include "experimental_behaviors/create_dynamic_interface_group_values.hpp"
 #include "experimental_behaviors/create_interface_value.hpp"
 #include "experimental_behaviors/get_blackboard_by_key.hpp"
@@ -18,6 +19,7 @@
 #include "experimental_behaviors/publish_dynamic_interface_group_values.hpp"
 #include "experimental_behaviors/set_blackboard_by_key.hpp"
 #include "experimental_behaviors/trajectory_to_path.hpp"
+#include "experimental_behaviors/write_yaml_value.hpp"
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -46,6 +48,8 @@ public:
     moveit_pro::behaviors::registerBehavior<GetBlackboardByKey>(factory, "GetBlackboardByKey", shared_resources);
     moveit_pro::behaviors::registerBehavior<SetBlackboardByKey>(factory, "SetBlackboardByKey", shared_resources);
     moveit_pro::behaviors::registerBehavior<TrajectoryToPath>(factory, "TrajectoryToPath", shared_resources);
+    moveit_pro::behaviors::registerBehavior<WriteYamlValue>(factory, "WriteYamlValue", shared_resources);
+    moveit_pro::behaviors::registerBehavior<AppendYamlListItem>(factory, "AppendYamlListItem", shared_resources);
   }
 };
 }  // namespace experimental_behaviors
