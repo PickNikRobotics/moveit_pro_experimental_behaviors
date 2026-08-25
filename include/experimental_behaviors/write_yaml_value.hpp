@@ -35,14 +35,19 @@ namespace experimental_behaviors
  * → dump. The dump lands in a temporary file alongside the target and
  * is renamed over it, so a concurrent reader sees either the old
  * document or the new one, never a truncated one, and a crash cannot
- * leave the file half-written. The replacement is atomic, but the
- * surrounding load-edit-store is not serialized: two writers editing
- * the same file concurrently can still lose one of the two edits, so
- * a given file is expected to have a single writer. Fails the tick if the file doesn't
- * exist (this behavior does not create files; pair with whatever step
- * is responsible for initialization), and fails rather than throwing
- * when a key along the path holds a scalar and cannot be descended
- * into.
+ * leave the file half-written. The whole load-modify-store runs under
+ * an exclusive lock on a `<file>.lock` sidecar next to the target, so
+ * two writers of one file take their turns instead of each loading the
+ * same document and having the later one discard the earlier one's
+ * edit. The lock is a real file lock, so it serializes writers in
+ * separate processes as well as concurrent ticks in one. A writer that
+ * cannot take it within a few seconds fails the tick rather than
+ * waiting indefinitely.
+ *
+ * Fails the tick if the file doesn't exist (this behavior does not
+ * create files; pair with whatever step is responsible for
+ * initialization), and fails rather than throwing when a key along the
+ * path holds a scalar and cannot be descended into.
  */
 class WriteYamlValue final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
