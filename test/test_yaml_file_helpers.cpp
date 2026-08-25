@@ -11,17 +11,21 @@
 
 #include <unistd.h>
 
+#include <chrono>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <optional>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 namespace
 {
 using experimental_behaviors::AtomicWriteResult;
 using experimental_behaviors::expandPath;
+using experimental_behaviors::FileUpdateLock;
 using experimental_behaviors::writeFileAtomically;
 
 std::string readAll(const std::filesystem::path& path)
@@ -214,6 +218,172 @@ TEST_F(AtomicFileWrite, ReportsFailureAndKeepsTheDestinationWhenTheWriteCannotLa
 
   // The pre-existing file is untouched.
   EXPECT_EQ(readAll(target_), "first: 1\n");
+}
+class FileUpdateLocking : public ::testing::Test
+{
+protected:
+  void SetUp() override
+  {
+    dir_ = std::filesystem::temp_directory_path() / "experimental_behaviors_file_lock_test";
+    std::filesystem::remove_all(dir_);
+    std::filesystem::create_directories(dir_);
+    target_ = dir_ / "manifest.yaml";
+    std::string error;
+    ASSERT_EQ(writeFileAtomically(target_, "items: []\n", error), AtomicWriteResult::kSucceeded) << error;
+  }
+
+  void TearDown() override
+  {
+    std::filesystem::remove_all(dir_);
+  }
+
+  std::filesystem::path dir_;
+  std::filesystem::path target_;
+};
+
+TEST_F(FileUpdateLocking, LocksASidecarNextToTheTarget)
+{
+  std::string error;
+  const auto lock = FileUpdateLock::acquire(target_, error);
+  ASSERT_TRUE(lock.has_value()) << error;
+  EXPECT_EQ(lock->lockPath(), dir_ / "manifest.yaml.lock");
+  EXPECT_TRUE(std::filesystem::exists(lock->lockPath()));
+}
+
+TEST_F(FileUpdateLocking, DoesNotLockTheTargetItselfSoAnAtomicWriteStillWorksUnderIt)
+{
+  std::string error;
+  const auto lock = FileUpdateLock::acquire(target_, error);
+  ASSERT_TRUE(lock.has_value()) << error;
+
+  // The lock guards the cycle; it must not block the replacement that ends it.
+  ASSERT_EQ(writeFileAtomically(target_, "items: [a]\n", error), AtomicWriteResult::kSucceeded) << error;
+  EXPECT_EQ(readAll(target_), "items: [a]\n");
+}
+
+TEST_F(FileUpdateLocking, ReachesTheSameLockThroughASymlinkedName)
+{
+  const auto link = dir_ / "link.yaml";
+  std::filesystem::create_symlink(target_, link);
+
+  std::filesystem::path direct_path;
+  {
+    std::string error;
+    const auto direct = FileUpdateLock::acquire(target_, error);
+    ASSERT_TRUE(direct.has_value()) << error;
+    direct_path = direct->lockPath();
+  }
+
+  std::string error;
+  const auto through_link = FileUpdateLock::acquire(link, error);
+  ASSERT_TRUE(through_link.has_value()) << error;
+  // Both names must resolve to one sidecar, or reaching a file through a link
+  // would quietly bypass the exclusion.
+  EXPECT_EQ(through_link->lockPath(), direct_path);
+}
+
+TEST_F(FileUpdateLocking, ExcludesASecondHolderAndReportsInsteadOfHanging)
+{
+  std::string error;
+  const auto held = FileUpdateLock::acquire(target_, error);
+  ASSERT_TRUE(held.has_value()) << error;
+
+  // flock(2) is per-open-file-description, not per-process, so a second
+  // acquisition contends with the first even from the same process — which is
+  // exactly the case that matters: two behavior ticks in one objective server.
+  error.clear();
+  const auto start = std::chrono::steady_clock::now();
+  const auto contended = FileUpdateLock::acquire(target_, error);
+  const auto waited = std::chrono::steady_clock::now() - start;
+
+  EXPECT_FALSE(contended.has_value());
+  EXPECT_FALSE(error.empty());
+  // It waited its bounded wait and then reported, rather than blocking forever.
+  EXPECT_GE(waited, FileUpdateLock::kMaxWait);
+  EXPECT_LT(waited, FileUpdateLock::kMaxWait + std::chrono::seconds(5));
+}
+
+TEST_F(FileUpdateLocking, LetsTheNextWriterInOnceTheHolderIsGone)
+{
+  {
+    std::string error;
+    const auto held = FileUpdateLock::acquire(target_, error);
+    ASSERT_TRUE(held.has_value()) << error;
+  }
+
+  std::string error;
+  const auto after = FileUpdateLock::acquire(target_, error);
+  EXPECT_TRUE(after.has_value()) << error;
+}
+
+TEST_F(FileUpdateLocking, SerializesConcurrentReadModifyWriteCycles)
+{
+  // What the lock exists for: N threads each load, append one item, and replace.
+  // Without it the last rename of each overlapping pair discards the other's
+  // item and the file ends up with fewer than N.
+  constexpr int kWriters = 8;
+  std::vector<std::thread> writers;
+  writers.reserve(kWriters);
+  for (int i = 0; i < kWriters; ++i)
+  {
+    writers.emplace_back([this, i]() {
+      std::string error;
+      const auto lock = FileUpdateLock::acquire(target_, error);
+      ASSERT_TRUE(lock.has_value()) << error;
+      // Load, edit, replace — the same shape as the behaviors' tick(), with the
+      // YAML round-trip stood in for by a line-append so the test needs no
+      // yaml-cpp.
+      std::string document = readAll(target_);
+      document += "item-" + std::to_string(i) + "\n";
+      ASSERT_EQ(writeFileAtomically(target_, document, error), AtomicWriteResult::kSucceeded) << error;
+    });
+  }
+  for (auto& writer : writers)
+  {
+    writer.join();
+  }
+
+  const std::string final_document = readAll(target_);
+  for (int i = 0; i < kWriters; ++i)
+  {
+    EXPECT_NE(final_document.find("item-" + std::to_string(i) + "\n"), std::string::npos)
+        << "writer " << i << " was lost:\n"
+        << final_document;
+  }
+}
+
+TEST_F(FileUpdateLocking, LeavesTheSidecarBehind)
+{
+  std::string error;
+  {
+    const auto lock = FileUpdateLock::acquire(target_, error);
+    ASSERT_TRUE(lock.has_value()) << error;
+  }
+  // The sidecar outlives the lock by design: unlinking it would let a second
+  // writer create and lock a fresh file while the first still held the old one.
+  EXPECT_TRUE(std::filesystem::exists(dir_ / "manifest.yaml.lock"));
+}
+
+TEST_F(FileUpdateLocking, RefusesToLockThroughAPlantedSidecarSymlink)
+{
+  const auto elsewhere = dir_ / "elsewhere.lock";
+  std::filesystem::create_symlink(elsewhere, dir_ / "manifest.yaml.lock");
+
+  std::string error;
+  const auto lock = FileUpdateLock::acquire(target_, error);
+  EXPECT_FALSE(lock.has_value());
+  EXPECT_FALSE(error.empty());
+  // A redirected lock would silently stop excluding anything, so nothing is
+  // created at the symlink's target either.
+  EXPECT_FALSE(std::filesystem::exists(elsewhere));
+}
+
+TEST_F(FileUpdateLocking, ReportsAnUnopenableSidecar)
+{
+  std::string error;
+  const auto lock = FileUpdateLock::acquire(dir_ / "absent_subdir" / "manifest.yaml", error);
+  EXPECT_FALSE(lock.has_value());
+  EXPECT_FALSE(error.empty());
 }
 }  // namespace
 

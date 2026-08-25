@@ -41,9 +41,11 @@ inline constexpr auto kDescriptionAppendYamlListItem = R"(
                 <p>
                     Round-trips through yaml-cpp on every tick: load existing &rarr; modify &rarr; dump.
                     The dump is written to a temporary file alongside the target and renamed over it,
-                    so a reader never observes a half-written file. Fails the tick if the file does not
-                    exist, or if a key along <code>key1..key5</code> holds a scalar and so cannot be
-                    descended into.
+                    so a reader never observes a half-written file. The load-append-write is held under
+                    an exclusive lock on a <code>&lt;file&gt;.lock</code> sidecar next to the target, so
+                    two appenders to one sequence both land instead of the later one discarding the
+                    earlier one's item. Fails the tick if the file does not exist, or if a key along
+                    <code>key1..key5</code> holds a scalar and so cannot be descended into.
                 </p>
             )";
 
@@ -139,6 +141,18 @@ BT::NodeStatus AppendYamlListItem::tick()
     {
       RCLCPP_ERROR(logger, "AppendYamlListItem: file does not exist: %s", file_path.c_str());
     }
+    return BT::NodeStatus::FAILURE;
+  }
+
+  // Hold an exclusive lock over the whole load-modify-replace cycle. The atomic
+  // replacement below keeps a reader from ever seeing a half-written file, but
+  // only this keeps a second writer from loading the same document and renaming
+  // its own edit over this one.
+  std::string lock_error;
+  const auto lock = FileUpdateLock::acquire(file_path, lock_error);
+  if (!lock)
+  {
+    RCLCPP_ERROR(logger, "AppendYamlListItem: %s", lock_error.c_str());
     return BT::NodeStatus::FAILURE;
   }
 

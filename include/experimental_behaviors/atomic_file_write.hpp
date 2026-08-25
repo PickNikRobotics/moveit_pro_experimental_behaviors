@@ -7,16 +7,21 @@
 #pragma once
 
 #include <fcntl.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
 #include <atomic>
 #include <cerrno>
+#include <chrono>
 #include <cstring>
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <system_error>
+#include <thread>
+#include <utility>
 
 namespace experimental_behaviors
 {
@@ -62,6 +67,32 @@ inline std::string errnoMessage(int error_number)
 {
   return std::error_code(error_number, std::generic_category()).message();
 }
+
+/// Resolves @p file_path to the file that will actually be written: a symlink is
+/// followed to the file it names, anything else is returned unchanged. Returns
+/// std::nullopt and sets @p error when a link cannot be resolved.
+inline std::optional<std::filesystem::path> resolveWriteDestination(const std::filesystem::path& file_path,
+                                                                    std::string& error)
+{
+  std::error_code ec;
+  if (!std::filesystem::is_symlink(file_path, ec))
+  {
+    return file_path;
+  }
+  const auto resolved = std::filesystem::weakly_canonical(file_path, ec);
+  if (ec)
+  {
+    error = "failed to resolve the symlink at '" + file_path.string() + "': " + ec.message();
+    return std::nullopt;
+  }
+  return resolved;
+}
+
+/// The directory @p destination lives in, as a path that can be opened.
+inline std::filesystem::path containingDirectory(const std::filesystem::path& destination)
+{
+  return destination.parent_path().empty() ? std::filesystem::path(".") : destination.parent_path();
+}
 }  // namespace detail
 
 /// Outcome of writeFileAtomically(). Three states, not two, because a failure
@@ -102,8 +133,9 @@ enum class AtomicWriteResult
  *
  * This serializes nothing: it replaces a file, it does not guard a
  * read-modify-write. Two writers that each load, edit and replace the same file
- * can still lose one of the two edits — the last rename wins. Callers that need
- * that guarantee have to serialize at a higher level.
+ * can still lose one of the two edits — the last rename wins. A caller doing a
+ * load-edit-replace has to hold a FileUpdateLock (below) across the whole
+ * sequence to get that guarantee.
  *
  * @param file_path Destination file. It need not exist yet.
  * @param contents Bytes to write.
@@ -119,21 +151,15 @@ inline AtomicWriteResult writeFileAtomically(const std::filesystem::path& file_p
 {
   // Follow a symlinked destination to the file it names: replacing the link
   // itself would silently change what every other reader of that path sees.
-  std::filesystem::path destination = file_path;
-  std::error_code ec;
-  if (std::filesystem::is_symlink(destination, ec))
+  const auto resolved = detail::resolveWriteDestination(file_path, error);
+  if (!resolved)
   {
-    const auto resolved = std::filesystem::weakly_canonical(destination, ec);
-    if (ec)
-    {
-      error = "failed to resolve the symlink at '" + destination.string() + "': " + ec.message();
-      return AtomicWriteResult::kFailed;
-    }
-    destination = resolved;
+    return AtomicWriteResult::kFailed;
   }
+  const std::filesystem::path destination = *resolved;
+  std::error_code ec;
 
-  const std::filesystem::path directory =
-      destination.parent_path().empty() ? std::filesystem::path(".") : destination.parent_path();
+  const std::filesystem::path directory = detail::containingDirectory(destination);
 
   // The mode to give the replacement: the destination's own, or the umask
   // default when there is no destination yet.
@@ -244,5 +270,145 @@ inline AtomicWriteResult writeFileAtomically(const std::filesystem::path& file_p
 
   return AtomicWriteResult::kSucceeded;
 }
+
+/**
+ * @brief An exclusive lock held across one file's read-modify-write cycle.
+ *
+ * writeFileAtomically() makes the replacement indivisible; it cannot make a
+ * load-edit-replace indivisible. Two writers can each load the same document,
+ * apply a different edit, and the second rename discards the first edit. Holding
+ * this lock from before the load until after the replacement serializes them, so
+ * the second writer reads the first one's result and both edits survive.
+ *
+ * The lock is `flock(2)` on a sidecar file named `<destination>.lock`, not on the
+ * destination itself: every atomic write replaces the destination's inode, so a
+ * lock taken on it would be invisible to the next writer to open that path.
+ * Being a real file lock, it serializes writers in separate processes as well as
+ * concurrent ticks in one. It is released when the object is destroyed, and by
+ * the kernel if the process dies holding it.
+ *
+ * The sidecar is created if absent and deliberately left behind — unlinking it
+ * would let a second writer create and lock a fresh file while the first still
+ * holds the old one. It stays empty.
+ *
+ * A symlinked destination is resolved the same way writeFileAtomically() resolves
+ * it, so two names for one file take the same lock.
+ */
+class FileUpdateLock
+{
+public:
+  /// How long acquire() waits for a competing holder. Every holder spans one
+  /// load-edit-replace of a config-sized file, so still waiting after this long
+  /// means something is wrong rather than merely busy — and failing the caller
+  /// with a diagnosis beats stalling a behavior tree indefinitely.
+  static constexpr std::chrono::seconds kMaxWait{ 5 };
+
+  /**
+   * @brief Takes the lock guarding writes to @p file_path.
+   * @param file_path The file about to be read, edited and replaced.
+   * @param[out] error Human-readable reason, set only when acquisition fails.
+   * @return The held lock, or std::nullopt if it could not be taken.
+   */
+  static std::optional<FileUpdateLock> acquire(const std::filesystem::path& file_path, std::string& error)
+  {
+    const auto destination = detail::resolveWriteDestination(file_path, error);
+    if (!destination)
+    {
+      return std::nullopt;
+    }
+    const std::filesystem::path lock_path =
+        detail::containingDirectory(*destination) / (destination->filename().string() + ".lock");
+
+    // O_RDONLY, not O_RDWR: flock(2) needs no write access, and a sidecar left
+    // by another user may not grant it. O_NOFOLLOW so a planted symlink cannot
+    // move the lock — and with it the mutual exclusion — somewhere else.
+    const int fd = ::open(lock_path.c_str(), O_RDONLY | O_CREAT | O_CLOEXEC | O_NOFOLLOW, 0666);
+    if (fd < 0)
+    {
+      error = "failed to open lock file '" + lock_path.string() + "': " + detail::errnoMessage(errno);
+      return std::nullopt;
+    }
+
+    // Poll instead of blocking in flock(): a wait that cannot end has to become
+    // an error the caller can report, not a hung tick.
+    constexpr auto kPollInterval = std::chrono::milliseconds(5);
+    const auto deadline = std::chrono::steady_clock::now() + kMaxWait;
+    while (true)
+    {
+      if (::flock(fd, LOCK_EX | LOCK_NB) == 0)
+      {
+        return FileUpdateLock(fd, lock_path);
+      }
+      const int lock_errno = errno;
+      if (lock_errno == EINTR)
+      {
+        continue;
+      }
+      if (lock_errno != EWOULDBLOCK)
+      {
+        error = "failed to lock '" + lock_path.string() + "': " + detail::errnoMessage(lock_errno);
+        ::close(fd);
+        return std::nullopt;
+      }
+      if (std::chrono::steady_clock::now() >= deadline)
+      {
+        error = "timed out after " + std::to_string(kMaxWait.count()) + "s waiting for another writer to release '" +
+                lock_path.string() + "'";
+        ::close(fd);
+        return std::nullopt;
+      }
+      std::this_thread::sleep_for(kPollInterval);
+    }
+  }
+
+  FileUpdateLock(const FileUpdateLock&) = delete;
+  FileUpdateLock& operator=(const FileUpdateLock&) = delete;
+
+  FileUpdateLock(FileUpdateLock&& other) noexcept : fd_{ other.fd_ }, lock_path_{ std::move(other.lock_path_) }
+  {
+    other.fd_ = -1;
+  }
+
+  FileUpdateLock& operator=(FileUpdateLock&& other) noexcept
+  {
+    if (this != &other)
+    {
+      release();
+      fd_ = other.fd_;
+      lock_path_ = std::move(other.lock_path_);
+      other.fd_ = -1;
+    }
+    return *this;
+  }
+
+  ~FileUpdateLock()
+  {
+    release();
+  }
+
+  /// The sidecar file this lock is held on. Exposed for diagnostics and tests.
+  const std::filesystem::path& lockPath() const
+  {
+    return lock_path_;
+  }
+
+private:
+  FileUpdateLock(int fd, std::filesystem::path lock_path) : fd_{ fd }, lock_path_{ std::move(lock_path) }
+  {
+  }
+
+  void release()
+  {
+    if (fd_ >= 0)
+    {
+      // close(2) drops the flock, so an explicit LOCK_UN would be redundant.
+      ::close(fd_);
+      fd_ = -1;
+    }
+  }
+
+  int fd_ = -1;
+  std::filesystem::path lock_path_;
+};
 
 }  // namespace experimental_behaviors

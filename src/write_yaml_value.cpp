@@ -41,9 +41,11 @@ inline constexpr auto kDescriptionWriteYamlValue = R"(
                 <p>
                     Round-trips through yaml-cpp on every tick: load existing &rarr; modify &rarr; dump.
                     The dump is written to a temporary file alongside the target and renamed over it,
-                    so a reader never observes a half-written file. Fails the tick if the file does not
-                    exist, or if a key along <code>key1..key5</code> holds a scalar and so cannot be
-                    descended into.
+                    so a reader never observes a half-written file. The load-modify-write is held under
+                    an exclusive lock on a <code>&lt;file&gt;.lock</code> sidecar next to the target, so
+                    two writers of one file cannot each load the same document and have the later one
+                    discard the earlier one's edit. Fails the tick if the file does not exist, or if a
+                    key along <code>key1..key5</code> holds a scalar and so cannot be descended into.
                 </p>
             )";
 
@@ -143,6 +145,18 @@ BT::NodeStatus WriteYamlValue::tick()
     {
       RCLCPP_ERROR(logger, "WriteYamlValue: file does not exist: %s", file_path.c_str());
     }
+    return BT::NodeStatus::FAILURE;
+  }
+
+  // Hold an exclusive lock over the whole load-modify-replace cycle. The atomic
+  // replacement below keeps a reader from ever seeing a half-written file, but
+  // only this keeps a second writer from loading the same document and renaming
+  // its own edit over this one.
+  std::string lock_error;
+  const auto lock = FileUpdateLock::acquire(file_path, lock_error);
+  if (!lock)
+  {
+    RCLCPP_ERROR(logger, "WriteYamlValue: %s", lock_error.c_str());
     return BT::NodeStatus::FAILURE;
   }
 
