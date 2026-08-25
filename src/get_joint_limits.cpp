@@ -6,6 +6,8 @@
 
 #include <experimental_behaviors/get_joint_limits.hpp>
 
+#include <moveit_pro_behavior_interface/metadata_fields.hpp>
+
 #include <string>
 
 #include <moveit_pro_base/robot_model/joint_model.hpp>
@@ -29,9 +31,10 @@ BT::PortsList GetJointLimits::providedPorts()
 
 BT::KeyValueVector GetJointLimits::metadata()
 {
-  return { { "description", "Reads a single-DOF joint's position limits (min/max) from the loaded robot model "
-                            "(robot_description), so trees obtain limits from the URDF instead of a static YAML." },
-           { "subcategory", "Robot State" } };
+  return { { moveit_pro::behaviors::kSubcategoryMetadataKey, "Robot State" },
+           { moveit_pro::behaviors::kDescriptionMetadataKey,
+             "Reads a single-DOF joint's position limits (min/max) from the loaded robot model "
+             "(robot_description), so trees obtain limits from the URDF instead of a static YAML." } };
 }
 
 BT::NodeStatus GetJointLimits::tick()
