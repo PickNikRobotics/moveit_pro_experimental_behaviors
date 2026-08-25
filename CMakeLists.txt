@@ -22,6 +22,7 @@ add_library(
   src/get_pose_stamped_from_topic.cpp
   src/publish_dynamic_interface_group_values.cpp
   src/get_blackboard_by_key.cpp
+  src/get_joint_limits.cpp
   src/set_blackboard_by_key.cpp
   src/trajectory_to_path.cpp
   src/write_yaml_value.cpp
