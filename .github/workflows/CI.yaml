@@ -17,7 +17,7 @@ on:
 
 jobs:
   integration-test-in-studio-container:
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@v0.0.7
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@v0.9.1
     with:
       runner: "ubuntu-22.04"
       # Pinned to the newest MoveIt Pro release, not the branch under test. This
@@ -28,7 +28,7 @@ jobs:
       # getBehaviorContext()). Every behavior here uses shared_resources_, so the
       # whole package failed to compile regardless of what a PR changed. Bump this
       # when the package is migrated to a newer release.
-      image_tag: ${{ github.event.inputs.image_tag || '9.4.1' }}
+      image_tag: ${{ github.event.inputs.image_tag || '9.4.3' }}
       colcon_test_args: "--executor sequential"
     secrets:
       moveit_license_key: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
