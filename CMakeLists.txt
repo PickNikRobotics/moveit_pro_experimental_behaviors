@@ -4,7 +4,18 @@ project(experimental_behaviors CXX)
 find_package(moveit_pro_package REQUIRED)
 moveit_pro_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS ament_index_cpp control_msgs geometry_msgs moveit_pro_behavior_interface pluginlib behaviortree_cpp tl_expected trajectory_msgs moveit_pro_base)
+# MoveIt Pro links the behaviortree_cpp_picknik fork on Jazzy, while stock
+# BehaviorTree.CPP is kept for Nav2 at runtime only and its development files
+# are excluded from the image (MoveIt Pro issue #20928). Depend on the fork on
+# Jazzy and keep stock behaviortree_cpp on Humble.
+if("$ENV{ROS_DISTRO}" STREQUAL "jazzy")
+  set(BEHAVIORTREE_CPP_PACKAGE behaviortree_cpp_picknik)
+  add_compile_definitions(MOVEIT_PRO_REQUIRE_BTCPP_PICKNIK_FORK)
+else()
+  set(BEHAVIORTREE_CPP_PACKAGE behaviortree_cpp)
+endif()
+
+set(THIS_PACKAGE_INCLUDE_DEPENDS ament_index_cpp control_msgs geometry_msgs moveit_pro_behavior_interface pluginlib ${BEHAVIORTREE_CPP_PACKAGE} tl_expected trajectory_msgs moveit_pro_base)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
