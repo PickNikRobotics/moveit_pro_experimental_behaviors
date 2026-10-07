@@ -9,3 +9,20 @@ ament_target_dependencies(test_behavior_plugins ${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_add_gtest(test_yaml_file_helpers test_yaml_file_helpers.cpp)
 target_link_libraries(test_yaml_file_helpers experimental_behaviors)
 ament_target_dependencies(test_yaml_file_helpers ament_index_cpp)
+
+# JSON Behaviors. The editing and transport tests load the plugin through
+# pluginlib, so they do not link the package library (that would load it twice).
+ament_add_gtest(test_json_utils json_behaviors/test_json_utils.cpp)
+target_link_libraries(test_json_utils experimental_behaviors)
+
+ament_add_gtest(test_json_editing json_behaviors/test_json_editing.cpp)
+ament_target_dependencies(test_json_editing ${THIS_PACKAGE_INCLUDE_DEPENDS})
+# json_serialization.hpp (Pro's ROS message converters) parses through yaml-cpp.
+if(TARGET yaml-cpp::yaml-cpp)
+  target_link_libraries(test_json_editing yaml-cpp::yaml-cpp)
+else()
+  target_link_libraries(test_json_editing yaml-cpp)
+endif()
+
+ament_add_gtest(test_json_transport json_behaviors/test_json_transport.cpp TIMEOUT 120)
+ament_target_dependencies(test_json_transport ${THIS_PACKAGE_INCLUDE_DEPENDS})

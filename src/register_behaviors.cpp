@@ -17,6 +17,15 @@
 #include "experimental_behaviors/get_interface_value_from_group.hpp"
 #include "experimental_behaviors/get_joint_limits.hpp"
 #include "experimental_behaviors/get_pose_stamped_from_topic.hpp"
+#include "experimental_behaviors/json_behaviors/create_json.hpp"
+#include "experimental_behaviors/json_behaviors/get_json_field.hpp"
+#include "experimental_behaviors/json_behaviors/has_json_field.hpp"
+#include "experimental_behaviors/json_behaviors/merge_json.hpp"
+#include "experimental_behaviors/json_behaviors/receive_json_udp.hpp"
+#include "experimental_behaviors/json_behaviors/remove_json_field.hpp"
+#include "experimental_behaviors/json_behaviors/send_json_http.hpp"
+#include "experimental_behaviors/json_behaviors/send_json_udp.hpp"
+#include "experimental_behaviors/json_behaviors/set_json_field.hpp"
 #include "experimental_behaviors/publish_dynamic_interface_group_values.hpp"
 #include "experimental_behaviors/set_blackboard_by_key.hpp"
 #include "experimental_behaviors/trajectory_to_path.hpp"
@@ -52,6 +61,15 @@ public:
     moveit_pro::behaviors::registerBehavior<TrajectoryToPath>(factory, "TrajectoryToPath", shared_resources);
     moveit_pro::behaviors::registerBehavior<WriteYamlValue>(factory, "WriteYamlValue", shared_resources);
     moveit_pro::behaviors::registerBehavior<AppendYamlListItem>(factory, "AppendYamlListItem", shared_resources);
+    moveit_pro::behaviors::registerBehavior<CreateJson>(factory, "CreateJson", shared_resources);
+    moveit_pro::behaviors::registerBehavior<SetJsonField>(factory, "SetJsonField", shared_resources);
+    moveit_pro::behaviors::registerBehavior<GetJsonField>(factory, "GetJsonField", shared_resources);
+    moveit_pro::behaviors::registerBehavior<RemoveJsonField>(factory, "RemoveJsonField", shared_resources);
+    moveit_pro::behaviors::registerBehavior<HasJsonField>(factory, "HasJsonField", shared_resources);
+    moveit_pro::behaviors::registerBehavior<MergeJson>(factory, "MergeJson", shared_resources);
+    moveit_pro::behaviors::registerBehavior<SendJsonUdp>(factory, "SendJsonUdp", shared_resources);
+    moveit_pro::behaviors::registerBehavior<ReceiveJsonUdp>(factory, "ReceiveJsonUdp", shared_resources);
+    moveit_pro::behaviors::registerBehavior<SendJsonHttp>(factory, "SendJsonHttp", shared_resources);
   }
 };
 }  // namespace experimental_behaviors

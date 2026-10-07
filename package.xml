@@ -16,6 +16,7 @@
   <depend>ament_index_cpp</depend>
   <depend>control_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>libcurl-dev</depend>
   <depend>moveit_pro_base</depend>
   <depend>moveit_pro_behavior_interface</depend>
   <depend>pluginlib</depend>

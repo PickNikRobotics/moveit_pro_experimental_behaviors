@@ -20,6 +20,7 @@ foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
 find_package(yaml-cpp REQUIRED)
+find_package(CURL REQUIRED)
 
 add_library(
   experimental_behaviors
@@ -37,6 +38,17 @@ add_library(
   src/set_blackboard_by_key.cpp
   src/trajectory_to_path.cpp
   src/write_yaml_value.cpp
+  src/json_behaviors/create_json.cpp
+  src/json_behaviors/get_json_field.cpp
+  src/json_behaviors/has_json_field.cpp
+  src/json_behaviors/json_utils.cpp
+  src/json_behaviors/merge_json.cpp
+  src/json_behaviors/receive_json_udp.cpp
+  src/json_behaviors/remove_json_field.cpp
+  src/json_behaviors/send_json_http.cpp
+  src/json_behaviors/send_json_udp.cpp
+  src/json_behaviors/set_json_field.cpp
+  src/json_behaviors/udp_socket.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   experimental_behaviors
@@ -55,6 +67,8 @@ if(TARGET yaml-cpp::yaml-cpp)
 else()
   target_link_libraries(experimental_behaviors PRIVATE yaml-cpp)
 endif()
+# libcurl backs SendJsonHttp. Like yaml-cpp, no installed header includes it.
+target_link_libraries(experimental_behaviors PRIVATE CURL::libcurl)
 ament_target_dependencies(experimental_behaviors PUBLIC
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
