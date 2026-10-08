@@ -33,6 +33,11 @@ TEST(BehaviorTests, test_load_behavior_plugins)
   EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_write_yaml_value", "WriteYamlValue", BT::NodeConfiguration()));
   EXPECT_NO_THROW(
       (void)factory.instantiateTreeNode("test_append_yaml_list_item", "AppendYamlListItem", BT::NodeConfiguration()));
+
+  for (const auto* id : { "CallEmptyServiceByName", "GetPoseWithCovarianceFromTopic", "ScanMatchResidualFromTopics" })
+  {
+    EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_localization", id, BT::NodeConfiguration())) << id;
+  }
 }
 
 int main(int argc, char** argv)

@@ -22,6 +22,10 @@
 #include "experimental_behaviors/trajectory_to_path.hpp"
 #include "experimental_behaviors/write_yaml_value.hpp"
 
+#include <experimental_behaviors/localization_behaviors/call_empty_service_by_name.hpp>
+#include <experimental_behaviors/localization_behaviors/get_pose_with_covariance_from_topic.hpp>
+#include <experimental_behaviors/localization_behaviors/scan_match_residual_from_topics.hpp>
+
 #include <pluginlib/class_list_macros.hpp>
 
 namespace experimental_behaviors
@@ -52,6 +56,13 @@ public:
     moveit_pro::behaviors::registerBehavior<TrajectoryToPath>(factory, "TrajectoryToPath", shared_resources);
     moveit_pro::behaviors::registerBehavior<WriteYamlValue>(factory, "WriteYamlValue", shared_resources);
     moveit_pro::behaviors::registerBehavior<AppendYamlListItem>(factory, "AppendYamlListItem", shared_resources);
+
+    // Localization Behaviors.
+    moveit_pro::behaviors::registerBehavior<CallEmptyServiceByName>(factory, "CallEmptyServiceByName", shared_resources);
+    moveit_pro::behaviors::registerBehavior<GetPoseWithCovarianceFromTopic>(factory, "GetPoseWithCovarianceFromTopic",
+                                                                            shared_resources);
+    moveit_pro::behaviors::registerBehavior<ScanMatchResidualFromTopics>(factory, "ScanMatchResidualFromTopics",
+                                                                         shared_resources);
   }
 };
 }  // namespace experimental_behaviors

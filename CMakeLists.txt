@@ -15,11 +15,28 @@ else()
   set(BEHAVIORTREE_CPP_PACKAGE behaviortree_cpp)
 endif()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS ament_index_cpp control_msgs geometry_msgs moveit_pro_behavior_interface pluginlib ${BEHAVIORTREE_CPP_PACKAGE} tl_expected trajectory_msgs moveit_pro_base)
+set(THIS_PACKAGE_INCLUDE_DEPENDS
+    ament_index_cpp
+    control_msgs
+    geometry_msgs
+    moveit_pro_behavior_interface
+    nav_msgs
+    pluginlib
+    rclcpp
+    sensor_msgs
+    std_srvs
+    tf2
+    tf2_eigen
+    tf2_ros
+    ${BEHAVIORTREE_CPP_PACKAGE}
+    tl_expected
+    trajectory_msgs
+    moveit_pro_base)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
 find_package(yaml-cpp REQUIRED)
+find_package(fmt REQUIRED)
 
 add_library(
   experimental_behaviors
@@ -37,6 +54,11 @@ add_library(
   src/set_blackboard_by_key.cpp
   src/trajectory_to_path.cpp
   src/write_yaml_value.cpp
+  src/localization_behaviors/call_empty_service_by_name.cpp
+  src/localization_behaviors/get_pose_with_covariance_from_topic.cpp
+  src/localization_behaviors/scan_match.cpp
+  src/localization_behaviors/scan_match_residual_from_topics.cpp
+  src/localization_behaviors/wait_for_message.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   experimental_behaviors
@@ -55,6 +77,8 @@ if(TARGET yaml-cpp::yaml-cpp)
 else()
   target_link_libraries(experimental_behaviors PRIVATE yaml-cpp)
 endif()
+# fmt is used only in .cpp files, so it stays private like yaml-cpp.
+target_link_libraries(experimental_behaviors PRIVATE fmt::fmt)
 ament_target_dependencies(experimental_behaviors PUBLIC
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
