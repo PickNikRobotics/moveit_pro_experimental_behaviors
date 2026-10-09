@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Copy SendHttpRequest</title>
+<style>
+:root {
+  --bg: #080C11; --panel: #0F1620; --panel-2: #131C28; --line: #233042;
+  --text: #E6EBF2; --muted: #9AA7B8; --blue: #0B77F6; --blue-2: #4C9BFF; --green: #52E49E; --green-2: #35DF8D;
+  --code-bg: #0B1118; --warn: #F2B544;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #D7DEE9; --panel: #E8EDF4; --panel-2: #F1F4F9; --line: #B7C2D3;
+    --text: #141A22; --muted: #46536A; --blue: #0B57F6; --blue-2: #0B57F6; --green: #137A4A; --green-2: #137A4A;
+    --code-bg: #F4F6FA; --warn: #8A5A00;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #D7DEE9; --panel: #E8EDF4; --panel-2: #F1F4F9; --line: #B7C2D3;
+  --text: #141A22; --muted: #46536A; --blue: #0B57F6; --blue-2: #0B57F6; --green: #137A4A; --green-2: #137A4A;
+  --code-bg: #F4F6FA; --warn: #8A5A00;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--text); }
+body { font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, sans-serif; }
+main { max-width: 920px; margin: 0 auto; padding: 32px 16px 64px; }
+h1 { font-size: 2rem; line-height: 1.2; margin: 0 0 12px; }
+h2 { font-size: 1.3rem; margin: 40px 0 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+h2 .n { display: inline-block; min-width: 2em; color: var(--blue-2); }
+h3 { font-size: 1.05rem; margin: 20px 0 6px; }
+p, li { max-width: 76ch; }
+a { color: var(--blue-2); }
+code { font: 0.9em/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+p code, li code, td code, summary code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; word-break: break-word; }
+.lead { font-size: 1.1rem; }
+.lead strong { color: var(--green); }
+.meta { color: var(--muted); font-size: 0.95rem; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; margin: 16px 0; }
+.card.tested { border-left: 4px solid var(--green-2); }
+.card.note { border-left: 4px solid var(--warn); }
+.code { margin: 12px 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--code-bg); }
+.code-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 10px;
+  background: var(--panel-2); border-bottom: 1px solid var(--line); font: 0.85rem ui-monospace, Menlo, monospace; color: var(--muted); }
+.code pre { margin: 0; padding: 12px 14px; overflow-x: auto; }
+.code pre code { font-size: 0.85rem; white-space: pre; }
+button { font: inherit; font-size: 0.8rem; color: var(--text); background: transparent; border: 1px solid var(--line);
+  border-radius: 6px; padding: 2px 10px; cursor: pointer; }
+button:hover { border-color: var(--blue-2); }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; }
+.diagram-wrap { overflow-x: auto; }
+.diagram { width: 100%; min-width: 600px; height: auto; margin: 8px 0; }
+.diagram rect { fill: var(--panel); stroke: var(--blue); stroke-width: 2; }
+.diagram .alt rect { stroke: var(--green-2); }
+.diagram .t1 { fill: var(--text); font: 600 15px system-ui, sans-serif; text-anchor: middle; }
+.diagram .t2 { fill: var(--muted); font: 13px system-ui, sans-serif; text-anchor: middle; }
+.diagram .link { stroke: var(--muted); stroke-width: 2; }
+.diagram .arrowhead { fill: var(--muted); }
+details { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; margin: 8px 0; }
+summary { cursor: pointer; font-weight: 600; }
+.top { display: flex; justify-content: flex-end; }
+ol.steps > li { margin: 4px 0; }
+</style>
+</head>
+<body>
+<main>
+<div class="top"><button type="button" id="theme">Light / dark</button></div>
+<h1>Copy SendHttpRequest into your workspace</h1>
+<p class="lead"><strong>SendHttpRequest is a MoveIt Pro Behavior that sends one HTTP request (GET, POST, PUT,
+PATCH or DELETE) to a REST API and puts the response on the blackboard.</strong></p>
+<p>Use it when an Objective must talk to a system that does not use ROS: a fleet manager, a job server, a PLC
+gateway or a dashboard. You do not write C++ for each system. This page tells you how to copy the Behavior
+from this repository into your own MoveIt Pro workspace, step by step.</p>
+
+<div class="card tested">
+<strong>Tested.</strong> The package files in steps 1 to 6 were built and run on MoveIt Pro 10.1.0, in a copy
+of the example workspace with a mock robot config. The same package also compiles on MoveIt Pro 9.4.3. The
+example Objective in step 9 ran unchanged against a local test server.
+</div>
+
+<div class="diagram-wrap"><svg viewBox="0 0 760 170" role="img" aria-labelledby="dtitle" class="diagram">
+  <title id="dtitle">The four places you change: package, loader, robot config, Objective</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" class="arrowhead"/>
+    </marker>
+  </defs>
+  <g class="box"><rect x="10" y="30" width="160" height="100" rx="10"/>
+    <text x="90" y="62" class="t1">1. Copy</text>
+    <text x="90" y="84" class="t2">2 source files</text>
+    <text x="90" y="104" class="t2">from this repository</text></g>
+  <g class="box"><rect x="205" y="30" width="160" height="100" rx="10"/>
+    <text x="285" y="62" class="t1">2. Package</text>
+    <text x="285" y="84" class="t2">restful_behaviors</text>
+    <text x="285" y="104" class="t2">CMake + loader</text></g>
+  <g class="box alt"><rect x="400" y="30" width="160" height="100" rx="10"/>
+    <text x="480" y="62" class="t1">3. Robot config</text>
+    <text x="480" y="84" class="t2">config.yaml</text>
+    <text x="480" y="104" class="t2">loads the loader</text></g>
+  <g class="box alt"><rect x="595" y="30" width="155" height="100" rx="10"/>
+    <text x="672" y="62" class="t1">4. Objective</text>
+    <text x="672" y="84" class="t2">uses</text>
+    <text x="672" y="104" class="t2">SendHttpRequest</text></g>
+  <line x1="170" y1="80" x2="203" y2="80" class="link" marker-end="url(#arrow)"/>
+  <line x1="365" y1="80" x2="398" y2="80" class="link" marker-end="url(#arrow)"/>
+  <line x1="560" y1="80" x2="593" y2="80" class="link" marker-end="url(#arrow)"/>
+</svg></div>
+
+<h2>What you need</h2>
+<ul>
+<li>A MoveIt Pro user workspace that builds with <code>moveit_pro build user_workspace</code>.</li>
+<li>A robot config package in that workspace (the package you start with <code>moveit_pro run -c</code>).</li>
+<li>A clone of this repository, to copy two files from.</li>
+<li>libcurl, the HTTP library. It is already in the MoveIt Pro image. Its rosdep key is
+<code>libcurl-dev</code>; the build installs it if it is missing.</li>
+</ul>
+
+<h2><span class="n">1</span>Make the package folder</h2>
+<p>Make a new ROS package called <code>restful_behaviors</code> in your workspace. At the end it has these files:</p>
+<div class="code"><div class="code-head"><span>folder layout</span><button type="button" class="copy">Copy</button></div><pre><code>your_ws/src/restful_behaviors/
+├── package.xml
+├── CMakeLists.txt
+├── restful_behaviors_plugin_description.xml
+├── include/experimental_behaviors/restful_behaviors/
+│   └── send_http_request.hpp        &lt;- copied, keep this path
+└── src/
+    ├── send_http_request.cpp        &lt;- copied
+    └── register_behaviors.cpp       &lt;- new, registers the Behavior</code></pre></div>
+<p>Keep the header in <code>include/experimental_behaviors/restful_behaviors/</code>. The source file includes it
+by that path, so you do not have to edit the copied files.</p>
+
+<h2><span class="n">2</span>Copy the two source files</h2>
+<div class="code"><div class="code-head"><span>shell</span><button type="button" class="copy">Copy</button></div><pre><code># From a clone of moveit_pro_experimental_behaviors (branch with SendHttpRequest):
+SRC=~/moveit_pro_experimental_behaviors
+PKG=~/your_ws/src/restful_behaviors
+
+mkdir -p $PKG/src $PKG/include/experimental_behaviors/restful_behaviors
+cp $SRC/include/experimental_behaviors/restful_behaviors/send_http_request.hpp \
+   $PKG/include/experimental_behaviors/restful_behaviors/
+cp $SRC/src/restful_behaviors/send_http_request.cpp $PKG/src/</code></pre></div>
+
+<h2><span class="n">3</span>Add package.xml</h2>
+<p>This tells the build which packages <code>restful_behaviors</code> needs. Change the maintainer to you.</p>
+<div class="code"><div class="code-head"><span>your_ws/src/restful_behaviors/package.xml</span><button type="button" class="copy">Copy</button></div><pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
+&lt;package format=&quot;3&quot;&gt;
+  &lt;name&gt;restful_behaviors&lt;/name&gt;
+  &lt;version&gt;0.1.0&lt;/version&gt;
+  &lt;description&gt;REST request Behavior (SendHttpRequest) for MoveIt Pro&lt;/description&gt;
+
+  &lt;maintainer email=&quot;you@example.com&quot;&gt;Your Name&lt;/maintainer&gt;
+
+  &lt;license&gt;BSD-3-Clause&lt;/license&gt;
+
+  &lt;buildtool_depend&gt;ament_cmake&lt;/buildtool_depend&gt;
+  &lt;build_depend&gt;moveit_pro_package&lt;/build_depend&gt;
+
+  &lt;depend&gt;libcurl-dev&lt;/depend&gt;
+  &lt;depend&gt;libexpected-dev&lt;/depend&gt;
+  &lt;depend&gt;moveit_pro_behavior_interface&lt;/depend&gt;
+  &lt;depend&gt;pluginlib&lt;/depend&gt;
+
+  &lt;export&gt;
+    &lt;build_type&gt;ament_cmake&lt;/build_type&gt;
+  &lt;/export&gt;
+&lt;/package&gt;</code></pre></div>
+
+<h2><span class="n">4</span>Add CMakeLists.txt</h2>
+<p>This builds one library from the two source files and links libcurl to it.</p>
+<div class="code"><div class="code-head"><span>your_ws/src/restful_behaviors/CMakeLists.txt</span><button type="button" class="copy">Copy</button></div><pre><code>cmake_minimum_required(VERSION 3.22)
+project(restful_behaviors CXX)
+
+find_package(moveit_pro_package REQUIRED)
+moveit_pro_package()
+
+set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_pro_behavior_interface pluginlib)
+foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
+  find_package(${package} REQUIRED)
+endforeach()
+find_package(tl-expected REQUIRED)
+find_package(CURL REQUIRED)
+
+add_library(restful_behaviors SHARED src/send_http_request.cpp
+                                     src/register_behaviors.cpp)
+target_include_directories(
+  restful_behaviors PUBLIC $&lt;BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include&gt;
+                           $&lt;INSTALL_INTERFACE:include&gt;)
+ament_target_dependencies(restful_behaviors PUBLIC
+                          ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(restful_behaviors PUBLIC tl::expected)
+target_link_libraries(restful_behaviors PRIVATE CURL::libcurl)
+
+install(
+  TARGETS restful_behaviors
+  EXPORT restful_behaviorsTargets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES
+  DESTINATION include)
+
+pluginlib_export_plugin_description_file(
+  moveit_pro_behavior_interface restful_behaviors_plugin_description.xml)
+
+ament_export_targets(restful_behaviorsTargets HAS_LIBRARY_TARGET)
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS} tl-expected)
+ament_package()</code></pre></div>
+
+<h2><span class="n">5</span>Add the loader</h2>
+<p>A loader is a small class that MoveIt Pro calls at start-up. It registers the Behavior under the name you
+use in Objectives (<code>SendHttpRequest</code>). The plugin description file tells MoveIt Pro where the loader is.</p>
+<div class="code"><div class="code-head"><span>your_ws/src/restful_behaviors/src/register_behaviors.cpp</span><button type="button" class="copy">Copy</button></div><pre><code>#include &lt;behaviortree_cpp/bt_factory.h&gt;
+#include &lt;moveit_pro_behavior_interface/behavior_context.hpp&gt;
+#include &lt;moveit_pro_behavior_interface/shared_resources_node_loader.hpp&gt;
+
+#include &lt;experimental_behaviors/restful_behaviors/send_http_request.hpp&gt;
+
+#include &lt;pluginlib/class_list_macros.hpp&gt;
+
+namespace restful_behaviors
+{
+class RestfulBehaviorsLoader : public moveit_pro::behaviors::SharedResourcesNodeLoaderBase
+{
+public:
+  void registerBehaviors(BT::BehaviorTreeFactory&amp; factory,
+                         const std::shared_ptr&lt;moveit_pro::behaviors::BehaviorContext&gt;&amp; shared_resources) override
+  {
+    moveit_pro::behaviors::registerBehavior&lt;experimental_behaviors::SendHttpRequest&gt;(factory, &quot;SendHttpRequest&quot;,
+                                                                                     shared_resources);
+  }
+};
+}  // namespace restful_behaviors
+
+PLUGINLIB_EXPORT_CLASS(restful_behaviors::RestfulBehaviorsLoader, moveit_pro::behaviors::SharedResourcesNodeLoaderBase);</code></pre></div>
+<div class="code"><div class="code-head"><span>your_ws/src/restful_behaviors/restful_behaviors_plugin_description.xml</span><button type="button" class="copy">Copy</button></div><pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot; ?&gt;
+&lt;library path=&quot;restful_behaviors&quot;&gt;
+  &lt;class
+    type=&quot;restful_behaviors::RestfulBehaviorsLoader&quot;
+    base_class_type=&quot;moveit_pro::behaviors::SharedResourcesNodeLoaderBase&quot;
+  /&gt;
+&lt;/library&gt;</code></pre></div>
+
+<h2><span class="n">6</span>Load the loader in your robot config</h2>
+<p>Add the loader under <code>objectives: behavior_loader_plugins:</code> in the <code>config.yaml</code> of
+the robot config you run. Use a key that no other entry uses. If your config has a parent
+(<code>based_on_package</code>), the entries merge, so the core Behaviors stay loaded.</p>
+<div class="code"><div class="code-head"><span>your_robot_config/config/config.yaml</span><button type="button" class="copy">Copy</button></div><pre><code>objectives:
+  behavior_loader_plugins:
+    restful_behaviors:
+      - &quot;restful_behaviors::RestfulBehaviorsLoader&quot;
+  # ...your other objectives settings stay as they are</code></pre></div>
+<p>Also add a run-time dependency, so the build and install order is correct:</p>
+<div class="code"><div class="code-head"><span>your_robot_config/package.xml</span><button type="button" class="copy">Copy</button></div><pre><code>&lt;!-- In your robot config package&#x27;s package.xml --&gt;
+&lt;exec_depend&gt;restful_behaviors&lt;/exec_depend&gt;</code></pre></div>
+
+<h2><span class="n">7</span>Build</h2>
+<div class="code"><div class="code-head"><span>shell</span><button type="button" class="copy">Copy</button></div><pre><code>moveit_pro build user_workspace
+# Look for:  Finished &lt;&lt;&lt; restful_behaviors</code></pre></div>
+
+<h2><span class="n">8</span>Start MoveIt Pro and check</h2>
+<div class="code"><div class="code-head"><span>shell</span><button type="button" class="copy">Copy</button></div><pre><code>moveit_pro run -c &lt;your_config_package&gt;
+# In the runtime log, the loader list includes your loader:
+#   Loading 5 behavior loader plugin(s):
+#     ...
+#     restful_behaviors::RestfulBehaviorsLoader</code></pre></div>
+<p>In the Objective editor, <code>SendHttpRequest</code> is in the Behavior list under <strong>REST</strong>.</p>
+
+<h2><span class="n">9</span>Try the example Objective</h2>
+<p>Save this as an XML file in your config's Objectives folder. It reads job 42 from a job server, marks it
+done, and writes the status code to the log. Change <code>http://127.0.0.1:8080</code> to your server.</p>
+<div class="code"><div class="code-head"><span>your_robot_config/objectives/rest_example.xml</span><button type="button" class="copy">Copy</button></div><pre><code>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot; ?&gt;
+&lt;root BTCPP_format=&quot;4&quot; main_tree_to_execute=&quot;REST Example&quot;&gt;
+  &lt;!-- Reads a job from a REST API, reports progress, and logs the reply --&gt;
+  &lt;BehaviorTree
+    ID=&quot;REST Example&quot;
+    _description=&quot;Reads job 42 from a REST API, marks it done, and logs the status code&quot;
+  &gt;
+    &lt;Control ID=&quot;Sequence&quot;&gt;
+      &lt;!-- GET http://127.0.0.1:8080/api/jobs?id=42 with an API key header --&gt;
+      &lt;Action
+        ID=&quot;SendHttpRequest&quot;
+        url=&quot;http://127.0.0.1:8080/api/jobs&quot;
+        method=&quot;GET&quot;
+        query_parameters=&#x27;{&quot;id&quot;: &quot;42&quot;}&#x27;
+        headers=&#x27;{&quot;Accept&quot;: &quot;application/json&quot;, &quot;X-Api-Key&quot;: &quot;my-key&quot;}&#x27;
+        timeout=&quot;5.0&quot;
+        status_code=&quot;{job_status}&quot;
+        response_body=&quot;{job}&quot;
+        response_headers=&quot;{job_headers}&quot;
+        error_message=&quot;{job_error}&quot;
+      /&gt;
+      &lt;!-- PUT a JSON body; content_type defaults to application/json --&gt;
+      &lt;Action
+        ID=&quot;SendHttpRequest&quot;
+        url=&quot;http://127.0.0.1:8080/api/jobs/42&quot;
+        method=&quot;PUT&quot;
+        body=&#x27;{&quot;state&quot;: &quot;done&quot;}&#x27;
+        status_code=&quot;{update_status}&quot;
+      /&gt;
+      &lt;!-- status_code is an int: make a text copy before a string port uses it --&gt;
+      &lt;Action
+        ID=&quot;Script&quot;
+        code=&quot;report := &#x27;Job server answered HTTP &#x27; .. update_status&quot;
+      /&gt;
+      &lt;Action ID=&quot;LogMessage&quot; message=&quot;{report}&quot; /&gt;
+    &lt;/Control&gt;
+  &lt;/BehaviorTree&gt;
+  &lt;TreeNodesModel&gt;
+    &lt;SubTree ID=&quot;REST Example&quot;&gt;
+      &lt;MetadataFields&gt;
+        &lt;Metadata subcategory=&quot;REST&quot; /&gt;
+      &lt;/MetadataFields&gt;
+    &lt;/SubTree&gt;
+  &lt;/TreeNodesModel&gt;
+&lt;/root&gt;</code></pre></div>
+<p><code>status_code</code> is an <code>int</code>, so <code>status_code == 200</code> works in a Script. A
+string port cannot use the same blackboard key, so the example makes a text copy first:</p>
+<div class="code"><div class="code-head"><span>status code as text</span><button type="button" class="copy">Copy</button></div><pre><code>&lt;Action ID=&quot;Script&quot; code=&quot;report := &#x27;Server answered HTTP &#x27; .. status_code&quot;/&gt;
+&lt;Action ID=&quot;LogMessage&quot; message=&quot;{report}&quot;/&gt;</code></pre></div>
+
+<h2>Ports</h2>
+<p>JSON on a port is always text in a <code>std::string</code>. A 2xx status is SUCCESS. Any other status, or
+no response, is FAILURE; all four outputs are still written. The full rules are in
+<code>docs/restful_behaviors.md</code>.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Port</th><th>Dir</th><th>Type</th><th>Default</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>url</code></td><td>in</td><td>string</td><td><code></code></td><td>http:// or https:// address</td></tr>
+<tr><td><code>method</code></td><td>in</td><td>string</td><td><code>GET</code></td><td>GET, POST, PUT, PATCH or DELETE</td></tr>
+<tr><td><code>query_parameters</code></td><td>in</td><td>string</td><td><code>&quot;&quot;</code></td><td>JSON object as text, e.g. {&quot;id&quot;: &quot;42&quot;}</td></tr>
+<tr><td><code>headers</code></td><td>in</td><td>string</td><td><code>&quot;&quot;</code></td><td>JSON object as text, e.g. {&quot;Accept&quot;: &quot;application/json&quot;}</td></tr>
+<tr><td><code>body</code></td><td>in</td><td>string</td><td><code>&quot;&quot;</code></td><td>Sent as it is. Must be empty for GET</td></tr>
+<tr><td><code>content_type</code></td><td>in</td><td>string</td><td><code>application/json</code></td><td>Content-Type of the body</td></tr>
+<tr><td><code>timeout</code></td><td>in</td><td>double</td><td><code>10.0</code></td><td>Seconds for the whole request</td></tr>
+<tr><td><code>verify_tls</code></td><td>in</td><td>bool</td><td><code>true</code></td><td>Check the https certificate</td></tr>
+<tr><td><code>follow_redirects</code></td><td>in</td><td>bool</td><td><code>false</code></td><td>Follow 3xx redirects</td></tr>
+<tr><td><code>status_code</code></td><td>out</td><td>int</td><td><code>{status_code}</code></td><td>0 if there was no response</td></tr>
+<tr><td><code>response_body</code></td><td>out</td><td>string</td><td><code>{response_body}</code></td><td>Response body</td></tr>
+<tr><td><code>response_headers</code></td><td>out</td><td>string</td><td><code>{response_headers}</code></td><td>JSON object, lower-case names</td></tr>
+<tr><td><code>error_message</code></td><td>out</td><td>string</td><td><code>{error_message}</code></td><td>Empty on SUCCESS</td></tr>
+</tbody></table></div>
+
+<h2>Another way: add it to a package you already have</h2>
+<p>If your workspace already has a Behavior package with its own loader, you can add
+<code>SendHttpRequest</code> to it instead of making a new package. (This path was not run end to end; the
+new-package path above was.)</p>
+<div class="code"><div class="code-head"><span>changes in your existing Behavior package</span><button type="button" class="copy">Copy</button></div><pre><code># 1. Copy the two files into your package (same folders as in step 2).
+# 2. CMakeLists.txt of your package:
+find_package(CURL REQUIRED)
+#    add src/send_http_request.cpp to your add_library(...) source list, then:
+target_link_libraries(&lt;your_library&gt; PRIVATE CURL::libcurl)
+# 3. package.xml:  &lt;depend&gt;libcurl-dev&lt;/depend&gt;
+# 4. In your loader&#x27;s registerBehaviors(...):
+#    moveit_pro::behaviors::registerBehavior&lt;experimental_behaviors::SendHttpRequest&gt;(
+#        factory, &quot;SendHttpRequest&quot;, shared_resources);
+#    and add:  #include &lt;experimental_behaviors/restful_behaviors/send_http_request.hpp&gt;</code></pre></div>
+
+<div class="card note">
+<strong>Security.</strong> HTTP sends in clear text, so use <code>https://</code> on networks you do not
+control. Keep <code>verify_tls</code> true unless the server is a trusted device with a self-signed
+certificate. A token typed into <code>headers</code> is stored in the Objective file; prefer a blackboard
+value. Check every field of a response before it drives motion.
+</div>
+
+<h2>If something goes wrong</h2>
+<details><summary>The Objective does not load: <code>port [x] was initially created with type [int] and, later type [std::string]</code></summary><p><code>status_code</code> is an <code>int</code>. A string port (for example <code>LogMessage</code> <code>message</code>) cannot use the same blackboard key. Make a text copy with a Script first (see step 9).</p></details>
+<details><summary>CMake error: <code>Could not find a package configuration file provided by "CURL"</code></summary><p>Add <code>&lt;depend&gt;libcurl-dev&lt;/depend&gt;</code> to <code>package.xml</code>. <code>moveit_pro build</code> runs rosdep, which installs it.</p></details>
+<details><summary><code>SendHttpRequest</code> is not in the Behavior list</summary><p>The loader is not loaded. Check the <code>behavior_loader_plugins</code> entry in <code>config.yaml</code> (step 6) and the loader name in <code>restful_behaviors_plugin_description.xml</code>. They must match <code>restful_behaviors::RestfulBehaviorsLoader</code>.</p></details>
+<details><summary><code>error_message</code> says <code>SSL certificate problem</code></summary><p>The server uses a certificate your system does not trust, for example a self-signed one. On a network you control, set <code>verify_tls="false"</code>. Otherwise install the CA certificate in the image.</p></details>
+<details><summary>A literal like <code>{abc}</code> in <code>body</code> is read as a blackboard key</summary><p>BT.CPP reads text in braces as a blackboard key. Text that is valid JSON, such as <code>{"a": 1}</code>, is sent as it is. Other text in braces must come from the blackboard.</p></details>
+
+<p class="meta">Source of truth: <code>src/restful_behaviors/send_http_request.cpp</code> and
+<code>docs/restful_behaviors.md</code> in this repository.</p>
+</main>
+<script>
+(function () {
+  var root = document.documentElement;
+  document.getElementById('theme').addEventListener('click', function () {
+    var dark = root.getAttribute('data-theme')
+      ? root.getAttribute('data-theme') === 'dark'
+      : !window.matchMedia('(prefers-color-scheme: light)').matches;
+    root.setAttribute('data-theme', dark ? 'light' : 'dark');
+  });
+  document.querySelectorAll('.code').forEach(function (block) {
+    var button = block.querySelector('.copy');
+    button.addEventListener('click', function () {
+      var text = block.querySelector('code').innerText;
+      var done = function () { button.textContent = 'Copied'; setTimeout(function () { button.textContent = 'Copy'; }, 1200); };
+      if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done, function () {}); }
+    });
+  });
+})();
+</script>
+</body>
+</html>

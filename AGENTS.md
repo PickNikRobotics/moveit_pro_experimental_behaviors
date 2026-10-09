@@ -6,8 +6,9 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 - Build and test inside the matching `picknikciuser/moveit-studio:<tag>-<distro>` image: `colcon build --packages-select experimental_behaviors`, then `colcon test --executor sequential` (as CI does).
 - Format with clang-format 14.0.6 through `pre-commit run clang-format --files <files>` (`.pre-commit-config.yaml`); ament_clang_format and ament_clang_tidy were not installed in the 9.4.3-jazzy image, so those lint tests did not run there.
 - Register every Behavior in `src/register_behaviors.cpp` and add it to `test/test_behavior_plugins.cpp`.
-- JSON Behaviors and their helpers live only under `src/json_behaviors/`, `include/experimental_behaviors/json_behaviors/` and `test/json_behaviors/`; user docs in `docs/json_behaviors.md`.
+- Behavior groups are folders, not packages: `json_behaviors/` and `restful_behaviors/` under `src/`, `include/experimental_behaviors/` and `test/`, with user docs in `docs/<group>.md`. Keep `restful_behaviors/` free of JSON-group includes: `docs/restful_behaviors_copy_howto.html` tells users to copy its two files alone (into Pro 9.4 or 10.x).
 - BT.CPP reads any port text wrapped in braces as a blackboard key, so a JSON object literal typed into a port is lost unless read raw (see `json_utils::getJsonText`).
+- BT.CPP refuses to create a tree where a `std::string` port and an `int` port share a blackboard key; convert in a Script first (`text := '' .. code`).
 
 ## Maintaining this file
 
