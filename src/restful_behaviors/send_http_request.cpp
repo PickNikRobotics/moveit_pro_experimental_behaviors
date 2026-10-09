@@ -221,6 +221,12 @@ tl::expected<std::string, std::string> appendQuery(CURL* curl, const std::string
   return result + encoded + (fragment == std::string::npos ? "" : url.substr(fragment));
 }
 
+/// True if @p text holds CR, LF or NUL, which would end a header line early.
+bool hasLineBreak(const std::string& text)
+{
+  return text.find_first_of(std::string("\r\n\0", 3)) != std::string::npos;
+}
+
 /// True for the characters RFC 9110 allows in a header name.
 bool isTokenChar(unsigned char c)
 {
@@ -249,7 +255,7 @@ tl::expected<std::vector<std::pair<std::string, std::string>>, std::string> pars
       return tl::make_unexpected("[headers] value of '" + name + "' is " + std::string(value.type_name()) +
                                  "; use a string, number, boolean or null.");
     }
-    if (text->find_first_of(std::string("\r\n\0", 3)) != std::string::npos)
+    if (hasLineBreak(*text))
     {
       return tl::make_unexpected("[headers] value of '" + name + "' contains a line break or NUL character.");
     }
@@ -447,6 +453,10 @@ tl::expected<bool, std::string> SendHttpRequest::doWork()
   if (!std::isfinite(timeout.value()) || timeout.value() <= 0.0)
   {
     return failWithoutResponse("[timeout] must be a finite number of seconds > 0.");
+  }
+  if (hasLineBreak(content_type.value()))
+  {
+    return failWithoutResponse("[content_type] contains a line break or NUL character.");
   }
   if (method == "GET" && !body->empty())
   {

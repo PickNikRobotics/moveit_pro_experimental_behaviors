@@ -402,6 +402,11 @@ TEST_F(SendHttpRequestTest, RejectsBadInputs)
   EXPECT_EQ(run(R"(<SendHttpRequest url="http://127.0.0.1:9/" headers="{bad_headers}"/>)"), BT::NodeStatus::FAILURE);
   expectNoResponse("[headers] value of 'X-A' contains a line break");
 
+  blackboard_->set<std::string>("bad_type", "text/plain\r\nX-Injected: b");
+  EXPECT_EQ(run(R"(<SendHttpRequest url="http://127.0.0.1:9/" method="POST" content_type="{bad_type}"/>)"),
+            BT::NodeStatus::FAILURE);
+  expectNoResponse("[content_type] contains a line break");
+
   EXPECT_EQ(run(R"(<SendHttpRequest url="http://127.0.0.1:9/" headers='{"X-A": ["a"]}'/>)"), BT::NodeStatus::FAILURE);
   expectNoResponse("[headers] value of 'X-A' is array");
 
