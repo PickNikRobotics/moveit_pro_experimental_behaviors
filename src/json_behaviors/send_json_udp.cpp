@@ -21,7 +21,7 @@ inline constexpr auto kDescriptionSendJsonUdp = R"(
                 <p>
                     <code>host</code> is an IPv4 or IPv6 address or a host name. The payload must be valid
                     JSON and fit in one datagram. UDP does not confirm delivery: SUCCESS means the datagram
-                    was sent, not that it arrived. Use <code>SendJsonHttp</code> when delivery matters.
+                    was sent, not that it arrived. Use <code>SendHttpRequest</code> when delivery matters.
                 </p>
             )";
 

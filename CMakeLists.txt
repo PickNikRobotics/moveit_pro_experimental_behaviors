@@ -45,7 +45,6 @@ add_library(
   src/json_behaviors/merge_json.cpp
   src/json_behaviors/receive_json_udp.cpp
   src/json_behaviors/remove_json_field.cpp
-  src/json_behaviors/send_json_http.cpp
   src/json_behaviors/send_json_udp.cpp
   src/json_behaviors/set_json_field.cpp
   src/json_behaviors/udp_socket.cpp
@@ -68,7 +67,7 @@ if(TARGET yaml-cpp::yaml-cpp)
 else()
   target_link_libraries(experimental_behaviors PRIVATE yaml-cpp)
 endif()
-# libcurl backs SendJsonHttp. Like yaml-cpp, no installed header includes it.
+# libcurl backs SendHttpRequest. Like yaml-cpp, no installed header includes it.
 target_link_libraries(experimental_behaviors PRIVATE CURL::libcurl)
 ament_target_dependencies(experimental_behaviors PUBLIC
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})

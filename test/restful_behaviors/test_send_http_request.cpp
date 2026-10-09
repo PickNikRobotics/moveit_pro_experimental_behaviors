@@ -258,6 +258,33 @@ TEST_F(SendHttpRequestTest, PostSendsJsonBodyWithDefaultContentType)
   EXPECT_EQ(requests[1].body, R"({"robot": "arm", "state": "idle"})");
 }
 
+TEST_F(SendHttpRequestTest, ReplacesSendJsonHttp)
+{
+  // The port mapping in docs/restful_behaviors.md: the same request SendJsonHttp sent, and its two outputs.
+  TestHttpServer server(HttpReply{ 200, {}, R"({"accepted": true})" });
+  blackboard_->set<std::string>("json", R"({"robot":"arm"})");
+  const std::string send = R"(<SendHttpRequest url=")" + server.url("/status") +
+                           R"(" method="POST" body="{json}" headers='{"Accept": "application/json"}' timeout="10.0"
+                             response_body="{response}" status_code="{status_code}"/>)";
+  ASSERT_EQ(run(send), BT::NodeStatus::SUCCESS) << errors();
+  EXPECT_EQ(json::parse(output("response")), json::parse(R"({"accepted": true})"));
+  EXPECT_EQ(blackboard_->get<int>("status_code"), 200);
+  auto requests = server.requests();
+  ASSERT_EQ(requests.size(), 1u);
+  EXPECT_EQ(requests[0].method, "POST");
+  EXPECT_EQ(requests[0].headers.at("content-type"), "application/json");
+  EXPECT_EQ(requests[0].headers.at("accept"), "application/json");
+  EXPECT_EQ(requests[0].body, R"({"robot":"arm"})");
+
+  // SendJsonHttp refused invalid JSON before sending; CreateJson in front does the same.
+  blackboard_->set<std::string>("json", "{not json");
+  EXPECT_EQ(run(R"(<Sequence><CreateJson initial="{json}" json="{json}"/>)" + send + "</Sequence>"),
+            BT::NodeStatus::FAILURE);
+  const auto message = errors();
+  EXPECT_NE(message.find("is not valid JSON"), std::string::npos) << message;
+  EXPECT_EQ(server.requests().size(), 1u);
+}
+
 TEST_F(SendHttpRequestTest, PutSendsBlackboardBodyWithCustomContentType)
 {
   TestHttpServer server(HttpReply{ 204, {}, "" });

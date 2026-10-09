@@ -137,23 +137,11 @@ Waits for a document sent as a UDP datagram.
 - Each run outputs the newest queued datagram and drops older ones. With nothing queued it returns
   RUNNING, and FAILURE after `timeout`. A datagram that is not valid JSON is a FAILURE.
 
-### SendJsonHttp
+### Sending JSON over HTTP
 
-Sends a document in an HTTP request and outputs the response.
-
-| Data Port Name | Port Type | Object Type | Default         | Description                     |
-| -------------- | --------- | ----------- | --------------- | ------------------------------- |
-| url            | input     | std::string |                 | `http://` or `https://` URL     |
-| method         | input     | std::string | `POST`          | `POST` or `PUT`                 |
-| payload        | input     | std::string | `{json}`        | JSON document to send           |
-| timeout        | input     | double      | `10.0`          | Seconds for the whole request   |
-| response       | output    | std::string | `{response}`    | Response body                   |
-| status_code    | output    | int         | `{status_code}` | HTTP status code                |
-
-- The request runs in the background and a halt cancels it (within about one second).
-- `Content-Type: application/json` is set. Redirects are not followed. Proxy settings come from the
-  standard environment variables.
-- A 2xx status is SUCCESS. Another status still writes `response` and `status_code`, then fails.
+`SendJsonHttp` was replaced by the generic `SendHttpRequest` Behavior; see
+[restful_behaviors.md](restful_behaviors.md), which also has the port-by-port mapping. To send a JSON
+document, put it in `body` (the default `content_type` is `application/json`).
 
 ## Security
 
@@ -164,7 +152,8 @@ Sends a document in an HTTP request and outputs the response.
   that network. Use `0.0.0.0` (every interface) only on a trusted network.
 - **Treat received JSON as untrusted input.** Check every field you read (with `HasJsonField` and range
   checks in the tree) before it drives motion.
-- **HTTP sends in clear text.** Use `https://` when the request crosses a network you do not control.
+- **HTTP sends in clear text.** Use `https://` with `SendHttpRequest` when the request crosses a
+  network you do not control.
 
 ## Example
 
@@ -175,7 +164,7 @@ Report a pose to a supervisor, then wait for its reply on UDP:
   <CreateJson initial='{"robot": "arm_1", "status": {}}' json="{msg}"/>
   <SetJsonField json="{msg}" path="/status/state" value="picking"/>
   <SetJsonField json="{msg}" path="/status/pose" value="{tool_pose}"/>
-  <SendJsonHttp url="http://192.168.1.20:8080/status" payload="{msg}" response="{reply}"/>
+  <SendHttpRequest url="http://192.168.1.20:8080/status" method="POST" body="{msg}" response_body="{reply}"/>
   <ReceiveJsonUdp port="9870" bind_address="192.168.1.5" timeout="5.0" payload="{command}"/>
   <HasJsonField json="{command}" path="/target"/>
   <GetJsonField json="{command}" path="/target" message_type="geometry_msgs/msg/PoseStamped"
