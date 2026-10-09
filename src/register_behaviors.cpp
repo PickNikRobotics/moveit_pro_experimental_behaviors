@@ -27,6 +27,7 @@
 #include "experimental_behaviors/json_behaviors/send_json_udp.hpp"
 #include "experimental_behaviors/json_behaviors/set_json_field.hpp"
 #include "experimental_behaviors/publish_dynamic_interface_group_values.hpp"
+#include "experimental_behaviors/restful_behaviors/send_http_request.hpp"
 #include "experimental_behaviors/set_blackboard_by_key.hpp"
 #include "experimental_behaviors/trajectory_to_path.hpp"
 #include "experimental_behaviors/write_yaml_value.hpp"
@@ -70,6 +71,7 @@ public:
     moveit_pro::behaviors::registerBehavior<SendJsonUdp>(factory, "SendJsonUdp", shared_resources);
     moveit_pro::behaviors::registerBehavior<ReceiveJsonUdp>(factory, "ReceiveJsonUdp", shared_resources);
     moveit_pro::behaviors::registerBehavior<SendJsonHttp>(factory, "SendJsonHttp", shared_resources);
+    moveit_pro::behaviors::registerBehavior<SendHttpRequest>(factory, "SendHttpRequest", shared_resources);
   }
 };
 }  // namespace experimental_behaviors

@@ -34,7 +34,7 @@ TEST(BehaviorTests, test_load_behavior_plugins)
   EXPECT_NO_THROW(
       (void)factory.instantiateTreeNode("test_append_yaml_list_item", "AppendYamlListItem", BT::NodeConfiguration()));
   for (const auto* id : { "CreateJson", "SetJsonField", "GetJsonField", "RemoveJsonField", "HasJsonField", "MergeJson",
-                          "SendJsonUdp", "ReceiveJsonUdp", "SendJsonHttp" })
+                          "SendJsonUdp", "ReceiveJsonUdp", "SendJsonHttp", "SendHttpRequest" })
   {
     EXPECT_NO_THROW((void)factory.instantiateTreeNode(std::string("test_") + id, id, BT::NodeConfiguration())) << id;
   }

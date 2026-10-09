@@ -49,6 +49,7 @@ add_library(
   src/json_behaviors/send_json_udp.cpp
   src/json_behaviors/set_json_field.cpp
   src/json_behaviors/udp_socket.cpp
+  src/restful_behaviors/send_http_request.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   experimental_behaviors

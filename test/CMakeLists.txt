@@ -26,3 +26,7 @@ endif()
 
 ament_add_gtest(test_json_transport json_behaviors/test_json_transport.cpp TIMEOUT 120)
 ament_target_dependencies(test_json_transport ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+# REST Behaviors. Loads the plugin through pluginlib, like the JSON transport tests.
+ament_add_gtest(test_send_http_request restful_behaviors/test_send_http_request.cpp TIMEOUT 120)
+ament_target_dependencies(test_send_http_request ${THIS_PACKAGE_INCLUDE_DEPENDS})
