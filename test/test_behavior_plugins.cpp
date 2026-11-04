@@ -53,16 +53,16 @@ public:
 std::set<std::string> registeredIDs(const BT::BehaviorTreeFactory& factory)
 {
   std::set<std::string> ids;
-  for (const auto& entry : factory.manifests())
+  for (const auto& [id, manifest] : factory.manifests())
   {
-    ids.insert(entry.first);
+    ids.insert(id);
   }
   return ids;
 }
 
 class BehaviorPlugins : public ::testing::Test
 {
-protected:
+public:
   void initialize(const std::vector<rclcpp::Parameter>& overrides = {})
   {
     rclcpp::NodeOptions options;
