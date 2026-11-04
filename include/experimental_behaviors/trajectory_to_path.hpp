@@ -7,8 +7,8 @@
 #pragma once
 
 #include <behaviortree_cpp/action_node.h>
+#include <experimental_behaviors/shared_resources_node.hpp>
 #include <moveit_pro_behavior_interface/behavior_context.hpp>
-#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
 namespace experimental_behaviors
 {
@@ -36,7 +36,7 @@ namespace experimental_behaviors
  * (`robot_model->getModelFrame()`) and the current node clock.
  * All output poses share a single timestamp captured once per tick.
  */
-class TrajectoryToPath final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class TrajectoryToPath final : public ExperimentalSharedResourcesNode<BT::SyncActionNode>
 {
 public:
   static constexpr auto kPortIDJointTrajectory = "joint_trajectory";

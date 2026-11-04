@@ -26,7 +26,7 @@ namespace experimental_behaviors
 CreateInterfaceValue::CreateInterfaceValue(
     const std::string& name, const BT::NodeConfiguration& config,
     const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
-  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+  : ExperimentalSharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
@@ -51,8 +51,8 @@ BT::NodeStatus CreateInterfaceValue::tick()
                                                               getInput<std::vector<double>>(kPortIDValues));
   if (!ports.has_value())
   {
-    shared_resources_->logger->publishFailureMessage(name(), "Failed to get required value from input data port: " +
-                                                                 ports.error());
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(
+        name(), "Failed to get required value from input data port: " + ports.error());
     return BT::NodeStatus::FAILURE;
   }
 
@@ -60,14 +60,14 @@ BT::NodeStatus CreateInterfaceValue::tick()
 
   if (interface_names.size() != values.size())
   {
-    shared_resources_->logger->publishFailureMessage(
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(
         name(), "`interface_names` and `values` must contain the same number of elements");
     return BT::NodeStatus::FAILURE;
   }
 
   if (interface_names.empty() || values.empty())
   {
-    shared_resources_->logger->publishFailureMessage(
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(
         name(), "`interface_names` and `values` must contain the same number of elements and not be empty");
     return BT::NodeStatus::FAILURE;
   }

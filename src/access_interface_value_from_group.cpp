@@ -26,7 +26,7 @@ namespace experimental_behaviors
 AccessInterfaceValueFromGroup::AccessInterfaceValueFromGroup(
     const std::string& name, const BT::NodeConfiguration& config,
     const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
-  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+  : ExperimentalSharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
@@ -50,8 +50,8 @@ BT::NodeStatus AccessInterfaceValueFromGroup::tick()
       getInput<std::string>(kPortIDInterfaceName), getInput<control_msgs::msg::InterfaceValue>(kPortIDInterfaceValue));
   if (!ports.has_value())
   {
-    shared_resources_->logger->publishFailureMessage(name(), "Failed to get required value from input data port: " +
-                                                                 ports.error());
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(
+        name(), "Failed to get required value from input data port: " + ports.error());
     return BT::NodeStatus::FAILURE;
   }
 
@@ -63,14 +63,15 @@ BT::NodeStatus AccessInterfaceValueFromGroup::tick()
     {
       if (i >= interface.values.size())
       {
-        shared_resources_->logger->publishFailureMessage(name(), "Interface value index out of range");
+        getExperimentalBehaviorContext()->logger->publishFailureMessage(name(), "Interface value index out of range");
         return BT::NodeStatus::FAILURE;
       }
       setOutput(kPortIDValue, interface.values[i]);
       return BT::NodeStatus::SUCCESS;
     }
   }
-  shared_resources_->logger->publishFailureMessage(name(), "Interface name not found in interface value message");
+  getExperimentalBehaviorContext()->logger->publishFailureMessage(
+      name(), "Interface name not found in interface value message");
   return BT::NodeStatus::FAILURE;
 }
 

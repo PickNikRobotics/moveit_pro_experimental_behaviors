@@ -8,8 +8,8 @@
 
 #include <control_msgs/msg/dynamic_interface_group_values.hpp>
 
+#include <experimental_behaviors/shared_resources_node.hpp>
 #include <moveit_pro_behavior_interface/behavior_context.hpp>
-#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 #include "moveit_pro_behavior_interface/async_behavior_base.hpp"
 
 namespace experimental_behaviors
@@ -23,12 +23,12 @@ namespace experimental_behaviors
  * | reference_frame      | input       | std::string                      |
  * | interface_groups     | input       | std::vector<std::string>         |
  * | interface_values     | input       | std::vector<control_msgs::msg::InterfaceValue>      |
- * | dynamic_interface_group_values        | output      | control_msgs::msg::DynamicInterfaceGroupValues |
+ * | group_values | output | control_msgs::msg::DynamicInterfaceGroupValues |
  *
  * The Behavior checks to see if the input values `interface_groups` and `interface_values` are of the same and non-zero size.
  */
 
-class CreateDynamicInterfaceGroupValues final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class CreateDynamicInterfaceGroupValues final : public ExperimentalSharedResourcesNode<BT::SyncActionNode>
 {
 public:
   /**

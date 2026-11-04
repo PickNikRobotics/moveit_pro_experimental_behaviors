@@ -62,7 +62,7 @@ namespace experimental_behaviors
 {
 WriteYamlValue::WriteYamlValue(const std::string& name, const BT::NodeConfiguration& config,
                                const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
-  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+  : ExperimentalSharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
@@ -93,7 +93,7 @@ BT::KeyValueVector WriteYamlValue::metadata()
 
 BT::NodeStatus WriteYamlValue::tick()
 {
-  const auto& logger = shared_resources_->node->get_logger();
+  const auto& logger = getExperimentalBehaviorContext()->node->get_logger();
 
   const auto file_path_in = getInput<std::string>(kPortIDFilePath);
   const auto key1_in = getInput<std::string>(kPortIDKey1);

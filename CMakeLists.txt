@@ -15,7 +15,7 @@ else()
   set(BEHAVIORTREE_CPP_PACKAGE behaviortree_cpp)
 endif()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS ament_index_cpp control_msgs geometry_msgs moveit_pro_behavior_interface pluginlib ${BEHAVIORTREE_CPP_PACKAGE} tl_expected trajectory_msgs moveit_pro_base)
+set(THIS_PACKAGE_INCLUDE_DEPENDS ament_index_cpp control_msgs geometry_msgs moveit_pro_behavior_interface pluginlib rcl_interfaces rclcpp ${BEHAVIORTREE_CPP_PACKAGE} tl_expected trajectory_msgs moveit_pro_base)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -67,6 +67,8 @@ install(
   RUNTIME DESTINATION bin
   INCLUDES
   DESTINATION include)
+
+install(DIRECTORY include/ DESTINATION include)
 
 if(BUILD_TESTING)
   moveit_pro_behavior_test(experimental_behaviors)

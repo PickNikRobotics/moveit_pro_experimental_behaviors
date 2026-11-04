@@ -33,7 +33,7 @@ namespace experimental_behaviors
 {
 SetBlackboardByKey::SetBlackboardByKey(const std::string& name, const BT::NodeConfiguration& config,
                                        const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
-  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+  : ExperimentalSharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
@@ -57,7 +57,7 @@ BT::NodeStatus SetBlackboardByKey::tick()
   std::string key;
   if (!getInput<std::string>(kPortIDKey, key) || key.empty())
   {
-    shared_resources_->logger->publishFailureMessage(name(), "Missing or empty input port [key]");
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(name(), "Missing or empty input port [key]");
     return BT::NodeStatus::FAILURE;
   }
 
@@ -68,7 +68,7 @@ BT::NodeStatus SetBlackboardByKey::tick()
   const auto value_it = config().input_ports.find(kPortIDValue);
   if (value_it == config().input_ports.end())
   {
-    shared_resources_->logger->publishFailureMessage(name(), "Missing input port [value]");
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(name(), "Missing input port [value]");
     return BT::NodeStatus::FAILURE;
   }
   const std::string& value_expr = value_it->second;
@@ -82,7 +82,7 @@ BT::NodeStatus SetBlackboardByKey::tick()
     auto src_entry = config().blackboard->getEntry(input_key);
     if (!src_entry)
     {
-      shared_resources_->logger->publishFailureMessage(
+      getExperimentalBehaviorContext()->logger->publishFailureMessage(
           name(), "Source port '" + input_key + "' for [value] does not reference an existing blackboard entry.");
       return BT::NodeStatus::FAILURE;
     }
@@ -105,7 +105,8 @@ BT::NodeStatus SetBlackboardByKey::tick()
     dst_entry = config().blackboard->getEntry(key);
     if (!dst_entry)
     {
-      shared_resources_->logger->publishFailureMessage(name(), "Failed to create blackboard entry '" + key + "'");
+      getExperimentalBehaviorContext()->logger->publishFailureMessage(name(), "Failed to create blackboard entry '" +
+                                                                                  key + "'");
       return BT::NodeStatus::FAILURE;
     }
   }

@@ -26,7 +26,7 @@ namespace experimental_behaviors
 GetInterfaceValueFromGroup::GetInterfaceValueFromGroup(
     const std::string& name, const BT::NodeConfiguration& config,
     const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
-  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+  : ExperimentalSharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
@@ -53,8 +53,8 @@ BT::NodeStatus GetInterfaceValueFromGroup::tick()
 
   if (!ports.has_value())
   {
-    shared_resources_->logger->publishFailureMessage(name(), "Failed to get required value from input data port: " +
-                                                                 ports.error());
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(
+        name(), "Failed to get required value from input data port: " + ports.error());
     return BT::NodeStatus::FAILURE;
   }
 
@@ -65,8 +65,8 @@ BT::NodeStatus GetInterfaceValueFromGroup::tick()
 
   if (it == group_values.interface_groups.end())
   {
-    shared_resources_->logger->publishFailureMessage(name(), "Interface group '" + interface_group_name +
-                                                                 "' not found in DynamicInterfaceGroupValues message");
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(
+        name(), "Interface group '" + interface_group_name + "' not found in DynamicInterfaceGroupValues message");
     return BT::NodeStatus::FAILURE;
   }
 
@@ -76,7 +76,7 @@ BT::NodeStatus GetInterfaceValueFromGroup::tick()
   // Check that the index is valid for the interface_values vector
   if (index >= group_values.interface_values.size())
   {
-    shared_resources_->logger->publishFailureMessage(
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(
         name(), "Index mismatch: interface_groups and interface_values have different sizes");
     return BT::NodeStatus::FAILURE;
   }

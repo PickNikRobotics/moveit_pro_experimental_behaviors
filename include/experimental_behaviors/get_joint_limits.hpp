@@ -7,8 +7,8 @@
 #pragma once
 
 #include <behaviortree_cpp/action_node.h>
+#include <experimental_behaviors/shared_resources_node.hpp>
 #include <moveit_pro_behavior_interface/behavior_context.hpp>
-#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
 namespace experimental_behaviors
 {
@@ -29,7 +29,7 @@ namespace experimental_behaviors
  * Returns FAILURE if the robot model is unavailable, the joint is not found, the joint is not
  * single-DOF, or the joint has no position limits.
  */
-class GetJointLimits final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class GetJointLimits final : public ExperimentalSharedResourcesNode<BT::SyncActionNode>
 {
 public:
   GetJointLimits(const std::string& name, const BT::NodeConfiguration& config,

@@ -4,6 +4,7 @@
 // Unauthorized copying of this code base via any medium is strictly prohibited.
 // Proprietary and confidential.
 
+#include <experimental_behaviors/robot_state_compatibility.hpp>
 #include <experimental_behaviors/trajectory_to_path.hpp>
 
 #include <Eigen/Geometry>
@@ -34,7 +35,7 @@ namespace experimental_behaviors
 {
 TrajectoryToPath::TrajectoryToPath(const std::string& name, const BT::NodeConfiguration& config,
                                    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
-  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+  : ExperimentalSharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
@@ -64,21 +65,23 @@ BT::NodeStatus TrajectoryToPath::tick()
   trajectory_msgs::msg::JointTrajectory trajectory;
   if (!getInput<trajectory_msgs::msg::JointTrajectory>(kPortIDJointTrajectory, trajectory))
   {
-    shared_resources_->logger->publishFailureMessage(name(), "Missing required input port [joint_trajectory].");
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(name(),
+                                                                    "Missing required input port [joint_trajectory].");
     return BT::NodeStatus::FAILURE;
   }
 
   std::string tip_link;
   if (!getInput<std::string>(kPortIDTipLink, tip_link) || tip_link.empty())
   {
-    shared_resources_->logger->publishFailureMessage(name(), "Missing or empty required input port [tip_link].");
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(name(),
+                                                                    "Missing or empty required input port [tip_link].");
     return BT::NodeStatus::FAILURE;
   }
 
-  const auto& robot_model = shared_resources_->robot_model;
+  const auto& robot_model = getExperimentalBehaviorContext()->robot_model;
   if (!robot_model)
   {
-    shared_resources_->logger->publishFailureMessage(
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(
         name(), "Robot model is not loaded on the BehaviorContext. TrajectoryToPath requires "
                 "load_robot_model=true.");
     return BT::NodeStatus::FAILURE;
@@ -87,8 +90,8 @@ BT::NodeStatus TrajectoryToPath::tick()
   // Validate the tip link.
   if (!robot_model->hasLinkModel(tip_link))
   {
-    shared_resources_->logger->publishFailureMessage(name(),
-                                                     "Unknown tip_link '" + tip_link + "' (not in robot model).");
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(name(), "Unknown tip_link '" + tip_link +
+                                                                                "' (not in robot model).");
     return BT::NodeStatus::FAILURE;
   }
 
@@ -97,8 +100,8 @@ BT::NodeStatus TrajectoryToPath::tick()
   {
     if (!robot_model->hasJointModel(joint_name))
     {
-      shared_resources_->logger->publishFailureMessage(name(), "Trajectory contains joint '" + joint_name +
-                                                                   "' which is not in the robot model.");
+      getExperimentalBehaviorContext()->logger->publishFailureMessage(
+          name(), "Trajectory contains joint '" + joint_name + "' which is not in the robot model.");
       return BT::NodeStatus::FAILURE;
     }
   }
@@ -112,7 +115,7 @@ BT::NodeStatus TrajectoryToPath::tick()
   std::vector<geometry_msgs::msg::PoseStamped> path;
   path.reserve(trajectory.points.size());
 
-  const auto stamp = shared_resources_->node->get_clock()->now();
+  const auto stamp = getExperimentalBehaviorContext()->node->get_clock()->now();
   const auto& frame_id = robot_model->getModelFrame();
 
   // Reuse a single RobotState across iterations: setVariablePositions only touches
@@ -124,7 +127,7 @@ BT::NodeStatus TrajectoryToPath::tick()
   {
     if (point.positions.size() != trajectory.joint_names.size())
     {
-      shared_resources_->logger->publishFailureMessage(
+      getExperimentalBehaviorContext()->logger->publishFailureMessage(
           name(), "Trajectory point has " + std::to_string(point.positions.size()) + " positions but " +
                       std::to_string(trajectory.joint_names.size()) + " joint names.");
       return BT::NodeStatus::FAILURE;
@@ -132,11 +135,11 @@ BT::NodeStatus TrajectoryToPath::tick()
 
     try
     {
-      state.setVariablePositions(trajectory.joint_names, point.positions);
+      detail::setVariablePositions(state, trajectory.joint_names, point.positions, 0);
     }
     catch (const std::exception& ex)
     {
-      shared_resources_->logger->publishFailureMessage(
+      getExperimentalBehaviorContext()->logger->publishFailureMessage(
           name(), std::string("Failed to set joint positions on robot state: ") + ex.what());
       return BT::NodeStatus::FAILURE;
     }
@@ -153,9 +156,9 @@ BT::NodeStatus TrajectoryToPath::tick()
 
   if (path.size() < 2)
   {
-    shared_resources_->logger->publishWarnMessage(name(), "Trajectory has fewer than 2 points (" +
-                                                              std::to_string(path.size()) +
-                                                              "); the resulting path will not render as a polyline.");
+    getExperimentalBehaviorContext()->logger->publishWarnMessage(
+        name(), "Trajectory has fewer than 2 points (" + std::to_string(path.size()) +
+                    "); the resulting path will not render as a polyline.");
   }
 
   setOutput(kPortIDPath, path);

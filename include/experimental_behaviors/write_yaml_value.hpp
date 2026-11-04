@@ -7,8 +7,8 @@
 #pragma once
 
 #include <behaviortree_cpp/action_node.h>
+#include <experimental_behaviors/shared_resources_node.hpp>
 #include <moveit_pro_behavior_interface/behavior_context.hpp>
-#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
 namespace experimental_behaviors
 {
@@ -49,7 +49,7 @@ namespace experimental_behaviors
  * initialization), and fails rather than throwing when a key along the
  * path holds a scalar and cannot be descended into.
  */
-class WriteYamlValue final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class WriteYamlValue final : public ExperimentalSharedResourcesNode<BT::SyncActionNode>
 {
 public:
   WriteYamlValue(const std::string& name, const BT::NodeConfiguration& config,

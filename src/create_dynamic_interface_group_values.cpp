@@ -29,7 +29,7 @@ namespace experimental_behaviors
 CreateDynamicInterfaceGroupValues::CreateDynamicInterfaceGroupValues(
     const std::string& name, const BT::NodeConfiguration& config,
     const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
-  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+  : ExperimentalSharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
@@ -60,8 +60,8 @@ BT::NodeStatus CreateDynamicInterfaceGroupValues::tick()
       getInput<std::vector<control_msgs::msg::InterfaceValue>>(kPortIDInterfaceValues));
   if (!ports.has_value())
   {
-    shared_resources_->logger->publishFailureMessage(name(), "Failed to get required value from input data port: " +
-                                                                 ports.error());
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(
+        name(), "Failed to get required value from input data port: " + ports.error());
     return BT::NodeStatus::FAILURE;
   }
 
@@ -69,14 +69,14 @@ BT::NodeStatus CreateDynamicInterfaceGroupValues::tick()
 
   if (interface_groups.size() != interface_values.size())
   {
-    shared_resources_->logger->publishFailureMessage(
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(
         name(), "`interface_groups` and `interface_values` must contain the same number of elements");
     return BT::NodeStatus::FAILURE;
   }
 
   if (interface_groups.empty() || interface_values.empty())
   {
-    shared_resources_->logger->publishFailureMessage(
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(
         name(), "`interface_groups` and `interface_values` must contain the same number of elements and not be empty");
     return BT::NodeStatus::FAILURE;
   }
@@ -84,7 +84,7 @@ BT::NodeStatus CreateDynamicInterfaceGroupValues::tick()
   control_msgs::msg::DynamicInterfaceGroupValues group_values_msg;
 
   group_values_msg.header.frame_id = reference_frame;
-  group_values_msg.header.stamp = shared_resources_->node->now();
+  group_values_msg.header.stamp = getExperimentalBehaviorContext()->node->now();
 
   group_values_msg.interface_groups = interface_groups;
 
