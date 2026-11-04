@@ -27,6 +27,7 @@
 #include <exception>
 #include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include <pluginlib/class_list_macros.hpp>
@@ -142,7 +143,7 @@ public:
     {
       throw BT::RuntimeError(kExcludedBehaviorsParameter, ": a BehaviorContext with a node is required");
     }
-    // Reject the entire configuration before changing the factory. Exclusions never depend on loader order.
+    // Validate the configured exclusions before changing the factory. Exclusions never depend on loader order.
     const auto excluded = validateExcludedBehaviors(readExcludedBehaviors(*shared_resources->node));
     for (const auto& registration : kBehaviorRegistrations)
     {

@@ -37,6 +37,8 @@ The parameter belongs in the ROS parameter file for that node, not in Objective 
 
 Keep existing robot parameters and the experimental loader enabled. Add only the deployed IDs to the array as each migration stage lands. Restart the Runtime after changing the array; it cannot be changed or undeclared on the running node. An already-declared parameter must also be a read-only string array; writable automatic declarations are rejected.
 
+Registration runs sequentially on the Runtime's startup thread. Concurrent calls to the same node and factory are not supported.
+
 The loader validates the entire array before registering any Behaviors. Unknown IDs, IDs outside the staged list, empty strings, duplicates, and non-string-array values throw `BT::RuntimeError` without partially registering this package. IDs are case-sensitive and are not trimmed.
 
 For a valid array, the loader skips only the named experimental registrations. It neither inspects the factory to infer exclusions nor unregisters or replaces existing builders. The exclusion works whether the replacement loader runs before or after the experimental loader. An unconfigured ID collision remains a registration error.
