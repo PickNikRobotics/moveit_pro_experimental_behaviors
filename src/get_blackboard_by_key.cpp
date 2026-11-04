@@ -31,7 +31,7 @@ namespace experimental_behaviors
 {
 GetBlackboardByKey::GetBlackboardByKey(const std::string& name, const BT::NodeConfiguration& config,
                                        const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
-  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+  : ExperimentalSharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
@@ -54,22 +54,22 @@ BT::NodeStatus GetBlackboardByKey::tick()
   std::string key;
   if (!getInput<std::string>(kPortIDKey, key) || key.empty())
   {
-    shared_resources_->logger->publishFailureMessage(name(), "Missing or empty input port [key]");
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(name(), "Missing or empty input port [key]");
     return BT::NodeStatus::FAILURE;
   }
 
   auto src_entry = config().blackboard->getEntry(key);
   if (!src_entry)
   {
-    shared_resources_->logger->publishFailureMessage(name(),
-                                                     "Blackboard entry '" + key + "' does not exist (cache miss).");
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(name(), "Blackboard entry '" + key +
+                                                                                "' does not exist (cache miss).");
     return BT::NodeStatus::FAILURE;
   }
 
   if (src_entry->value.empty())
   {
-    shared_resources_->logger->publishFailureMessage(name(),
-                                                     "Blackboard entry '" + key + "' exists but holds no value.");
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(name(), "Blackboard entry '" + key +
+                                                                                "' exists but holds no value.");
     return BT::NodeStatus::FAILURE;
   }
 
@@ -79,7 +79,7 @@ BT::NodeStatus GetBlackboardByKey::tick()
   const auto result = setOutput<BT::Any>(kPortIDValue, src_entry->value);
   if (!result)
   {
-    shared_resources_->logger->publishFailureMessage(name(), result.error());
+    getExperimentalBehaviorContext()->logger->publishFailureMessage(name(), result.error());
     return BT::NodeStatus::FAILURE;
   }
 

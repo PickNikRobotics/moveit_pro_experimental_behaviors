@@ -22,36 +22,135 @@
 #include "experimental_behaviors/trajectory_to_path.hpp"
 #include "experimental_behaviors/write_yaml_value.hpp"
 
+#include <algorithm>
+#include <array>
+#include <exception>
+#include <set>
+#include <string>
+#include <vector>
+
 #include <pluginlib/class_list_macros.hpp>
+#include <rcl_interfaces/msg/parameter_descriptor.hpp>
+#include <rclcpp/node.hpp>
 
 namespace experimental_behaviors
 {
+namespace
+{
+constexpr auto kExcludedBehaviorsParameter = "experimental_behaviors.excluded_behaviors";
+
+using RegisterBehavior = void (*)(BT::BehaviorTreeFactory&, const std::string&,
+                                  const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>&);
+
+struct BehaviorRegistration
+{
+  const char* id;
+  bool excludable;
+  RegisterBehavior register_behavior;
+};
+
+// Registration and exclusion eligibility share one inventory; IDs retain their existing ports and implementations.
+const std::array<BehaviorRegistration, 13> kBehaviorRegistrations = { {
+    { "GetPoseStampedFromTopic", false, &moveit_pro::behaviors::registerBehavior<GetPoseStampedFromTopic> },
+    { "CreateDynamicInterfaceGroupValues", true,
+      &moveit_pro::behaviors::registerBehavior<CreateDynamicInterfaceGroupValues> },
+    { "PublishDynamicInterfaceGroupValues", true,
+      &moveit_pro::behaviors::registerBehavior<PublishDynamicInterfaceGroupValues> },
+    { "CreateInterfaceValue", true, &moveit_pro::behaviors::registerBehavior<CreateInterfaceValue> },
+    { "GetDynamicInterfaceGroupValues", true, &moveit_pro::behaviors::registerBehavior<GetDynamicInterfaceGroupValues> },
+    { "GetInterfaceValueFromGroup", true, &moveit_pro::behaviors::registerBehavior<GetInterfaceValueFromGroup> },
+    { "AccessInterfaceValue", false, &moveit_pro::behaviors::registerBehavior<AccessInterfaceValueFromGroup> },
+    { "GetBlackboardByKey", false, &moveit_pro::behaviors::registerBehavior<GetBlackboardByKey> },
+    { "GetJointLimits", false, &moveit_pro::behaviors::registerBehavior<GetJointLimits> },
+    { "SetBlackboardByKey", false, &moveit_pro::behaviors::registerBehavior<SetBlackboardByKey> },
+    { "TrajectoryToPath", false, &moveit_pro::behaviors::registerBehavior<TrajectoryToPath> },
+    { "WriteYamlValue", false, &moveit_pro::behaviors::registerBehavior<WriteYamlValue> },
+    { "AppendYamlListItem", false, &moveit_pro::behaviors::registerBehavior<AppendYamlListItem> },
+} };
+
+std::set<std::string> validateExcludedBehaviors(const std::vector<std::string>& configured);
+
+std::vector<std::string> readExcludedBehaviors(rclcpp::Node& node)
+{
+  try
+  {
+    if (!node.has_parameter(kExcludedBehaviorsParameter))
+    {
+      const auto& overrides = node.get_node_parameters_interface()->get_parameter_overrides();
+      std::vector<std::string> configured;
+      if (const auto found = overrides.find(kExcludedBehaviorsParameter); found != overrides.end())
+      {
+        if (found->second.get_type() != rclcpp::ParameterType::PARAMETER_STRING_ARRAY)
+        {
+          throw BT::RuntimeError(kExcludedBehaviorsParameter, ": expected a string array");
+        }
+        configured = found->second.get<std::vector<std::string>>();
+      }
+      std::ignore = validateExcludedBehaviors(configured);
+      rcl_interfaces::msg::ParameterDescriptor descriptor;
+      descriptor.read_only = true;
+      descriptor.description = "Experimental Behavior IDs supplied by another deployed loader instead.";
+      node.declare_parameter<std::vector<std::string>>(kExcludedBehaviorsParameter, std::vector<std::string>{},
+                                                       descriptor);
+    }
+
+    const auto descriptor = node.describe_parameter(kExcludedBehaviorsParameter);
+    const auto parameter = node.get_parameter(kExcludedBehaviorsParameter);
+    if (!descriptor.read_only || parameter.get_type() != rclcpp::ParameterType::PARAMETER_STRING_ARRAY)
+    {
+      throw BT::RuntimeError(kExcludedBehaviorsParameter, ": expected a read-only string array");
+    }
+    return parameter.as_string_array();
+  }
+  catch (const std::exception& ex)
+  {
+    throw BT::RuntimeError(kExcludedBehaviorsParameter, ": invalid startup parameter: ", ex.what());
+  }
+}
+
+std::set<std::string> validateExcludedBehaviors(const std::vector<std::string>& configured)
+{
+  std::set<std::string> excluded;
+  for (const auto& id : configured)
+  {
+    if (id.empty())
+    {
+      throw BT::RuntimeError(kExcludedBehaviorsParameter, ": Behavior IDs must not be empty");
+    }
+    const auto registration = std::find_if(kBehaviorRegistrations.begin(), kBehaviorRegistrations.end(),
+                                           [&id](const auto& entry) { return id == entry.id; });
+    if (registration == kBehaviorRegistrations.end() || !registration->excludable)
+    {
+      throw BT::RuntimeError(kExcludedBehaviorsParameter, ": Behavior ID is not eligible for exclusion: ", id);
+    }
+    if (!excluded.insert(id).second)
+    {
+      throw BT::RuntimeError(kExcludedBehaviorsParameter, ": duplicate Behavior ID: ", id);
+    }
+  }
+  return excluded;
+}
+}  // namespace
+
 class ExperimentalBehaviorsLoader : public moveit_pro::behaviors::SharedResourcesNodeLoaderBase
 {
 public:
-  void registerBehaviors(
-      BT::BehaviorTreeFactory& factory,
-      [[maybe_unused]] const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources) override
+  void registerBehaviors(BT::BehaviorTreeFactory& factory,
+                         const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources) override
   {
-    moveit_pro::behaviors::registerBehavior<GetPoseStampedFromTopic>(factory, "GetPoseStampedFromTopic",
-                                                                     shared_resources);
-    moveit_pro::behaviors::registerBehavior<CreateDynamicInterfaceGroupValues>(
-        factory, "CreateDynamicInterfaceGroupValues", shared_resources);
-    moveit_pro::behaviors::registerBehavior<PublishDynamicInterfaceGroupValues>(
-        factory, "PublishDynamicInterfaceGroupValues", shared_resources);
-    moveit_pro::behaviors::registerBehavior<CreateInterfaceValue>(factory, "CreateInterfaceValue", shared_resources);
-    moveit_pro::behaviors::registerBehavior<GetDynamicInterfaceGroupValues>(factory, "GetDynamicInterfaceGroupValues",
-                                                                            shared_resources);
-    moveit_pro::behaviors::registerBehavior<GetInterfaceValueFromGroup>(factory, "GetInterfaceValueFromGroup",
-                                                                        shared_resources);
-    moveit_pro::behaviors::registerBehavior<AccessInterfaceValueFromGroup>(factory, "AccessInterfaceValue",
-                                                                           shared_resources);
-    moveit_pro::behaviors::registerBehavior<GetBlackboardByKey>(factory, "GetBlackboardByKey", shared_resources);
-    moveit_pro::behaviors::registerBehavior<GetJointLimits>(factory, "GetJointLimits", shared_resources);
-    moveit_pro::behaviors::registerBehavior<SetBlackboardByKey>(factory, "SetBlackboardByKey", shared_resources);
-    moveit_pro::behaviors::registerBehavior<TrajectoryToPath>(factory, "TrajectoryToPath", shared_resources);
-    moveit_pro::behaviors::registerBehavior<WriteYamlValue>(factory, "WriteYamlValue", shared_resources);
-    moveit_pro::behaviors::registerBehavior<AppendYamlListItem>(factory, "AppendYamlListItem", shared_resources);
+    if (!shared_resources || !shared_resources->node)
+    {
+      throw BT::RuntimeError(kExcludedBehaviorsParameter, ": a BehaviorContext with a node is required");
+    }
+    // Reject the entire configuration before changing the factory. Exclusions never depend on loader order.
+    const auto excluded = validateExcludedBehaviors(readExcludedBehaviors(*shared_resources->node));
+    for (const auto& registration : kBehaviorRegistrations)
+    {
+      if (excluded.count(registration.id) == 0)
+      {
+        registration.register_behavior(factory, registration.id, shared_resources);
+      }
+    }
   }
 };
 }  // namespace experimental_behaviors

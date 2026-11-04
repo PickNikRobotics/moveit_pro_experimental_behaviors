@@ -7,8 +7,8 @@
 #pragma once
 
 #include <behaviortree_cpp/action_node.h>
+#include <experimental_behaviors/shared_resources_node.hpp>
 #include <moveit_pro_behavior_interface/behavior_context.hpp>
-#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
 namespace experimental_behaviors
 {
@@ -41,7 +41,7 @@ namespace experimental_behaviors
  * prefixed with `@`. Returns FAILURE if `key` is missing/empty or if the
  * `value` port refers to a blackboard entry that does not exist.
  */
-class SetBlackboardByKey final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class SetBlackboardByKey final : public ExperimentalSharedResourcesNode<BT::SyncActionNode>
 {
 public:
   SetBlackboardByKey(const std::string& name, const BT::NodeConfiguration& config,

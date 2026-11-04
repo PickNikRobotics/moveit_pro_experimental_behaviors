@@ -8,8 +8,8 @@
 
 #include <control_msgs/msg/interface_value.hpp>
 
+#include <experimental_behaviors/shared_resources_node.hpp>
 #include <moveit_pro_behavior_interface/behavior_context.hpp>
-#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 #include "moveit_pro_behavior_interface/async_behavior_base.hpp"
 
 namespace experimental_behaviors
@@ -28,7 +28,7 @@ namespace experimental_behaviors
  * # List of resource interface names
  */
 
-class CreateInterfaceValue final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class CreateInterfaceValue final : public ExperimentalSharedResourcesNode<BT::SyncActionNode>
 {
 public:
   /**

@@ -9,8 +9,8 @@
 #include <control_msgs/msg/dynamic_interface_group_values.hpp>
 #include <control_msgs/msg/interface_value.hpp>
 
+#include <experimental_behaviors/shared_resources_node.hpp>
 #include <moveit_pro_behavior_interface/behavior_context.hpp>
-#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 #include "moveit_pro_behavior_interface/async_behavior_base.hpp"
 
 namespace experimental_behaviors
@@ -29,7 +29,7 @@ namespace experimental_behaviors
  * Returns FAILURE if the group name is not found in the DynamicInterfaceGroupValues message.
  */
 
-class GetInterfaceValueFromGroup final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class GetInterfaceValueFromGroup final : public ExperimentalSharedResourcesNode<BT::SyncActionNode>
 {
 public:
   /**

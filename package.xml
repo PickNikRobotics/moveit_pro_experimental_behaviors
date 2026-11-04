@@ -19,6 +19,8 @@
   <depend>moveit_pro_base</depend>
   <depend>moveit_pro_behavior_interface</depend>
   <depend>pluginlib</depend>
+  <depend>rcl_interfaces</depend>
+  <depend>rclcpp</depend>
   <depend condition="$ROS_DISTRO == 'humble'">behaviortree_cpp</depend>
   <depend condition="$ROS_DISTRO == 'jazzy'">behaviortree_cpp_picknik</depend>
   <depend>tl_expected</depend>

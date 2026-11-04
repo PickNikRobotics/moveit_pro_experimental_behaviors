@@ -7,8 +7,8 @@
 #pragma once
 
 #include <behaviortree_cpp/action_node.h>
+#include <experimental_behaviors/shared_resources_node.hpp>
 #include <moveit_pro_behavior_interface/behavior_context.hpp>
-#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
 namespace experimental_behaviors
 {
@@ -34,7 +34,7 @@ namespace experimental_behaviors
  * but uninitialized" from "never declared" should populate the entry with
  * an explicit sentinel before reading.
  */
-class GetBlackboardByKey final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class GetBlackboardByKey final : public ExperimentalSharedResourcesNode<BT::SyncActionNode>
 {
 public:
   GetBlackboardByKey(const std::string& name, const BT::NodeConfiguration& config,
