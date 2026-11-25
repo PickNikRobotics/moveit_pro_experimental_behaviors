@@ -138,8 +138,8 @@ std::string renderBehaviorIndex()
 
     out << "    {\n"
         << "      \"folder\": " << quoted("yaml_behaviors") << ",\n"
-        << "      \"summary\": " << quoted("Change values and lists in a YAML file on disk, safely and atomically.")
-        << ",\n"
+        << "      \"summary\": "
+        << quoted("Read, change and save values, lists, paths and poses in YAML files on disk.") << ",\n"
         << "      \"behaviors\": [\n";
     std::size_t b = 0;
     for (const auto& [id, manifest] : manifests)

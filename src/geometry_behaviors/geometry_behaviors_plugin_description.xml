@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<library path="geometry_behaviors">
+  <class
+    type="geometry_behaviors::GeometryBehaviorsLoader"
+    base_class_type="moveit_pro::behaviors::SharedResourcesNodeLoaderBase"
+  />
+</library>

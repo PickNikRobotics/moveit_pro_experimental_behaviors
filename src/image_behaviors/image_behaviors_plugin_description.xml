@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<library path="image_behaviors">
+  <class
+    type="image_behaviors::ImageBehaviorsLoader"
+    base_class_type="moveit_pro::behaviors::SharedResourcesNodeLoaderBase"
+  />
+</library>

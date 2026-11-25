@@ -2,7 +2,7 @@
 
 **`yaml_behaviors` is a standalone ROS 2 package of MoveIt Pro Behaviors.**
 
-Change a value or append to a list in a YAML file on disk. Each write is atomic and holds a file lock, so a reader never sees a half-written file and two writers do not lose each other's change.
+Read a value or a list from a YAML file, change a value or append to a list in a YAML file, and save a path or a list of points or poses to a YAML file. `WriteYamlValue` and `AppendYamlListItem` write atomically and hold a file lock, so a reader never sees a half-written file and two writers do not lose each other's change.
 
 
 ## Use this package
@@ -34,6 +34,11 @@ objectives:
 | ----------- | ------------ |
 | `WriteYamlValue` | Sets the value at a key path (up to five keys) in a YAML file. |
 | `AppendYamlListItem` | Appends a value to the list at a key path (up to five keys) in a YAML file. |
+| `ReadYamlValue` | Reads the string value at a key path (up to six keys) in a YAML file in a ROS package. Can ignore key case, and can succeed with an empty value when the key is missing. |
+| `ReadYamlList` | Reads the list at a key path (up to five keys) in a YAML file in a ROS package as a `vector<string>`. |
+| `SavePathToYaml` | Saves a `nav_msgs/Path` message to a YAML file. It is the MoveIt Pro `SaveToYaml` Behavior for the `Path` type. |
+| `SavePointStampedVectorToYaml` | Saves a `vector<PointStamped>` to a YAML file. |
+| `SavePoseStampedVectorToYaml` | Saves a `vector<PoseStamped>` to a multi-document YAML file that `LoadPoseStampedVectorFromYaml` can read back. |
 
 Every port is documented in the [offline behavior index](docs/behavior_index/index.html).
 
@@ -69,6 +74,8 @@ then [regenerate the index](docs/behavior_index/README.md).
 
 ## Notes
 
-- `file_path` accepts an absolute path, `${VAR}` and a leading `~`, or a `package://<package>/<path>` URL.
-- The shared helpers `atomic_file_write.hpp` and `path_expansion.hpp` are in `include/`; `src/yaml_key_path.hpp` is private to this package.
+- `file_path` (in `WriteYamlValue` and `AppendYamlListItem`) accepts an absolute path, `${VAR}` and a leading `~`, or a `package://<package>/<path>` URL.
+- `ReadYamlValue` and `ReadYamlList` take `package_name` and `relative_file_path` instead of `file_path`. They keep the ports they had in the projects they come from, so that existing Objectives keep working.
+- The shared helpers `atomic_file_write.hpp` and `path_expansion.hpp` are in `include/`; `src/yaml_key_path.hpp` and `src/yaml_key_lookup.hpp` are private to this package.
+- `test/test_yaml_key_lookup.cpp` tests the key lookup of `ReadYamlValue` and `ReadYamlList`, with and without case.
 - `test/test_yaml_file_helpers.cpp` tests the helpers. The package URL case resolves the installed `yaml_behaviors` package.

@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    joint_state_behaviors:
+      - "joint_state_behaviors::JointStateBehaviorsLoader"

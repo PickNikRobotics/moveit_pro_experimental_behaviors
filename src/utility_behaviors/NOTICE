@@ -1,0 +1,8 @@
+utility_behaviors
+Copyright (c) 2023 PickNik Inc.
+Licensed under the BSD 3-Clause License. See LICENSE.
+
+Explicitly included external dependencies: none.
+
+This package links MoveIt Pro, ROS 2 and system libraries installed in the MoveIt Pro image. It does not
+vendor or redistribute them. Source files retain their existing copyright notices.

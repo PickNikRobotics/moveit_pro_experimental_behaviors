@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    utility_behaviors:
+      - "utility_behaviors::UtilityBehaviorsLoader"

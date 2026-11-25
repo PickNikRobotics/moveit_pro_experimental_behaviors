@@ -246,6 +246,1964 @@ window.BEHAVIOR_INDEX = {
       ]
     },
     {
+      "folder": "conversion_behaviors",
+      "summary": "Convert between strings, numbers and vectors of numbers.",
+      "behaviors": [
+        {
+          "id": "CreateVectorOfDoubles",
+          "node_type": "Action",
+          "subcategory": "User Created Behaviors",
+          "description": "Creates a vector of doubles from the input port",
+          "ports": [
+            {
+              "name": "input",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "{input}",
+              "description": "The input vector of doubles"
+            },
+            {
+              "name": "output",
+              "direction": "output",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "{output}",
+              "description": "The output vector of doubles."
+            }
+          ]
+        },
+        {
+          "id": "DoubleToString",
+          "node_type": "Action",
+          "subcategory": "User Created Behaviors",
+          "description": "Creates a string from the double provided",
+          "ports": [
+            {
+              "name": "double_in",
+              "direction": "input",
+              "type": "double",
+              "default": "{double_in}",
+              "description": "The input double"
+            },
+            {
+              "name": "string_out",
+              "direction": "output",
+              "type": "std::string",
+              "default": "{string_out}",
+              "description": "The output string."
+            }
+          ]
+        },
+        {
+          "id": "StringToDouble",
+          "node_type": "Action",
+          "subcategory": "User Created Behaviors",
+          "description": "Creates a double from the string provided",
+          "ports": [
+            {
+              "name": "double_out",
+              "direction": "output",
+              "type": "double",
+              "default": "{double_out}",
+              "description": "The output double."
+            },
+            {
+              "name": "string_in",
+              "direction": "input",
+              "type": "std::string",
+              "default": "{string_in}",
+              "description": "The input string"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "folder": "geometry_behaviors",
+      "summary": "Pose, axis and box math: orient, rotate, grid and test poses against boxes.",
+      "behaviors": [
+        {
+          "id": "CheckBoundingBoxInBounds",
+          "node_type": "Action",
+          "subcategory": "",
+          "description": "Checks if a bounding box is within specified world-frame min/max bounds. Returns FAILURE if any dimension exceeds, otherwise returns SUCCESS.",
+          "ports": [
+            {
+              "name": "box_center_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": null,
+              "description": "Center pose of the bounding box"
+            },
+            {
+              "name": "box_dimensions",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": null,
+              "description": "Dimensions [x, y, z] of the bounding box in meters"
+            },
+            {
+              "name": "max_point",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": null,
+              "description": "Maximum boundary point [x, y, z] in world frame"
+            },
+            {
+              "name": "max_volume_center_pose",
+              "direction": "output",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": null,
+              "description": "Center pose of allowed volume for visualization"
+            },
+            {
+              "name": "max_volume_dimensions",
+              "direction": "output",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": null,
+              "description": "Dimensions of allowed volume for visualization"
+            },
+            {
+              "name": "min_point",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": null,
+              "description": "Minimum boundary point [x, y, z] in world frame"
+            }
+          ]
+        },
+        {
+          "id": "ComputeCameraPoseFromTag",
+          "node_type": "Action",
+          "subcategory": "Calibration",
+          "description": "\n    <p>Computes a camera's world-frame pose from a shared AprilTag observed by two cameras.</p>\n    <p>Given the tag pose in world frame (from a camera with known TF, e.g. wrist camera)\n       and the tag pose in the target camera's optical frame, computes:\n       T_world_camera = T_world_tag * T_camera_tag^{-1}</p>\n    <p>The output is the optical frame pose in world. Use the optical-to-link offset\n       to get the camera link pose if needed.</p>\n",
+          "ports": [
+            {
+              "name": "camera_pose_world",
+              "direction": "output",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{camera_pose_world}",
+              "description": "Target camera optical frame pose in world frame"
+            },
+            {
+              "name": "tag_pose_camera",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": null,
+              "description": "Tag pose in target camera's optical frame (from scene camera detection, NOT transformed)"
+            },
+            {
+              "name": "tag_pose_world",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": null,
+              "description": "Tag pose in world frame (from wrist camera detection + TransformPoseFrame)"
+            }
+          ]
+        },
+        {
+          "id": "ComputeRelativeAxisDot",
+          "node_type": "Action",
+          "subcategory": "Utility",
+          "description": "Computes |dot(axis_a, axis_b)| where each axis is the named body-frame axis of its pose, expressed in a common frame. Use to discriminate parallel-vs-perpendicular alignment between two poses without caring about sign.",
+          "ports": [
+            {
+              "name": "abs_dot",
+              "direction": "output",
+              "type": "double",
+              "default": "{abs_dot}",
+              "description": "Absolute value of the dot product of the two chosen axes, expressed in a common frame. 1.0 = parallel (any sign), 0.0 = perpendicular."
+            },
+            {
+              "name": "axis_a",
+              "direction": "input",
+              "type": "std::string",
+              "default": "{axis_a}",
+              "description": "Body-frame axis of pose_a (+X/-X/+Y/-Y/+Z/-Z; X/Y/Z = +X/+Y/+Z)."
+            },
+            {
+              "name": "axis_b",
+              "direction": "input",
+              "type": "std::string",
+              "default": "{axis_b}",
+              "description": "Body-frame axis of pose_b (same alphabet as axis_a)."
+            },
+            {
+              "name": "pose_a",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{pose_a}",
+              "description": "First pose."
+            },
+            {
+              "name": "pose_b",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{pose_b}",
+              "description": "Second pose."
+            }
+          ]
+        },
+        {
+          "id": "CreatePoseStampedGrid",
+          "node_type": "Action",
+          "subcategory": "",
+          "description": "\n    <p>Creates a 3D grid of PoseStamped messages from a single input pose.</p>\n    <p>Offsets are applied in the local frame of the input pose. Rotations are incremental per step along each axis, in degrees.</p>\n",
+          "ports": [
+            {
+              "name": "offset_x",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Spacing between copies along local X (meters)"
+            },
+            {
+              "name": "offset_y",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Spacing between copies along local Y (meters)"
+            },
+            {
+              "name": "offset_z",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Spacing between copies along local Z (meters)"
+            },
+            {
+              "name": "pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": null,
+              "description": "Base pose to replicate"
+            },
+            {
+              "name": "poses",
+              "direction": "output",
+              "type": "std::vector<geometry_msgs::msg::PoseStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PoseStamped_<std::allocator<void> > > >",
+              "default": null,
+              "description": "Generated grid of poses"
+            },
+            {
+              "name": "repeat_x",
+              "direction": "input",
+              "type": "int",
+              "default": "0",
+              "description": "Number of additional copies along local X"
+            },
+            {
+              "name": "repeat_y",
+              "direction": "input",
+              "type": "int",
+              "default": "0",
+              "description": "Number of additional copies along local Y"
+            },
+            {
+              "name": "repeat_z",
+              "direction": "input",
+              "type": "int",
+              "default": "0",
+              "description": "Number of additional copies along local Z"
+            },
+            {
+              "name": "rotate_x",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Incremental rotation per X step (degrees)"
+            },
+            {
+              "name": "rotate_y",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Incremental rotation per Y step (degrees)"
+            },
+            {
+              "name": "rotate_z",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Incremental rotation per Z step (degrees)"
+            }
+          ]
+        },
+        {
+          "id": "ExpressWorldVectorInLinkFrame",
+          "node_type": "Action",
+          "subcategory": "Math",
+          "description": "\n    <p>\n        Re-expresses a 3D vector given in world frame as the equivalent vector in a link's\n        local frame, using that link's current world orientation.\n    </p>\n    <p>\n        Math: <code>local = q_link^{-1} * world</code>, where <code>q_link</code> is the\n        link's orientation in world (e.g. the <code>orientation_xyzw</code> output of\n        ExtractPoseOrientation applied to the link's TF). This is a pure rotation; no\n        translation is involved.\n    </p>\n    <p>\n        Primary use case: feeding a <i>world</i>-frame velocity intent (e.g. \"descend in\n        world -Z\") to behaviors like CreateStampedTwist whose downstream consumer\n        (velocity_force_controller via PublishVelocityForceCommand) interprets the twist's\n        linear vector in the controller's own EE frame regardless of the TwistStamped's\n        <code>header.frame_id</code>. Compute the per-cycle conversion here, then pass the\n        result as <code>linear_velocity_xyz</code> to a CreateStampedTwist whose\n        <code>reference_frame</code> matches the link.\n    </p>\n    <p>\n        Both vectors are <code>std::vector&lt;double&gt;</code> of length 3 (x;y;z),\n        matching CreateStampedTwist's port type. The orientation is xyzw.\n    </p>\n",
+          "ports": [
+            {
+              "name": "link_orientation_xyzw",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "{link_orientation_xyzw}",
+              "description": "Quaternion (x;y;z;w) representing the link's orientation in world. Must be the orientation of the same frame the result is being expressed in."
+            },
+            {
+              "name": "local_vector_xyz",
+              "direction": "output",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "{local_vector_xyz}",
+              "description": "3D vector (x;y;z) — the same physical vector as the input, but expressed in the link's local frame."
+            },
+            {
+              "name": "world_vector_xyz",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "{world_vector_xyz}",
+              "description": "3D vector (x;y;z) expressed in world frame. The translation/length is preserved; only the rotation changes."
+            }
+          ]
+        },
+        {
+          "id": "GenerateAxisRotatedCandidates",
+          "node_type": "Action",
+          "subcategory": "Utility",
+          "description": "Generates a list of pose candidates from a single input pose, each rotated by a different angle around the input pose's body-frame rotation_axis. Useful for trying yaw / twist variations of a base grasp pose under a Fallback / ForEachUntilSuccess.",
+          "ports": [
+            {
+              "name": "angles_deg",
+              "direction": "input",
+              "type": "std::string",
+              "default": "{angles_deg}",
+              "description": "Semicolon-separated list of rotation angles in degrees, e.g. \"45;-45;90;-90\". Each angle produces one candidate, in list order."
+            },
+            {
+              "name": "candidates",
+              "direction": "output",
+              "type": "std::vector<geometry_msgs::msg::PoseStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PoseStamped_<std::allocator<void> > > >",
+              "default": "{candidates}",
+              "description": "Vector of candidate poses (input_pose with each angle applied around rotation_axis)."
+            },
+            {
+              "name": "input_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{input_pose}",
+              "description": "Base pose. Each output candidate is this pose rotated about its own body-frame rotation_axis by one of the supplied angles. Position and frame_id are unchanged."
+            },
+            {
+              "name": "rotation_axis",
+              "direction": "input",
+              "type": "std::string",
+              "default": "{rotation_axis}",
+              "description": "Body-frame axis of input_pose to rotate around (+X/-X/+Y/-Y/+Z/-Z; X/Y/Z = +X/+Y/+Z)."
+            }
+          ]
+        },
+        {
+          "id": "GetBoundingBoxFacePose",
+          "node_type": "Action",
+          "subcategory": "",
+          "description": "Computes a PoseStamped at the center of one face of an oriented bounding box, optionally offset outward along the face normal.",
+          "ports": [
+            {
+              "name": "box_center_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": null,
+              "description": "Center pose of the bounding box."
+            },
+            {
+              "name": "box_dimensions",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": null,
+              "description": "Dimensions [length, width, height] of the bounding box in meters."
+            },
+            {
+              "name": "face",
+              "direction": "input",
+              "type": "std::string",
+              "default": "+x",
+              "description": "Signed axis selecting the face in the box's local frame. One of \"+x\", \"-x\", \"+y\", \"-y\", \"+z\", \"-z\"."
+            },
+            {
+              "name": "face_pose",
+              "direction": "output",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": null,
+              "description": "Face-center pose (orientation = box orientation, header copied from box_center_pose)."
+            },
+            {
+              "name": "face_position_x",
+              "direction": "output",
+              "type": "double",
+              "default": null,
+              "description": "Face X coordinate in the input pose's frame."
+            },
+            {
+              "name": "face_position_y",
+              "direction": "output",
+              "type": "double",
+              "default": null,
+              "description": "Face Y coordinate in the input pose's frame."
+            },
+            {
+              "name": "face_position_z",
+              "direction": "output",
+              "type": "double",
+              "default": null,
+              "description": "Face Z coordinate in the input pose's frame."
+            },
+            {
+              "name": "offset",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Additional outward distance along the face normal, in meters. Positive = outside the box; negative = toward the box center."
+            }
+          ]
+        },
+        {
+          "id": "IsPoseInBox",
+          "node_type": "Action",
+          "subcategory": "Utility",
+          "description": "Calculates if a pose is inside a box.",
+          "ports": [
+            {
+              "name": "box_centroid_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{box_centroid_pose}",
+              "description": "The box to check that the pose is in."
+            },
+            {
+              "name": "box_size",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "{box_size}",
+              "description": "The X, Y, and Z dimensions of the region of interest."
+            },
+            {
+              "name": "is_pose_in_box",
+              "direction": "output",
+              "type": "bool",
+              "default": "{is_pose_in_box}",
+              "description": "Is the pose inside of the box?"
+            },
+            {
+              "name": "pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{pose}",
+              "description": "The pose to check."
+            }
+          ]
+        },
+        {
+          "id": "OrientPoseAxisToReferenceAxis",
+          "node_type": "Action",
+          "subcategory": "Utility",
+          "description": "Reorients a pose by the minimal rotation that aligns one of its body axes with a chosen body axis of a reference pose. Position is unchanged. Optionally allows ± flip on the target axis so the output aligns to whichever sign requires less rotation.",
+          "ports": [
+            {
+              "name": "allow_axis_flip",
+              "direction": "input",
+              "type": "bool",
+              "default": "true",
+              "description": "If true (default), align to ±target_axis whichever requires the smaller rotation. If false, align strictly to the signed target_axis."
+            },
+            {
+              "name": "axis_to_orient",
+              "direction": "input",
+              "type": "std::string",
+              "default": "{axis_to_orient}",
+              "description": "Body-frame axis of pose_to_orient to align (+X/-X/+Y/-Y/+Z/-Z; X/Y/Z are aliases for +X/+Y/+Z)."
+            },
+            {
+              "name": "pose_to_orient",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{pose_to_orient}",
+              "description": "The pose to orient."
+            },
+            {
+              "name": "reference_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{reference_pose}",
+              "description": "The reference pose to orient to."
+            },
+            {
+              "name": "reoriented_pose",
+              "direction": "output",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{reoriented_pose}",
+              "description": "The reoriented pose"
+            },
+            {
+              "name": "target_axis",
+              "direction": "input",
+              "type": "std::string",
+              "default": "{target_axis}",
+              "description": "Body-frame axis of reference_pose to align onto (same alphabet as axis_to_orient)."
+            }
+          ]
+        },
+        {
+          "id": "OrientPosePlaneToReferencePlane",
+          "node_type": "Action",
+          "subcategory": "Utility",
+          "description": "Reorients a pose through a minimal rotation so that a given plane is parallel to a reference plane.",
+          "ports": [
+            {
+              "name": "plane_to_orient",
+              "direction": "input",
+              "type": "std::string",
+              "default": "{plane_to_orient}",
+              "description": "The plane we want to orient."
+            },
+            {
+              "name": "pose_to_orient",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{pose_to_orient}",
+              "description": "The pose to orient."
+            },
+            {
+              "name": "reference_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{reference_pose}",
+              "description": "The reference pose to orient to."
+            },
+            {
+              "name": "reoriented_pose",
+              "direction": "output",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{reoriented_pose}",
+              "description": "The reoriented pose"
+            },
+            {
+              "name": "target_plane",
+              "direction": "input",
+              "type": "std::string",
+              "default": "{target_plane}",
+              "description": "The plane we want to orient to."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "folder": "grasping_behaviors",
+      "summary": "Filter graspable objects, read their shape, label the pick direction and make grasp candidates.",
+      "behaviors": [
+        {
+          "id": "DeterminePickAlignment",
+          "node_type": "Action",
+          "subcategory": "Grasping",
+          "description": "\n    <p>\n        Classifies a grasp pose as <b>top</b> or <b>side</b> relative to a fitted\n        object primitive.\n    </p>\n    <p>\n        Compares the grasp pose's local Z axis against the primitive's local Z axis,\n        both expressed in their shared header frame. The <b>primitive_pose</b> and\n        <b>grasp_pose</b> must have matching <code>frame_id</code> values (e.g. both in\n        <code>world</code>).\n    </p>\n    <ul>\n        <li><b>top</b>: grasp Z parallel to primitive Z (approach aligned with the object's Z axis).</li>\n        <li><b>side</b>: grasp Z perpendicular to primitive Z (approach normal to the object's Z axis).</li>\n    </ul>\n    <p>\n        SPHERE primitives have no axis of symmetry; the behavior logs a warning and returns <b>top</b>.\n    </p>\n",
+          "ports": [
+            {
+              "name": "alignment",
+              "direction": "output",
+              "type": "std::string",
+              "default": "{alignment}",
+              "description": "Either 'top' (grasp Z parallel to primitive Z) or 'side' (grasp Z perpendicular to primitive Z)."
+            },
+            {
+              "name": "grasp_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{grasp_pose}",
+              "description": "Grasp pose to classify. Must have the same frame_id as primitive_pose."
+            },
+            {
+              "name": "primitive_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{primitive_pose}",
+              "description": "Pose of the primitive in a shared frame. Must have the same frame_id as grasp_pose."
+            },
+            {
+              "name": "solid_primitive",
+              "direction": "input",
+              "type": "shape_msgs::msg::SolidPrimitive_<std::allocator<void> >",
+              "default": "{solid_primitive}",
+              "description": "Object primitive. Its local Z axis is the reference for 'top' vs 'side'."
+            },
+            {
+              "name": "vertical_alignment_threshold",
+              "direction": "input",
+              "type": "double",
+              "default": "0.700000",
+              "description": "Absolute cosine threshold between the grasp's Z axis and the primitive's Z axis. Above this value the grasp is 'top'; at or below it is 'side'. Default 0.7 (~45 deg)."
+            }
+          ]
+        },
+        {
+          "id": "ExtractGraspableObjectPrimitive",
+          "node_type": "Action",
+          "subcategory": "Grasping",
+          "description": "\n    <p>\n        Pulls the first <b>shape_msgs::msg::SolidPrimitive</b> out of a\n        <b>moveit_studio_vision_msgs::msg::GraspableObject</b>'s underlying collision object.\n        Fails if the object has no primitives.\n    </p>\n",
+          "ports": [
+            {
+              "name": "graspable_object",
+              "direction": "input",
+              "type": "moveit_studio_vision_msgs::msg::GraspableObject_<std::allocator<void> >",
+              "default": "{graspable_object}",
+              "description": "GraspableObject to extract the primitive from."
+            },
+            {
+              "name": "solid_primitive",
+              "direction": "output",
+              "type": "shape_msgs::msg::SolidPrimitive_<std::allocator<void> >",
+              "default": "{solid_primitive}",
+              "description": "First SolidPrimitive from the GraspableObject's collision object."
+            }
+          ]
+        },
+        {
+          "id": "FilterGraspableObjects",
+          "node_type": "Action",
+          "subcategory": "Perception - 3D",
+          "description": "Filters graspable objects by maximum linear dimension and optionally by volume. Results are sorted by centroid height (highest Z first). Publishes blue markers for rejected objects and green for accepted.",
+          "ports": [
+            {
+              "name": "max_linear_dimension",
+              "direction": "input",
+              "type": "double",
+              "default": "0.20",
+              "description": "Maximum allowed dimension along any single axis (meters)."
+            },
+            {
+              "name": "max_volume_cm3",
+              "direction": "input",
+              "type": "double",
+              "default": "-1.0",
+              "description": "Maximum allowed bounding volume in cubic centimeters. Set to <= 0 to skip volume filtering."
+            },
+            {
+              "name": "objects_in",
+              "direction": "input",
+              "type": "std::vector<moveit_studio_vision_msgs::msg::GraspableObject_<std::allocator<void> >, std::allocator<moveit_studio_vision_msgs::msg::GraspableObject_<std::allocator<void> > > >",
+              "default": "{objects}",
+              "description": "Input vector of graspable objects to filter."
+            },
+            {
+              "name": "objects_out",
+              "direction": "output",
+              "type": "std::vector<moveit_studio_vision_msgs::msg::GraspableObject_<std::allocator<void> >, std::allocator<moveit_studio_vision_msgs::msg::GraspableObject_<std::allocator<void> > > >",
+              "default": "{filtered_objects}",
+              "description": "Filtered and sorted graspable objects (highest centroid Z first)."
+            }
+          ]
+        },
+        {
+          "id": "GenerateGraspCandidates",
+          "node_type": "Action",
+          "subcategory": "Grasp Planning",
+          "description": "\n    <p>Generates grasp candidate poses for detected objects based on their fitted primitive shape.</p>\n    <ul>\n      <li><b>Cylinder:</b> Two poses centered on the flat end whose outward normal points most upward in world Z\n          (tried first) — one with Z along the outward end normal, one flipped 180° to point along the inward\n          end normal toward the cylinder's geometric center — followed by <code>num_cylinder_candidates</code>\n          poses evenly spaced around the circumference at mid-height, all with Z-axis pointing radially\n          outward from the surface.</li>\n      <li><b>Box:</b> Up to 3 poses, one centered on each of the most accessible faces\n          (selected by choosing the more upward-facing face from each opposite pair).</li>\n      <li><b>Sphere:</b> One pose at the topmost point plus <code>num_sphere_ring_candidates</code>\n          poses in a ring tilted <code>sphere_tilt_angle_degrees</code> from the vertical,\n          all with Z-axis pointing radially outward.</li>\n    </ul>\n",
+          "ports": [
+            {
+              "name": "grasp_candidates",
+              "direction": "output",
+              "type": "std::vector<geometry_msgs::msg::PoseStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PoseStamped_<std::allocator<void> > > >",
+              "default": "{grasp_candidates}",
+              "description": "Grasp candidate poses on object surfaces."
+            },
+            {
+              "name": "graspable_object",
+              "direction": "input",
+              "type": "moveit_studio_vision_msgs::msg::GraspableObject_<std::allocator<void> >",
+              "default": "{graspable_object}",
+              "description": "A single graspable object from shape fitting."
+            },
+            {
+              "name": "num_cylinder_candidates",
+              "direction": "input",
+              "type": "int",
+              "default": "8",
+              "description": "Number of grasp candidates to generate around each cylinder."
+            },
+            {
+              "name": "num_sphere_ring_candidates",
+              "direction": "input",
+              "type": "int",
+              "default": "4",
+              "description": "Number of grasp candidates in the tilted ring around each sphere."
+            },
+            {
+              "name": "point_cloud",
+              "direction": "input",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{point_cloud}",
+              "description": "Input point cloud."
+            },
+            {
+              "name": "sphere_tilt_angle_degrees",
+              "direction": "input",
+              "type": "double",
+              "default": "22.500000",
+              "description": "Tilt angle in degrees from the vertical for the sphere ring candidates."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "folder": "hardware_behaviors",
+      "summary": "Activate or deactivate a ros2_control hardware component, for example to recover a driver after an error.",
+      "behaviors": [
+        {
+          "id": "SetHardwareComponentState",
+          "node_type": "Action",
+          "subcategory": "Motion - Controls",
+          "description": "\n  <p>Drives a <code>ros2_control</code> hardware component through a lifecycle transition by calling the controller\n  manager's <code>set_hardware_component_state</code> service. This is the Behavior equivalent of\n  <code>ros2 control set_hardware_component_state &lt;name&gt; &lt;state&gt;</code>.</p>\n  <p>Use it on recovery paths where the hardware itself went down rather than just its controllers: a driver error\n  transitions the component out of the active state, and <code>SwitchController</code> alone cannot bring it back. The\n  controller manager works out the transition chain, so an unconfigured component can be taken straight to\n  <code>active</code> in one call.</p>\n  <p>Requesting the state a component is already in reports failure, so wrap a defensive <code>inactive</code> step in\n  a <code>ForceSuccess</code> decorator.</p>\n",
+          "ports": [
+            {
+              "name": "hardware_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Name of the hardware component to transition, as declared by the <ros2_control name=\"...\"> tag in the URDF. List the available names with `ros2 control list_hardware_components`."
+            },
+            {
+              "name": "service_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": "/controller_manager/set_hardware_component_state",
+              "description": "Name of the controller manager's set_hardware_component_state service."
+            },
+            {
+              "name": "target_state",
+              "direction": "input",
+              "type": "std::string",
+              "default": "active",
+              "description": "Target lifecycle state: active, inactive, unconfigured, or finalized."
+            },
+            {
+              "name": "timeout",
+              "direction": "input",
+              "type": "double",
+              "default": "10.000000",
+              "description": "Seconds to wait for the service response before failing. A negative value waits indefinitely."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "folder": "image_behaviors",
+      "summary": "Work with 2D masks and images: find points in masks, pick the best mask, draw points, save depth images.",
+      "behaviors": [
+        {
+          "id": "FindMaskIndexForPoint",
+          "node_type": "Action",
+          "subcategory": "Perception - 2D",
+          "description": "\n    <p>Finds the index of the first 2D mask that contains a given point (normalized image UV coordinates).</p>\n    <p>The input PointStamped has x,y in [0,1] representing UV coordinates in the image. The behavior\n    walks the masks in input order and returns the index of the first mask whose pixel value at the\n    point is non-zero. Fails if the point is outside every mask.</p>\n",
+          "ports": [
+            {
+              "name": "image",
+              "direction": "input",
+              "type": "sensor_msgs::msg::Image_<std::allocator<void> >",
+              "default": "{image}",
+              "description": "Image used to determine pixel dimensions."
+            },
+            {
+              "name": "mask_index",
+              "direction": "output",
+              "type": "int",
+              "default": "{mask_index}",
+              "description": "Index of the first mask in masks2d that contains the point."
+            },
+            {
+              "name": "masks2d",
+              "direction": "input",
+              "type": "std::vector<moveit_studio_vision_msgs::msg::Mask2D_<std::allocator<void> >, std::allocator<moveit_studio_vision_msgs::msg::Mask2D_<std::allocator<void> > > >",
+              "default": "{masks2d}",
+              "description": "2D masks."
+            },
+            {
+              "name": "point",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PointStamped_<std::allocator<void> >",
+              "default": "{point}",
+              "description": "Point with x,y in [0,1] as image UV coordinates."
+            }
+          ]
+        },
+        {
+          "id": "FindPointsInMasks",
+          "node_type": "Action",
+          "subcategory": "Perception - 2D",
+          "description": "\n    <p>Finds which points (in normalized image UV coordinates) fall inside any of the given 2D masks.</p>\n    <p>Each input PointStamped has x,y in [0,1] representing UV coordinates in the image.\n    The behavior checks each point against every mask and returns the indices of points\n    that fall inside at least one mask. Fails if no points are inside any mask.</p>\n",
+          "ports": [
+            {
+              "name": "image",
+              "direction": "input",
+              "type": "sensor_msgs::msg::Image_<std::allocator<void> >",
+              "default": "{image}",
+              "description": "Image used to determine pixel dimensions."
+            },
+            {
+              "name": "masks2d",
+              "direction": "input",
+              "type": "std::vector<moveit_studio_vision_msgs::msg::Mask2D_<std::allocator<void> >, std::allocator<moveit_studio_vision_msgs::msg::Mask2D_<std::allocator<void> > > >",
+              "default": "{masks2d}",
+              "description": "2D masks."
+            },
+            {
+              "name": "point_indices",
+              "direction": "output",
+              "type": "std::vector<int, std::allocator<int> >",
+              "default": "{point_indices}",
+              "description": "Indices of points that fall inside at least one mask."
+            },
+            {
+              "name": "points",
+              "direction": "input",
+              "type": "std::vector<geometry_msgs::msg::PointStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PointStamped_<std::allocator<void> > > >",
+              "default": "{points}",
+              "description": "Points with x,y in [0,1] as image UV coordinates."
+            }
+          ]
+        },
+        {
+          "id": "GetHighestConfidenceMask",
+          "node_type": "Action",
+          "subcategory": "Perception - Segmentation",
+          "description": "\n    <p>Selects the mask with the highest confidence score from the output of a segmentation behavior.</p>\n    <p>Takes parallel vectors of masks and confidence scores, returns the single best mask and its score.</p>\n",
+          "ports": [
+            {
+              "name": "best_mask",
+              "direction": "output",
+              "type": "moveit_studio_vision_msgs::msg::Mask2D_<std::allocator<void> >",
+              "default": "{best_mask}",
+              "description": "The mask with the highest confidence."
+            },
+            {
+              "name": "best_masks2d",
+              "direction": "output",
+              "type": "std::vector<moveit_studio_vision_msgs::msg::Mask2D_<std::allocator<void> >, std::allocator<moveit_studio_vision_msgs::msg::Mask2D_<std::allocator<void> > > >",
+              "default": "{best_masks2d}",
+              "description": "Single-element vector containing the highest-confidence mask, for use with GetMasks3DFromMasks2D."
+            },
+            {
+              "name": "best_score",
+              "direction": "output",
+              "type": "double",
+              "default": "{best_score}",
+              "description": "The highest confidence score."
+            },
+            {
+              "name": "confidence_scores",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "{confidence_scores}",
+              "description": "Confidence scores parallel to masks2d."
+            },
+            {
+              "name": "masks2d",
+              "direction": "input",
+              "type": "std::vector<moveit_studio_vision_msgs::msg::Mask2D_<std::allocator<void> >, std::allocator<moveit_studio_vision_msgs::msg::Mask2D_<std::allocator<void> > > >",
+              "default": "{masks2d}",
+              "description": "Vector of 2D masks from segmentation."
+            }
+          ]
+        },
+        {
+          "id": "MarkPointsOnImage",
+          "node_type": "Action",
+          "subcategory": "Visualization",
+          "description": "\n    <p>Draws visible markers on an image at each point location and publishes the result.</p>\n    <p>Input points are in normalized image UV coordinates (x,y in [0,1]).\n    A crosshair marker is drawn at each corresponding pixel location and the\n    annotated image is published to the specified topic.</p>\n",
+          "ports": [
+            {
+              "name": "image",
+              "direction": "input",
+              "type": "sensor_msgs::msg::Image_<std::allocator<void> >",
+              "default": "{image}",
+              "description": "Input image to annotate."
+            },
+            {
+              "name": "output_image",
+              "direction": "output",
+              "type": "sensor_msgs::msg::Image_<std::allocator<void> >",
+              "default": "{marked_image}",
+              "description": "The annotated image."
+            },
+            {
+              "name": "points",
+              "direction": "input",
+              "type": "std::vector<geometry_msgs::msg::PointStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PointStamped_<std::allocator<void> > > >",
+              "default": "{points}",
+              "description": "Points with x,y in [0,1] as image UV coordinates."
+            },
+            {
+              "name": "topic",
+              "direction": "input",
+              "type": "std::string",
+              "default": "/marked_image",
+              "description": "Topic to publish the annotated image to."
+            }
+          ]
+        },
+        {
+          "id": "SaveDepthImageToFile",
+          "node_type": "Action",
+          "subcategory": "Perception - 2D Image",
+          "description": "Save a depth image to a 16-bit PNG file. Unlike SaveImageToFile, this preserves the original depth encoding instead of converting to BGR8.",
+          "ports": [
+            {
+              "name": "file_path",
+              "direction": "input",
+              "type": "std::string",
+              "default": "~/.config/moveit_pro/saved_behavior_data",
+              "description": "Directory to save the depth image in."
+            },
+            {
+              "name": "file_prefix",
+              "direction": "input",
+              "type": "std::string",
+              "default": "depth",
+              "description": "Prefix for the output filename."
+            },
+            {
+              "name": "image",
+              "direction": "input",
+              "type": "sensor_msgs::msg::Image_<std::allocator<void> >",
+              "default": "{depth_image}",
+              "description": "Depth image (16UC1 or 32FC1)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "folder": "joint_state_behaviors",
+      "summary": "Read and edit joint values in JointState, RobotState and RobotState messages.",
+      "behaviors": [
+        {
+          "id": "CreateEmptyMultiDOFJointState",
+          "node_type": "Action",
+          "subcategory": "Robot State",
+          "description": "Creates an empty MultiDOFJointState message",
+          "ports": [
+            {
+              "name": "output_state",
+              "direction": "output",
+              "type": "sensor_msgs::msg::MultiDOFJointState_<std::allocator<void> >",
+              "default": null,
+              "description": "Empty MultiDOFJointState message"
+            }
+          ]
+        },
+        {
+          "id": "FilterRobotJointState",
+          "node_type": "Action",
+          "subcategory": "Robot State",
+          "description": "Filters a JointState message to only include joints from a specific planning group",
+          "ports": [
+            {
+              "name": "input_robot_joint_state",
+              "direction": "input",
+              "type": "moveit_msgs::msg::RobotState_<std::allocator<void> >",
+              "default": null,
+              "description": "Input robot joint state with all robot joints"
+            },
+            {
+              "name": "output_robot_joint_state",
+              "direction": "output",
+              "type": "moveit_msgs::msg::RobotState_<std::allocator<void> >",
+              "default": null,
+              "description": "Output robot joint state containing only planning group joints"
+            },
+            {
+              "name": "planning_group_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Name of the planning group to filter joints for"
+            }
+          ]
+        },
+        {
+          "id": "FilterRobotStateToJoints",
+          "node_type": "Action",
+          "subcategory": "Utility",
+          "description": "Keeps only the named joints of a RobotState, so a waypoint saved with every joint on the robot can be handed to a planner that requires a subset of one planning group.",
+          "ports": [
+            {
+              "name": "input_state",
+              "direction": "input",
+              "type": "moveit_msgs::msg::RobotState_<std::allocator<void> >",
+              "default": "{input_state}",
+              "description": "RobotState to filter, typically straight from RetrieveWaypoint."
+            },
+            {
+              "name": "joint_names",
+              "direction": "input",
+              "type": "std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >",
+              "default": "",
+              "description": "Semicolon-separated joints to keep, in the order they should appear in the output."
+            },
+            {
+              "name": "output_state",
+              "direction": "output",
+              "type": "moveit_msgs::msg::RobotState_<std::allocator<void> >",
+              "default": "{output_state}",
+              "description": "The same state carrying only the named joints."
+            }
+          ]
+        },
+        {
+          "id": "GetJointValueFromRobotJointState",
+          "node_type": "Action",
+          "subcategory": "Robot State",
+          "description": "Gets a joint value from a RobotState message",
+          "ports": [
+            {
+              "name": "joint_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Name of the joint to query"
+            },
+            {
+              "name": "joint_value",
+              "direction": "output",
+              "type": "double",
+              "default": null,
+              "description": "Value of the joint"
+            },
+            {
+              "name": "robot_joint_state",
+              "direction": "input",
+              "type": "moveit_msgs::msg::RobotState_<std::allocator<void> >",
+              "default": null,
+              "description": "Input robot joint state"
+            }
+          ]
+        },
+        {
+          "id": "IsJointPositionInRange",
+          "node_type": "Action",
+          "subcategory": "Utility",
+          "description": "Succeeds if one joint's current position (from a planning scene's robot state) is within [min_position, max_position], and fails otherwise. Outputs the position either way. Written as a grasp check for grippers whose close action succeeds whether or not it caught anything: the finger joint stalls part way on a part and runs to its end stop on nothing.",
+          "ports": [
+            {
+              "name": "joint_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "The joint to check."
+            },
+            {
+              "name": "max_position",
+              "direction": "input",
+              "type": "double",
+              "default": null,
+              "description": "Highest position that counts as in range (inclusive)."
+            },
+            {
+              "name": "min_position",
+              "direction": "input",
+              "type": "double",
+              "default": null,
+              "description": "Lowest position that counts as in range (inclusive)."
+            },
+            {
+              "name": "planning_scene",
+              "direction": "input",
+              "type": "moveit_msgs::msg::PlanningScene_<std::allocator<void> >",
+              "default": "{planning_scene}",
+              "description": "Scene whose robot state is read, typically straight from GetCurrentPlanningScene."
+            },
+            {
+              "name": "position",
+              "direction": "output",
+              "type": "double",
+              "default": "{joint_position}",
+              "description": "The joint's current position."
+            }
+          ]
+        },
+        {
+          "id": "RobotStateFromPoseAxis",
+          "node_type": "Action",
+          "subcategory": "Utility",
+          "description": "Builds a one-joint RobotState whose value is a translation component of a pose, for lining a prismatic axis up with something the tree only knows as a pose.",
+          "ports": [
+            {
+              "name": "axis",
+              "direction": "input",
+              "type": "std::string",
+              "default": "X",
+              "description": "Which translation component to take: X, Y or Z."
+            },
+            {
+              "name": "input_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{input_pose}",
+              "description": "Pose whose translation supplies the joint value."
+            },
+            {
+              "name": "joint_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": "linear_x_joint",
+              "description": "The single joint the goal names."
+            },
+            {
+              "name": "offset",
+              "direction": "input",
+              "type": "double",
+              "default": "0.0",
+              "description": "Added to the coordinate before it becomes the joint value."
+            },
+            {
+              "name": "robot_state",
+              "direction": "output",
+              "type": "moveit_msgs::msg::RobotState_<std::allocator<void> >",
+              "default": "{robot_state}",
+              "description": "One-joint goal, ready for Move to Joint State's target_joint_state."
+            }
+          ]
+        },
+        {
+          "id": "SetJointStateValues",
+          "node_type": "Action",
+          "subcategory": "User Created Behaviors",
+          "description": "Overwrites joint values in a JointState message",
+          "ports": [
+            {
+              "name": "joint_names",
+              "direction": "input",
+              "type": "std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >",
+              "default": "{joint_names}",
+              "description": "The joints to overwrite"
+            },
+            {
+              "name": "joint_state_in",
+              "direction": "input",
+              "type": "sensor_msgs::msg::JointState_<std::allocator<void> >",
+              "default": "{joint_state_in}",
+              "description": "The JointState input"
+            },
+            {
+              "name": "joint_state_out",
+              "direction": "output",
+              "type": "sensor_msgs::msg::JointState_<std::allocator<void> >",
+              "default": "{joint_state_out}",
+              "description": "The overwritten JointState"
+            },
+            {
+              "name": "joint_values",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "{joint_values}",
+              "description": "The values to overwrite"
+            }
+          ]
+        },
+        {
+          "id": "SetJointValueInRobotJointState",
+          "node_type": "Action",
+          "subcategory": "Robot State",
+          "description": "Sets a joint value in a RobotState message",
+          "ports": [
+            {
+              "name": "input_robot_joint_state",
+              "direction": "input",
+              "type": "moveit_msgs::msg::RobotState_<std::allocator<void> >",
+              "default": null,
+              "description": "Input robot joint state"
+            },
+            {
+              "name": "joint_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Name of the joint to modify"
+            },
+            {
+              "name": "joint_value",
+              "direction": "input",
+              "type": "double",
+              "default": null,
+              "description": "New value for the joint"
+            },
+            {
+              "name": "output_robot_joint_state",
+              "direction": "output",
+              "type": "moveit_msgs::msg::RobotState_<std::allocator<void> >",
+              "default": null,
+              "description": "Output robot joint state with modified value"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "folder": "mobile_base_behaviors",
+      "summary": "Drive a differential mobile base from the MoveIt Pro jog commands.",
+      "behaviors": [
+        {
+          "id": "TeleoperateBase",
+          "node_type": "Action",
+          "subcategory": "MuJoCo Simulation",
+          "description": "\n                <p>\n                    Drives a differential-drive base's <code>cmd_vel</code> from the VelocityForceCommand stream\n                    published on <code>/pose_jog/&lt;planning_group&gt;</code> by the Desktop App's Pose tab,\n                    gamepad, and Quest headset teleoperation sources.\n                </p>\n            ",
+          "ports": [
+            {
+              "name": "cmd_vel_topic",
+              "direction": "input",
+              "type": "std::string",
+              "default": "/cmd_vel",
+              "description": "Topic to publish the resulting TwistStamped to."
+            },
+            {
+              "name": "frame_id",
+              "direction": "input",
+              "type": "std::string",
+              "default": "footprint",
+              "description": "Frame ID to stamp the published TwistStamped with."
+            },
+            {
+              "name": "max_angular_velocity",
+              "direction": "input",
+              "type": "double",
+              "default": "2.000000",
+              "description": "Maximum magnitude, in rad/s, for the forwarded angular.z."
+            },
+            {
+              "name": "max_linear_velocity",
+              "direction": "input",
+              "type": "double",
+              "default": "0.800000",
+              "description": "Maximum magnitude, in m/s, for the forwarded linear.x."
+            },
+            {
+              "name": "planning_group",
+              "direction": "input",
+              "type": "std::string",
+              "default": "base",
+              "description": "Planning group whose jog commands to follow. Subscribes to /pose_jog/<planning_group>."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "folder": "mtc_behaviors",
+      "summary": "MoveIt Task Constructor helpers: read the cost of a solution, allow or forbid collisions between two groups.",
+      "behaviors": [
+        {
+          "id": "GetMtcSolutionCost",
+          "node_type": "Action",
+          "subcategory": "Motion - Task Planning",
+          "description": "\n<p>\nExtracts the cost of an MTC solution. Reports the total cost, summed across all sub-trajectories, and the individual\ncost of each sub-trajectory.\n</p>\n",
+          "ports": [
+            {
+              "name": "solution",
+              "direction": "input",
+              "type": "moveit_task_constructor_msgs::msg::Solution_<std::allocator<void> >",
+              "default": "{mtc_solution}",
+              "description": "MoveIt Task Constructor solution."
+            },
+            {
+              "name": "sub_trajectory_costs",
+              "direction": "output",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "{sub_trajectory_costs}",
+              "description": "Cost of each individual sub-trajectory, in order."
+            },
+            {
+              "name": "total_cost",
+              "direction": "output",
+              "type": "double",
+              "default": "{total_cost}",
+              "description": "Total cost of the solution, summed across all sub-trajectories."
+            }
+          ]
+        },
+        {
+          "id": "SetCollisionsBetweenGroups",
+          "node_type": "Action",
+          "subcategory": "Motion - Task Planning",
+          "description": "\n                <p>Add an MTC Stage, named '<allow/forbid> collision (group vs. group)', to an MTC Task that modifies the planning scene's Allowed Collision Matrix to permit or forbid collisions between every pair (a, b) where a is drawn from `first_objects` and b is drawn from `second_objects`. Pairs within `first_objects` (e.g. wrist-link to wrist-link) and pairs within `second_objects` (e.g. scene object to scene object) are NOT touched, so SRDF `<disable_collisions reason=\"Adjacent\">` defaults are preserved.</p>\n                <p>Compared to `SetupMTCIgnoreCollisionsBetweenObjects` (single list, cross product with itself), this behavior is the safe choice when one of the groups contains mechanically-adjacent links the SRDF wants always-disabled — typical for the wrist chain (gripper body, tool adapter and camera adapter links, etc.) where adjacent pairs would otherwise get clobbered by the disallow call.</p>\n                <p>This Behavior will add stage(s) that will modify the global planning scene when executed via the `Execute MTC Solution` Subtree.</p>\n            ",
+          "ports": [
+            {
+              "name": "allow_collision",
+              "direction": "input",
+              "type": "bool",
+              "default": "true",
+              "description": "If true, allow collisions between every (a, b) pair where a is in `first_objects` and b is in `second_objects`. If false, forbid them."
+            },
+            {
+              "name": "first_objects",
+              "direction": "input",
+              "type": "std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >",
+              "default": "",
+              "description": "Semicolon-separated list of object names — group A. ACM entries are toggled between every member of this group and every member of `second_objects`. Pairs within this group are NOT touched."
+            },
+            {
+              "name": "second_objects",
+              "direction": "input",
+              "type": "std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >",
+              "default": "",
+              "description": "Semicolon-separated list of object names — group B. ACM entries are toggled between every member of this group and every member of `first_objects`. Pairs within this group are NOT touched."
+            },
+            {
+              "name": "task",
+              "direction": "inout",
+              "type": "std::shared_ptr<moveit_pro::task_constructor::Task>",
+              "default": "{mtc_task}",
+              "description": "MoveIt Task Constructor task."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "folder": "planning_scene_behaviors",
+      "summary": "Edit planning scene messages and octomaps, add colored objects, and check a joint state for collision.",
+      "behaviors": [
+        {
+          "id": "AddColoredVirtualObjectToPlanningScene",
+          "node_type": "Action",
+          "subcategory": "Planning Scene",
+          "description": "\n<p>\n  Add a <code>moveit_msgs/CollisionObject</code> to the planning scene as a \"virtual\" obstacle\n  with the specified RGBA color, in a single <code>/apply_planning_scene</code> call.\n</p>\n<p>\n  Replaces the\n  <code>Convert CollisionObject To GraspableObject</code> &rarr;\n  <code>UnpackGraspableObjectMessage</code> &rarr;\n  <code>CreateColorRGBAMessage</code> &rarr;\n  <code>CreateObjectColorMessage</code> &rarr;\n  <code>CreateGraspableObjectMessage</code> &rarr;\n  <code>AddVirtualObjectToPlanningScene</code>\n  six-step chain that's otherwise required to add a colored virtual obstacle.\n</p>\n<p>\n  Mirrors the \"virtual_\" id-prefix and allowed-collision-matrix conventions of MoveIt Pro's\n  <code>AddVirtualObjectToPlanningScene</code>: forbids collisions with all non-virtual objects,\n  allows collisions with all other virtual objects. Requires a fresh\n  <code>planning_scene_msg</code>, typically produced by a preceding\n  <code>GetCurrentPlanningScene</code> call.\n</p>\n",
+          "ports": [
+            {
+              "name": "a",
+              "direction": "input",
+              "type": "double",
+              "default": "0.900000",
+              "description": "Alpha channel, 0-1. Defaults to 0.9."
+            },
+            {
+              "name": "b",
+              "direction": "input",
+              "type": "double",
+              "default": "1.000000",
+              "description": "Blue channel, 0-1. Defaults to 1.0 (white)."
+            },
+            {
+              "name": "collision_object",
+              "direction": "input",
+              "type": "moveit_msgs::msg::CollisionObject_<std::allocator<void> >",
+              "default": "{collision_object}",
+              "description": "CollisionObject to add to the planning scene as a virtual obstacle. Its `id` field is prefixed with \"virtual_\" inside this behavior if not already."
+            },
+            {
+              "name": "g",
+              "direction": "input",
+              "type": "double",
+              "default": "1.000000",
+              "description": "Green channel, 0-1. Defaults to 1.0 (white)."
+            },
+            {
+              "name": "planning_scene_msg",
+              "direction": "input",
+              "type": "moveit_msgs::msg::PlanningScene_<std::allocator<void> >",
+              "default": "{planning_scene}",
+              "description": "Snapshot of the current planning scene to diff against. Typically produced by an immediately preceding GetCurrentPlanningScene call."
+            },
+            {
+              "name": "r",
+              "direction": "input",
+              "type": "double",
+              "default": "1.000000",
+              "description": "Red channel, 0-1. Defaults to 1.0 (white)."
+            }
+          ]
+        },
+        {
+          "id": "AddRobotJointStateToPlanningSceneMsg",
+          "node_type": "Action",
+          "subcategory": "Planning Scene",
+          "description": "Updates a planning scene message with robot joint state values",
+          "ports": [
+            {
+              "name": "input_planning_scene",
+              "direction": "input",
+              "type": "moveit_msgs::msg::PlanningScene_<std::allocator<void> >",
+              "default": null,
+              "description": "Input planning scene message"
+            },
+            {
+              "name": "output_planning_scene",
+              "direction": "output",
+              "type": "moveit_msgs::msg::PlanningScene_<std::allocator<void> >",
+              "default": null,
+              "description": "Output planning scene with updated robot state"
+            },
+            {
+              "name": "robot_joint_state",
+              "direction": "input",
+              "type": "moveit_msgs::msg::RobotState_<std::allocator<void> >",
+              "default": null,
+              "description": "Robot joint state to add to planning scene"
+            }
+          ]
+        },
+        {
+          "id": "ApplyPlanningSceneDiff",
+          "node_type": "Action",
+          "subcategory": "Planning Scene",
+          "description": "Applies a planning scene diff to MoveIt via the /apply_planning_scene service. Use this after InflateOctomap to push the inflated octomap into the planning scene.",
+          "ports": [
+            {
+              "name": "apply_planning_scene_service",
+              "direction": "input",
+              "type": "std::string",
+              "default": "/apply_planning_scene",
+              "description": "Name of the service advertised by the MoveIt2 ApplyPlanningScene MoveGroup capability."
+            },
+            {
+              "name": "planning_scene",
+              "direction": "input",
+              "type": "moveit_msgs::msg::PlanningScene_<std::allocator<void> >",
+              "default": "{inflated_scene}",
+              "description": "Planning scene diff to apply (e.g. output of InflateOctomap)."
+            }
+          ]
+        },
+        {
+          "id": "GenerateShapeUrdf",
+          "node_type": "Action",
+          "subcategory": "Planning Scene",
+          "description": "\n    <p>\n        Generates a URDF string for a primitive shape (box, sphere, or cylinder)\n        from a shape type and dimension parameters.\n    </p>\n    <p>\n        Dimension requirements per shape type:\n        <ul>\n            <li><b>box</b>: [width, height, depth] (3 values in meters)</li>\n            <li><b>sphere</b>: [radius] (1 value in meters)</li>\n            <li><b>cylinder</b>: [radius, height] (2 values in meters)</li>\n        </ul>\n    </p>\n",
+          "ports": [
+            {
+              "name": "dimensions",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "{dimensions}",
+              "description": "Dimensions for the shape in meters. Box requires 3 values [width;height;depth], sphere requires 1 value [radius], cylinder requires 2 values [radius;height]."
+            },
+            {
+              "name": "grasp_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "",
+              "description": "Grasp_link pose in world frame at pick time. Used with object_pose to auto-compute orientation."
+            },
+            {
+              "name": "object_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": "generated_object",
+              "description": "Name used for the robot and link elements in the URDF."
+            },
+            {
+              "name": "object_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "",
+              "description": "Object pose in world frame. Used with grasp_pose to auto-compute orientation."
+            },
+            {
+              "name": "origin_offset_z",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Z offset for the collision origin."
+            },
+            {
+              "name": "origin_rpy",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "",
+              "description": "Roll, pitch, yaw (radians) for the collision origin orientation. If empty, computed from object_pose and grasp_pose if provided."
+            },
+            {
+              "name": "output_file_path",
+              "direction": "output",
+              "type": "std::string",
+              "default": "{generated_urdf_path}",
+              "description": "The file path the URDF was written to."
+            },
+            {
+              "name": "shape_type",
+              "direction": "input",
+              "type": "std::string",
+              "default": "{shape_type}",
+              "description": "Shape type to generate: 'box', 'sphere', or 'cylinder'."
+            },
+            {
+              "name": "urdf_file_path",
+              "direction": "input",
+              "type": "std::string",
+              "default": "/tmp/generated_collision.urdf",
+              "description": "File path to write the URDF to."
+            },
+            {
+              "name": "urdf_string",
+              "direction": "output",
+              "type": "std::string",
+              "default": "{urdf_string}",
+              "description": "The generated URDF XML string."
+            }
+          ]
+        },
+        {
+          "id": "GetAttachedCollisionObjectPoseStamped",
+          "node_type": "Action",
+          "subcategory": "Perception - Planning Scene",
+          "description": "Gets the pose of an attached collision object.",
+          "ports": [
+            {
+              "name": "collision_object_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": "{collision_object_name}",
+              "description": "The name of the CollisionObject to get pose of"
+            },
+            {
+              "name": "planning_scene",
+              "direction": "input",
+              "type": "moveit_msgs::msg::PlanningScene_<std::allocator<void> >",
+              "default": "{planning_scene}",
+              "description": "A planning scene"
+            },
+            {
+              "name": "pose_stamped",
+              "direction": "output",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{pose_stamped}",
+              "description": "The pose of the attached collision object."
+            }
+          ]
+        },
+        {
+          "id": "GetPlanningSceneACMOnly",
+          "node_type": "Action",
+          "subcategory": "Perception - Planning Scene",
+          "description": "\n                <p>\n                    Fetches only the allowed collision matrix component of the current planning scene via the\n                    /get_planning_scene service, skipping the octomap, world object geometry, and robot state\n                    entirely. Much faster than GetCurrentPlanningScene when the result will only be used as input to\n                    SetCollisionsBetweenObjects or SetCollisionsBetweenObjectsInPlanningScene.\n                </p>\n                <p>\n                    Do not use this ahead of motion planning: the returned planning scene does not contain the\n                    octomap or world object geometry.\n                </p>\n            ",
+          "ports": [
+            {
+              "name": "get_planning_scene_service",
+              "direction": "input",
+              "type": "std::string",
+              "default": "/get_planning_scene",
+              "description": "Name of the service advertised by the MoveIt2 GetPlanningScene MoveGroup capability."
+            },
+            {
+              "name": "planning_scene_msg",
+              "direction": "output",
+              "type": "moveit_msgs::msg::PlanningScene_<std::allocator<void> >",
+              "default": "{planning_scene}",
+              "description": "The current planning scene, containing only the allowed_collision_matrix field."
+            }
+          ]
+        },
+        {
+          "id": "InflateOctomap",
+          "node_type": "Action",
+          "subcategory": "Planning Scene",
+          "description": "Inflates the occupied voxels in the planning scene's octomap by a given radius.",
+          "ports": [
+            {
+              "name": "inflated_scene",
+              "direction": "output",
+              "type": "moveit_msgs::msg::PlanningScene_<std::allocator<void> >",
+              "default": "{inflated_scene}",
+              "description": "Planning scene with the inflated octomap."
+            },
+            {
+              "name": "inflation_radius",
+              "direction": "input",
+              "type": "double",
+              "default": "0.050000",
+              "description": "Radius (meters) by which to inflate occupied voxels."
+            },
+            {
+              "name": "planning_scene",
+              "direction": "input",
+              "type": "moveit_msgs::msg::PlanningScene_<std::allocator<void> >",
+              "default": "{planning_scene}",
+              "description": "Input planning scene containing the octomap to inflate."
+            }
+          ]
+        },
+        {
+          "id": "IsJointStateInCollision",
+          "node_type": "Action",
+          "subcategory": "Utility",
+          "description": "Fails if an arm joint state plus a candidate EOAT joint configuration is in collision within a given planning scene; succeeds otherwise.",
+          "ports": [
+            {
+              "name": "colliding_contacts",
+              "direction": "output",
+              "type": "std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >",
+              "default": "{colliding_contacts}",
+              "description": "Human-readable 'nameA <-> nameB' pairs for each colliding link/object pair."
+            },
+            {
+              "name": "eoat_joint_names",
+              "direction": "input",
+              "type": "std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >",
+              "default": "{eoat_joint_names}",
+              "description": "Names of the EOAT joints to set before checking."
+            },
+            {
+              "name": "eoat_joint_positions",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "{eoat_joint_positions}",
+              "description": "Positions of the EOAT joints to set before checking, same order as eoat_joint_names."
+            },
+            {
+              "name": "joint_state",
+              "direction": "input",
+              "type": "sensor_msgs::msg::JointState_<std::allocator<void> >",
+              "default": "{joint_state}",
+              "description": "The arm joint state to check."
+            },
+            {
+              "name": "planning_scene_msg",
+              "direction": "input",
+              "type": "moveit_msgs::msg::PlanningScene_<std::allocator<void> >",
+              "default": "{planning_scene_msg}",
+              "description": "The planning scene providing the world and allowed collision matrix. Its robot state is overwritten by joint_state and the EOAT joint values before checking."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "folder": "point_cloud_behaviors",
+      "summary": "Filter, count, mirror and reconstruct point clouds, and find the closest point to a pose.",
+      "behaviors": [
+        {
+          "id": "ClearPointCloudTimestamp",
+          "node_type": "Action",
+          "subcategory": "Perception - 3D Point Cloud",
+          "description": "Zeroes a point cloud's header stamp so TF lookups against it resolve to the latest available transforms. Use before UpdatePlanningSceneService on any cloud that is not being pushed the instant it was captured, otherwise the octomap updater cannot self-filter the moving robot links out of it.",
+          "ports": [
+            {
+              "name": "point_cloud",
+              "direction": "input",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{point_cloud}",
+              "description": "Point cloud whose header stamp should be zeroed."
+            },
+            {
+              "name": "stamped_point_cloud",
+              "direction": "output",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{stamped_point_cloud}",
+              "description": "The same cloud with header.stamp set to zero. The frame_id and points are unchanged."
+            }
+          ]
+        },
+        {
+          "id": "CountPointsInCloud",
+          "node_type": "Action",
+          "subcategory": "Perception - 3D Point Cloud",
+          "description": "Counts the finite points in a point cloud, and the distinct voxels they occupy. Measurement only - applies no threshold. An empty cloud is SUCCESS with zero counts.",
+          "ports": [
+            {
+              "name": "point_cloud",
+              "direction": "input",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{point_cloud}",
+              "description": "Point cloud to measure. Counts whatever it is given, so any cropping or filtering is the caller's job."
+            },
+            {
+              "name": "point_count",
+              "direction": "output",
+              "type": "int",
+              "default": "{point_count}",
+              "description": "Number of finite, non-near-zero points in the cloud."
+            },
+            {
+              "name": "point_count_str",
+              "direction": "output",
+              "type": "std::string",
+              "default": "{point_count_str}",
+              "description": "'point_count' as a string, for ports that take one - a YAML writer, say. A single entry cannot serve both: BT.CPP fixes its type when the tree is built."
+            },
+            {
+              "name": "voxel_count",
+              "direction": "output",
+              "type": "int",
+              "default": "{voxel_count}",
+              "description": "Number of distinct occupied voxels at 'voxel_size', or -1 when voxel counting is disabled. Prefer this over 'point_count' when comparing captures: it is far less sensitive to how close a surface happened to be to a camera."
+            },
+            {
+              "name": "voxel_count_str",
+              "direction": "output",
+              "type": "std::string",
+              "default": "{voxel_count_str}",
+              "description": "'voxel_count' as a string, for the same reason."
+            },
+            {
+              "name": "voxel_size",
+              "direction": "input",
+              "type": "double",
+              "default": "0.050000",
+              "description": "Edge length in meters of the voxel grid used for 'voxel_count'. Set to exactly 0 to skip voxel counting, which then reports -1. Any other value must be finite and at least 1 mm."
+            }
+          ]
+        },
+        {
+          "id": "ExcludeMask3DFromPointCloud",
+          "node_type": "Action",
+          "subcategory": "Perception - 3D Point Cloud",
+          "description": "\n                <p>\n                    Returns a point cloud without the points selected by a 3D mask.\n                </p>\n            ",
+          "ports": [
+            {
+              "name": "mask3d",
+              "direction": "input",
+              "type": "moveit_studio_vision_msgs::msg::Mask3D_<std::allocator<void> >",
+              "default": "{mask3d}",
+              "description": "3D mask selecting which points to exclude from the point cloud to the output."
+            },
+            {
+              "name": "point_cloud",
+              "direction": "input",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{point_cloud}",
+              "description": "Input point cloud."
+            },
+            {
+              "name": "point_cloud_excluded",
+              "direction": "output",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{point_cloud_excluded}",
+              "description": "Point cloud points with the masked points removed."
+            }
+          ]
+        },
+        {
+          "id": "GetClosestPointPose",
+          "node_type": "Action",
+          "subcategory": "Perception - 3D",
+          "description": "\n    <p>Finds the closest point in a point cloud to a reference pose and returns a new pose\n    at that point with the Z axis aligned along the surface normal.</p>\n    <p>The point cloud and input pose must be in the same frame. The surface normal is\n    estimated using the local neighborhood around the closest point and oriented to\n    point toward the input pose position.</p>\n",
+          "ports": [
+            {
+              "name": "closest_point_pose",
+              "direction": "output",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{closest_point_pose}",
+              "description": "Pose at the closest point with Z axis along the surface normal."
+            },
+            {
+              "name": "input_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": null,
+              "description": "Reference pose to find closest point to."
+            },
+            {
+              "name": "normal_k_neighbors",
+              "direction": "input",
+              "type": "int",
+              "default": "30",
+              "description": "Number of neighbors for surface normal estimation."
+            },
+            {
+              "name": "point_cloud",
+              "direction": "input",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": null,
+              "description": "Input point cloud."
+            }
+          ]
+        },
+        {
+          "id": "MirrorPointCloud",
+          "node_type": "Action",
+          "subcategory": "User Created Behaviors",
+          "description": "Reflect a point cloud across a plane (default plane Y=0).",
+          "ports": [
+            {
+              "name": "input_cloud",
+              "direction": "input",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{input_cloud}",
+              "description": "Point cloud to reflect across the plane."
+            },
+            {
+              "name": "output_cloud",
+              "direction": "output",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{output_cloud}",
+              "description": "Reflected point cloud (xyz reflected, other fields kept)."
+            },
+            {
+              "name": "plane_normal",
+              "direction": "input",
+              "type": "std::string",
+              "default": "0;1;0",
+              "description": "Mirror plane normal as 'x;y;z' (default Y=0 plane)."
+            },
+            {
+              "name": "plane_point",
+              "direction": "input",
+              "type": "std::string",
+              "default": "0;0;0",
+              "description": "Point on the mirror plane as 'x;y;z'."
+            }
+          ]
+        },
+        {
+          "id": "PclNnFilter",
+          "node_type": "Action",
+          "subcategory": "Perception - 3D Point Cloud",
+          "description": "Removes points that do not have at least N neighbors within a radius using a KD-tree radius search.",
+          "ports": [
+            {
+              "name": "filtered_point_cloud",
+              "direction": "output",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{filtered_point_cloud}",
+              "description": "Filtered point cloud with sparse points removed."
+            },
+            {
+              "name": "min_neighbors",
+              "direction": "input",
+              "type": "int",
+              "default": "2",
+              "description": "Minimum number of neighbors required within `radius` (excluding the query point)."
+            },
+            {
+              "name": "point_cloud",
+              "direction": "input",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{point_cloud}",
+              "description": "Input point cloud to filter."
+            },
+            {
+              "name": "radius",
+              "direction": "input",
+              "type": "double",
+              "default": "0.050000",
+              "description": "Neighbor search radius (meters)."
+            }
+          ]
+        },
+        {
+          "id": "PoissonReconstruct",
+          "node_type": "Action",
+          "subcategory": "User Created Behaviors",
+          "description": "Poisson surface reconstruction; measured vs filled points colored differently.",
+          "ports": [
+            {
+              "name": "fill_threshold",
+              "direction": "input",
+              "type": "double",
+              "default": "0.008000",
+              "description": "Surface points farther than this from a measured point are colored as filled (m)."
+            },
+            {
+              "name": "filled_color",
+              "direction": "input",
+              "type": "std::string",
+              "default": "255;60;60",
+              "description": "RGB of filled/interpolated points 'r;g;b'."
+            },
+            {
+              "name": "input_cloud",
+              "direction": "input",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{input_cloud}",
+              "description": "Point cloud to reconstruct."
+            },
+            {
+              "name": "normal_radius",
+              "direction": "input",
+              "type": "double",
+              "default": "0.030000",
+              "description": "Normal-estimation neighborhood radius (m)."
+            },
+            {
+              "name": "output_cloud",
+              "direction": "output",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{output_cloud}",
+              "description": "Measured points (scanned_color) + filled points (filled_color), as PointXYZRGB."
+            },
+            {
+              "name": "poisson_depth",
+              "direction": "input",
+              "type": "int",
+              "default": "9",
+              "description": "Poisson octree depth (higher = finer, slower)."
+            },
+            {
+              "name": "scanned_color",
+              "direction": "input",
+              "type": "std::string",
+              "default": "200;200;200",
+              "description": "RGB of measured/scanned points 'r;g;b'."
+            },
+            {
+              "name": "trim_distance",
+              "direction": "input",
+              "type": "double",
+              "default": "0.025000",
+              "description": "Drop surface points farther than this from any measured point (m)."
+            }
+          ]
+        },
+        {
+          "id": "ReconstructSurface",
+          "node_type": "Action",
+          "subcategory": "User Created Behaviors",
+          "description": "Surface-following hole fill / smoothing via Moving Least Squares.",
+          "ports": [
+            {
+              "name": "dilation_iterations",
+              "direction": "input",
+              "type": "int",
+              "default": "1",
+              "description": "VOXEL_GRID_DILATION dilation passes."
+            },
+            {
+              "name": "input_cloud",
+              "direction": "input",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{input_cloud}",
+              "description": "Point cloud to reconstruct."
+            },
+            {
+              "name": "output_cloud",
+              "direction": "output",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{output_cloud}",
+              "description": "Reconstructed point cloud (PointXYZ)."
+            },
+            {
+              "name": "polynomial_order",
+              "direction": "input",
+              "type": "int",
+              "default": "2",
+              "description": "Local polynomial order."
+            },
+            {
+              "name": "search_radius",
+              "direction": "input",
+              "type": "double",
+              "default": "0.030000",
+              "description": "MLS neighborhood radius (m)."
+            },
+            {
+              "name": "upsampling_method",
+              "direction": "input",
+              "type": "std::string",
+              "default": "voxel_grid_dilation",
+              "description": "voxel_grid_dilation | sample_local_plane | none."
+            },
+            {
+              "name": "voxel_size",
+              "direction": "input",
+              "type": "double",
+              "default": "0.010000",
+              "description": "VOXEL_GRID_DILATION voxel size (m)."
+            }
+          ]
+        }
+      ]
+    },
+    {
       "folder": "robot_model_behaviors",
       "summary": "Query the loaded robot model: joint limits and forward kinematics of a trajectory.",
       "behaviors": [
@@ -311,7 +2269,7 @@ window.BEHAVIOR_INDEX = {
     },
     {
       "folder": "ros_messaging_behaviors",
-      "summary": "Wait for a ROS message on a topic and copy it to the blackboard.",
+      "summary": "Wait for a ROS message on a topic and copy it to the blackboard, or publish a message on a topic.",
       "behaviors": [
         {
           "id": "GetPoseStampedFromTopic",
@@ -341,12 +2299,440 @@ window.BEHAVIOR_INDEX = {
               "description": "PoseStamped topic name."
             }
           ]
+        },
+        {
+          "id": "GetStringFromTopic",
+          "node_type": "Action",
+          "subcategory": "",
+          "description": "",
+          "ports": [
+            {
+              "name": "message_out",
+              "direction": "output",
+              "type": "std_msgs::msg::String_<std::allocator<void> >",
+              "default": null,
+              "description": "String message."
+            },
+            {
+              "name": "message_timeout_sec",
+              "direction": "input",
+              "type": "double",
+              "default": "-1.000000",
+              "description": "Maximum duration in seconds to wait for string message to be published before failing. Set to -1.0 to wait indefinitely."
+            },
+            {
+              "name": "topic_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "String topic name."
+            }
+          ]
+        },
+        {
+          "id": "PublishTwistStamped",
+          "node_type": "Action",
+          "subcategory": "ROS Messaging",
+          "description": "\n                <p>\n                    Publish a <code>geometry_msgs::msg::TwistStamped</code> message to a topic.\n                </p>\n            ",
+          "ports": [
+            {
+              "name": "message",
+              "direction": "input",
+              "type": "geometry_msgs::msg::TwistStamped_<std::allocator<void> >",
+              "default": null,
+              "description": "The TwistStamped message to publish."
+            },
+            {
+              "name": "queue_size",
+              "direction": "input",
+              "type": "unsigned long",
+              "default": "1",
+              "description": "The queue size for the publisher."
+            },
+            {
+              "name": "topic",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "The topic the message should be published to."
+            },
+            {
+              "name": "use_best_effort",
+              "direction": "input",
+              "type": "bool",
+              "default": "false",
+              "description": "Whether the publisher's reliability should be best effort (true) or reliable (false)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "folder": "tf_behaviors",
+      "summary": "Publish a static transform and watch the height of a TF frame.",
+      "behaviors": [
+        {
+          "id": "MonitorTransformZBelowThreshold",
+          "node_type": "Action",
+          "subcategory": "Monitors",
+          "description": "\n    <p>\n        Returns SUCCESS as soon as the source frame's Z coordinate, expressed in the target\n        frame, drops to or below <code>threshold_z</code>. Until then the behavior returns\n        RUNNING. On TF lookup failure it also returns RUNNING (the parent Parallel keeps\n        ticking, the lookup retries next tick).\n    </p>\n    <p>\n        Use under a Parallel(success_count=1) alongside other stop conditions for an open-loop\n        descent — typically an F/T magnitude monitor plus a wall-clock timeout. The threshold\n        is the world Z at which the carried object would sit on the target surface (surface Z\n        + half the object's vertical extent + clearance), so the descent stops at the surface\n        even if the F/T sensor never trips.\n    </p>\n",
+          "ports": [
+            {
+              "name": "source_frame_id",
+              "direction": "input",
+              "type": "std::string",
+              "default": "grasp_link",
+              "description": "Source frame whose origin's Z coordinate is monitored."
+            },
+            {
+              "name": "target_frame_id",
+              "direction": "input",
+              "type": "std::string",
+              "default": "world",
+              "description": "Target frame for the TF lookup. The Z coordinate is read in this frame."
+            },
+            {
+              "name": "threshold_z",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Z threshold (m). The behavior returns SUCCESS the first tick source_frame_id's Z (in target_frame_id) is <= threshold_z."
+            }
+          ]
+        },
+        {
+          "id": "PublishStaticTransform",
+          "node_type": "Action",
+          "subcategory": "Utilities",
+          "description": "\n    <p>Publishes a static transform to /tf_static from a PoseStamped.</p>\n    <p>Use this to bridge frames that are not connected in the TF tree,\n       e.g. connecting a calibrated scene camera to the world frame.</p>\n",
+          "ports": [
+            {
+              "name": "child_frame_id",
+              "direction": "input",
+              "type": "std::string",
+              "default": "scene_camera_link",
+              "description": "Child frame ID for the static transform"
+            },
+            {
+              "name": "pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": null,
+              "description": "Pose defining the transform (frame_id = parent, position/orientation = transform)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "folder": "trajectory_behaviors",
+      "summary": "Check and clean up joint trajectories: blend deviation and back-and-forth points.",
+      "behaviors": [
+        {
+          "id": "CheckBlendDeviation",
+          "node_type": "Action",
+          "subcategory": "Utility",
+          "description": "\n<p>\nRejects a blended trajectory that strays too far in joint space from the original un-blended path,\nchecked only within the blended regions.\n</p>\n<p>\nBlendJointTrajectories does no collision checking and applies no path-deviation bound, so a large\nblending_radius can produce a smooth Ruckig segment that loops away from the inputs and into collision.\nThis Behavior checks deviation only inside each blend zone: a zone is the set of points (in both the\nblended trajectory and the original concatenated path) within <tt>blend_radius</tt> radians\n(joint-space Euclidean distance) of the connection point between two consecutive input trajectories.\n<tt>blend_radius</tt> must match the value passed to BlendJointTrajectories.\nNo collision checking and no forward kinematics.\n</p>\n",
+          "ports": [
+            {
+              "name": "blend_radius",
+              "direction": "input",
+              "type": "double",
+              "default": null,
+              "description": "Joint-space Euclidean distance (rad) from each connection point that defines the blend zone. Must match the blend_radius passed to BlendJointTrajectories."
+            },
+            {
+              "name": "blended_trajectory",
+              "direction": "input",
+              "type": "trajectory_msgs::msg::JointTrajectory_<std::allocator<void> >",
+              "default": "{connected_joint_trajectory}",
+              "description": "The blended output of BlendJointTrajectories."
+            },
+            {
+              "name": "max_joint_deviation",
+              "direction": "input",
+              "type": "double",
+              "default": "0.100000",
+              "description": "Max allowed joint-space distance (rad) of any blended point from the reference path within the blend zone."
+            },
+            {
+              "name": "measured_deviation",
+              "direction": "output",
+              "type": "double",
+              "default": "{blend_deviation}",
+              "description": "The largest joint-space deviation found within any blend zone (rad)."
+            },
+            {
+              "name": "original_trajectories",
+              "direction": "input",
+              "type": "std::vector<trajectory_msgs::msg::JointTrajectory_<std::allocator<void> >, std::allocator<trajectory_msgs::msg::JointTrajectory_<std::allocator<void> > > >",
+              "default": "{jt_vector}",
+              "description": "The un-blended input trajectories that were fed to BlendJointTrajectories."
+            }
+          ]
+        },
+        {
+          "id": "FilterABAJointTrajectory",
+          "node_type": "Action",
+          "subcategory": "Utility",
+          "description": "\n<p>\nTakes a JointTrajectory, detects ABA micro-reversals in joint space (A ~= C with direction flip),\nremoves the middle 'B' points, and optionally removes near-duplicates.\n</p>\n",
+          "ports": [
+            {
+              "name": "a_equals_c_eps",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000500",
+              "description": "ABA detection: if ||A - C|| < this, treat as A ~= C."
+            },
+            {
+              "name": "aba_count",
+              "direction": "output",
+              "type": "int",
+              "default": "{aba_count}",
+              "description": "Number of ABA middle points removed."
+            },
+            {
+              "name": "corrected_joint_trajectory",
+              "direction": "output",
+              "type": "trajectory_msgs::msg::JointTrajectory_<std::allocator<void> >",
+              "default": "{corrected_joint_trajectory}",
+              "description": "Corrected JointTrajectory without retiming."
+            },
+            {
+              "name": "cos_thresh",
+              "direction": "input",
+              "type": "double",
+              "default": "-0.990000",
+              "description": "ABA detection: if cos(v1,v2) < this, treat as direction flip."
+            },
+            {
+              "name": "downsample_eps",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Optional: remove points closer than this (joint-space norm). 0 disables."
+            },
+            {
+              "name": "joint_trajectory",
+              "direction": "input",
+              "type": "trajectory_msgs::msg::JointTrajectory_<std::allocator<void> >",
+              "default": "{joint_trajectory_msg}",
+              "description": "Input JointTrajectory to be checked and corrected."
+            },
+            {
+              "name": "min_step_eps",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "ABA detection: ignore steps smaller than this when computing cosine."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "folder": "utility_behaviors",
+      "summary": "Small helpers: elapsed-time checks after StopwatchBegin, and a random pick from a list.",
+      "behaviors": [
+        {
+          "id": "SelectRandomStringFromVector",
+          "node_type": "Action",
+          "subcategory": "Utilities",
+          "description": "Selects one random element from a vector of strings",
+          "ports": [
+            {
+              "name": "input_vector",
+              "direction": "input",
+              "type": "std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >",
+              "default": null,
+              "description": "Input vector to sample from"
+            },
+            {
+              "name": "random_selection",
+              "direction": "output",
+              "type": "std::string",
+              "default": null,
+              "description": "Randomly selected item from input_vector"
+            }
+          ]
+        },
+        {
+          "id": "StopWatchCheck",
+          "node_type": "Action",
+          "subcategory": "Utility",
+          "description": "Checks if a specified duration has elapsed since a given timestamp",
+          "ports": [
+            {
+              "name": "duration_msec",
+              "direction": "input",
+              "type": "int",
+              "default": null,
+              "description": "The duration in milliseconds to check if elapsed"
+            },
+            {
+              "name": "timestamp",
+              "direction": "input",
+              "type": "std::chrono::time_point<std::chrono::_V2::steady_clock, std::chrono::duration<long, std::ratio<1l, 1000000000l> > >",
+              "default": null,
+              "description": "The epoch timestamp to compare against"
+            }
+          ]
+        },
+        {
+          "id": "StopwatchLog",
+          "node_type": "Action",
+          "subcategory": "Utility",
+          "description": "\n                <p>\n                    Log a message and the time elapsed since a timepoint provided on an input data port.\n                </p>\n            ",
+          "ports": [
+            {
+              "name": "elapsed_time_double_s",
+              "direction": "output",
+              "type": "double",
+              "default": "{elapsed_time_double_s}",
+              "description": "Elapsed time double (seconds)"
+            },
+            {
+              "name": "elapsed_time_str",
+              "direction": "output",
+              "type": "std::string",
+              "default": "{elapsed_time_str}",
+              "description": "Elapsed time (seconds) as a formatted string"
+            },
+            {
+              "name": "log_message_bool",
+              "direction": "input",
+              "type": "bool",
+              "default": "true",
+              "description": "Whether to log the message"
+            },
+            {
+              "name": "message",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Message to log (required if log_message_bool is true)."
+            },
+            {
+              "name": "timepoint",
+              "direction": "input",
+              "type": "std::chrono::time_point<std::chrono::_V2::steady_clock, std::chrono::duration<long, std::ratio<1l, 1000000000l> > >",
+              "default": "{timepoint}",
+              "description": "Measure time elapsed since this timepoint."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "folder": "visualization_behaviors",
+      "summary": "Publish, modify and delete visualization markers.",
+      "behaviors": [
+        {
+          "id": "ClearStaleContourMarkers",
+          "node_type": "Action",
+          "subcategory": "Visualization",
+          "description": "Deletes the stale triads/line a longer previous contour left in a VisualizePath namespace, using per-id DELETE (honored regardless of the UI's Auto-Clear on Run).",
+          "ports": [
+            {
+              "name": "marker_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "VisualizePath marker_name whose stale markers to clear (e.g. left_path)."
+            },
+            {
+              "name": "path",
+              "direction": "input",
+              "type": "std::vector<geometry_msgs::msg::PoseStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PoseStamped_<std::allocator<void> > > >",
+              "default": null,
+              "description": "The contour about to be drawn by the matching VisualizePath; its size sets how many triads will exist this pass."
+            },
+            {
+              "name": "topic",
+              "direction": "input",
+              "type": "std::string",
+              "default": "/visual_markers",
+              "description": "Marker topic to publish DELETEs on."
+            }
+          ]
+        },
+        {
+          "id": "PublishMarkerArray",
+          "node_type": "Action",
+          "subcategory": "Visualization",
+          "description": "Publishes a pre-built visualization MarkerArray on the given topic",
+          "ports": [
+            {
+              "name": "marker_array",
+              "direction": "input",
+              "type": "visualization_msgs::msg::MarkerArray_<std::allocator<void> >",
+              "default": null,
+              "description": "MarkerArray to publish verbatim (e.g. a cached array)"
+            },
+            {
+              "name": "topic",
+              "direction": "input",
+              "type": "std::string",
+              "default": "/visual_markers",
+              "description": "Topic to publish the MarkerArray on"
+            }
+          ]
+        },
+        {
+          "id": "PublishModifyMarkers",
+          "node_type": "Action",
+          "subcategory": "Visualization",
+          "description": "Publishes or modifies visualization markers on the /visual_markers topic",
+          "ports": [
+            {
+              "name": "color",
+              "direction": "input",
+              "type": "std_msgs::msg::ColorRGBA_<std::allocator<void> >",
+              "default": null,
+              "description": "Color of the markers in RGBA"
+            },
+            {
+              "name": "marker_poses",
+              "direction": "input",
+              "type": "std::vector<geometry_msgs::msg::PoseStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PoseStamped_<std::allocator<void> > > >",
+              "default": null,
+              "description": "Vector of poses for the markers"
+            },
+            {
+              "name": "marker_scale",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": null,
+              "description": "Scale of the markers in xyz [x, y, z]"
+            },
+            {
+              "name": "marker_type",
+              "direction": "input",
+              "type": "int",
+              "default": null,
+              "description": "Marker type (0=ARROW, 1=CUBE, 2=SPHERE, 3=CYLINDER, etc.)"
+            },
+            {
+              "name": "namespace",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Namespace for the markers (used to modify/delete markers later)"
+            },
+            {
+              "name": "operation_type",
+              "direction": "input",
+              "type": "int",
+              "default": "0",
+              "description": "Marker action value copied into each marker"
+            }
+          ]
         }
       ]
     },
     {
       "folder": "yaml_behaviors",
-      "summary": "Change values and lists in a YAML file on disk, safely and atomically.",
+      "summary": "Read, change and save values, lists, paths and poses in YAML files on disk.",
       "behaviors": [
         {
           "id": "AppendYamlListItem",
@@ -402,6 +2788,249 @@ window.BEHAVIOR_INDEX = {
               "type": "std::string",
               "default": null,
               "description": "Value to append. Parsed as YAML, so scalars and inline maps (`{ key: val, ... }`) both work through the same string port."
+            }
+          ]
+        },
+        {
+          "id": "ReadYamlList",
+          "node_type": "Action",
+          "subcategory": "YAML Operations",
+          "description": "Reads a list from a YAML file as a vector of strings using nested keys",
+          "ports": [
+            {
+              "name": "case_sensitive",
+              "direction": "input",
+              "type": "bool",
+              "default": "true",
+              "description": "Match YAML keys exactly (default). Set false to ignore case."
+            },
+            {
+              "name": "key1",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "First key to traverse YAML structure (mandatory)"
+            },
+            {
+              "name": "key2",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Second key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "key3",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Third key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "key4",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Fourth key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "key5",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Fifth key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "package_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Name of the ROS2 package containing the YAML file"
+            },
+            {
+              "name": "relative_file_path",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Relative path from the package root to the YAML file"
+            },
+            {
+              "name": "value_list",
+              "direction": "output",
+              "type": "std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >",
+              "default": null,
+              "description": "The extracted list as a vector of strings"
+            }
+          ]
+        },
+        {
+          "id": "ReadYamlValue",
+          "node_type": "Action",
+          "subcategory": "YAML Operations",
+          "description": "Reads a string value from a YAML file using nested keys",
+          "ports": [
+            {
+              "name": "case_sensitive",
+              "direction": "input",
+              "type": "bool",
+              "default": "true",
+              "description": "Match YAML keys exactly (default). Set false to ignore case."
+            },
+            {
+              "name": "key1",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "First key to traverse YAML structure (mandatory)"
+            },
+            {
+              "name": "key2",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Second key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "key3",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Third key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "key4",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Fourth key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "key5",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Fifth key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "key6",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Sixth key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "optional",
+              "direction": "input",
+              "type": "bool",
+              "default": "false",
+              "description": "Treat an absent key as a valid answer rather than a failure: SUCCESS with an empty `value`, logged at debug. Lets a caller read a key that may not be configured without a Fallback, so that every OTHER lookup failure - missing package, missing file, unparsable YAML, non-scalar value - still FAILS the caller instead of being indistinguishable from 'not configured'."
+            },
+            {
+              "name": "package_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Name of the ROS2 package containing the YAML file"
+            },
+            {
+              "name": "relative_file_path",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Relative path from the package root to the YAML file"
+            },
+            {
+              "name": "value",
+              "direction": "output",
+              "type": "std::string",
+              "default": null,
+              "description": "The extracted string value from the YAML file"
+            }
+          ]
+        },
+        {
+          "id": "SavePathToYaml",
+          "node_type": "Action",
+          "subcategory": "YAML Handling",
+          "description": "<p>Accepts a ROS message object, a namespace, and a file name. Converts and saves the message as a YAML file in the Objectives directory at the provided file name and under the provided namespace within the file.</p>",
+          "ports": [
+            {
+              "name": "message",
+              "direction": "input",
+              "type": "nav_msgs::msg::Path_<std::allocator<void> >",
+              "default": null,
+              "description": "Message to serialize and save to the YAML file."
+            },
+            {
+              "name": "namespace",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Top-level YAML key the message is written under within the file."
+            },
+            {
+              "name": "overwrite",
+              "direction": "input",
+              "type": "bool",
+              "default": null,
+              "description": "If true, overwrite the file if it already exists; if false, merge the message into the existing file under the given namespace, which must be non-empty in that case or the Behavior fails."
+            },
+            {
+              "name": "yaml_filename",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Path of the YAML file to write. Relative paths are resolved against the active config's objectives source directory."
+            }
+          ]
+        },
+        {
+          "id": "SavePointStampedVectorToYaml",
+          "node_type": "Action",
+          "subcategory": "YAML Handling",
+          "description": "\n    <p>Saves a vector of <code>geometry_msgs::msg::PointStamped</code> messages to a multi-document\n    YAML file in the objectives directory. Each message is written as a separate YAML document,\n    compatible with <code>LoadPointStampedVectorFromYaml</code>.</p>\n",
+          "ports": [
+            {
+              "name": "message",
+              "direction": "input",
+              "type": "std::vector<geometry_msgs::msg::PointStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PointStamped_<std::allocator<void> > > >",
+              "default": "{point_stamped_vector}",
+              "description": "A vector of geometry_msgs::msg::PointStamped messages to write to the file."
+            },
+            {
+              "name": "overwrite",
+              "direction": "input",
+              "type": "bool",
+              "default": "true",
+              "description": "Overwrite the file if it already exists."
+            },
+            {
+              "name": "yaml_filename",
+              "direction": "input",
+              "type": "std::string",
+              "default": "point_stamped_vector",
+              "description": "The name of the YAML file to save."
+            }
+          ]
+        },
+        {
+          "id": "SavePoseStampedVectorToYaml",
+          "node_type": "Action",
+          "subcategory": "User Created Behaviors",
+          "description": "Save a PoseStamped vector (coverage path) to a multi-document YAML file that round-trips with the built-in LoadPoseStampedVectorFromYaml. Fills the missing vector-save so a captured path can be replayed deterministically.",
+          "ports": [
+            {
+              "name": "file_path",
+              "direction": "input",
+              "type": "std::string",
+              "default": "/tmp/coverage_path.yaml",
+              "description": "Absolute path of the YAML file to write (multi-document: one pose per '---' doc, so it loads back with LoadPoseStampedVectorFromYaml)."
+            },
+            {
+              "name": "input",
+              "direction": "input",
+              "type": "std::vector<geometry_msgs::msg::PoseStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PoseStamped_<std::allocator<void> > > >",
+              "default": "{surface_path}",
+              "description": "The vector of PoseStamped (coverage/surface path) to save."
             }
           ]
         },

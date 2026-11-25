@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<package format="3">
+  <name>grasping_behaviors</name>
+  <version>0.1.0</version>
+  <description>
+    Filter graspable objects, read their shape, label the pick direction and
+    make grasp candidates.
+  </description>
+
+  <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
+  <author email="support@picknik.ai">MoveIt Pro Maintainer</author>
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>moveit_pro_package</buildtool_depend>
+
+  <depend>behaviortree_cpp_picknik</depend>
+  <depend>eigen</depend>
+  <depend>geometry_msgs</depend>
+  <depend>moveit_pro_behavior_interface</depend>
+  <depend>moveit_studio_vision_msgs</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>shape_msgs</depend>
+  <depend>spdlog</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tl_expected</depend>
+  <depend>visualization_msgs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

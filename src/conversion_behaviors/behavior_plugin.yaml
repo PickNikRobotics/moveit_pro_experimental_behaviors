@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    conversion_behaviors:
+      - "conversion_behaviors::ConversionBehaviorsLoader"

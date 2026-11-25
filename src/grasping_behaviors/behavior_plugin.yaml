@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    grasping_behaviors:
+      - "grasping_behaviors::GraspingBehaviorsLoader"

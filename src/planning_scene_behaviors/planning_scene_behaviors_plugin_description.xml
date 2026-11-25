@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<library path="planning_scene_behaviors">
+  <class
+    type="planning_scene_behaviors::PlanningSceneBehaviorsLoader"
+    base_class_type="moveit_pro::behaviors::SharedResourcesNodeLoaderBase"
+  />
+</library>

@@ -14,3 +14,13 @@ target_compile_definitions(
 ament_add_gtest(test_yaml_file_helpers test_yaml_file_helpers.cpp)
 target_link_libraries(test_yaml_file_helpers ${PROJECT_NAME})
 ament_target_dependencies(test_yaml_file_helpers ament_index_cpp)
+
+# resolveKey, the key lookup of ReadYamlValue and ReadYamlList. Its header is private to src/.
+ament_add_gtest(test_yaml_key_lookup test_yaml_key_lookup.cpp)
+target_include_directories(test_yaml_key_lookup PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+target_link_libraries(test_yaml_key_lookup ${PROJECT_NAME})
+if(TARGET yaml-cpp::yaml-cpp)
+  target_link_libraries(test_yaml_key_lookup yaml-cpp::yaml-cpp)
+else()
+  target_link_libraries(test_yaml_key_lookup yaml-cpp)
+endif()

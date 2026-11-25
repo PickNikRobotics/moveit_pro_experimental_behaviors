@@ -3,7 +3,7 @@
   <name>yaml_behaviors</name>
   <version>0.1.0</version>
   <description>
-    Change values and lists in a YAML file on disk, safely and atomically.
+    Read, change and save values, lists, paths and poses in YAML files on disk.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
@@ -15,9 +15,14 @@
 
   <depend>ament_index_cpp</depend>
   <depend>behaviortree_cpp_picknik</depend>
+  <depend>geometry_msgs</depend>
   <depend>moveit_pro_behavior_interface</depend>
+  <depend>moveit_pro_common</depend>
+  <depend>nav_msgs</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp</depend>
+  <depend>spdlog</depend>
+  <depend>tl_expected</depend>
   <depend>yaml-cpp</depend>
 
   <test_depend>ament_lint_auto</test_depend>
