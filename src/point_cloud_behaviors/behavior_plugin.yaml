@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    point_cloud_behaviors:
+      - "point_cloud_behaviors::PointCloudBehaviorsLoader"

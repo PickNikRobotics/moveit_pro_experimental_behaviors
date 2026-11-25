@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    planning_scene_behaviors:
+      - "planning_scene_behaviors::PlanningSceneBehaviorsLoader"

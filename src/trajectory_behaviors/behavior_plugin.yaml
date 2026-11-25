@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    trajectory_behaviors:
+      - "trajectory_behaviors::TrajectoryBehaviorsLoader"

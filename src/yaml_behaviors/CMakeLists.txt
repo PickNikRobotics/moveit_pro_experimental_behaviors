@@ -7,19 +7,29 @@ moveit_pro_package()
 set(THIS_PACKAGE_INCLUDE_DEPENDS
     ament_index_cpp
     behaviortree_cpp_picknik
+    geometry_msgs
     moveit_pro_behavior_interface
+    moveit_pro_common
+    nav_msgs
     pluginlib
-    rclcpp)
+    rclcpp
+    tl_expected)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
 
+find_package(spdlog REQUIRED)
 find_package(yaml-cpp REQUIRED)
 
 add_library(
   ${PROJECT_NAME} SHARED
   src/append_yaml_list_item.cpp
+  src/read_yaml_list.cpp
+  src/read_yaml_value.cpp
+  src/save_point_stamped_vector_to_yaml.cpp
+  src/save_pose_stamped_vector_to_yaml.cpp
   src/write_yaml_value.cpp
+  src/yaml_key_lookup.cpp
   src/register_yaml_behaviors.cpp
   src/register_behaviors.cpp)
 target_include_directories(
@@ -28,6 +38,7 @@ target_include_directories(
          $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(${PROJECT_NAME} PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
+target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
 if(TARGET yaml-cpp::yaml-cpp)
   target_link_libraries(${PROJECT_NAME} PRIVATE yaml-cpp::yaml-cpp)
 else()

@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    mobile_base_behaviors:
+      - "mobile_base_behaviors::MobileBaseBehaviorsLoader"

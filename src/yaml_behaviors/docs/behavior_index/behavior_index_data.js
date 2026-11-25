@@ -4,7 +4,7 @@ window.BEHAVIOR_INDEX = {
   "categories": [
     {
       "folder": "yaml_behaviors",
-      "summary": "Change values and lists in a YAML file on disk, safely and atomically.",
+      "summary": "Read, change and save values, lists, paths and poses in YAML files on disk.",
       "behaviors": [
         {
           "id": "AppendYamlListItem",
@@ -60,6 +60,249 @@ window.BEHAVIOR_INDEX = {
               "type": "std::string",
               "default": null,
               "description": "Value to append. Parsed as YAML, so scalars and inline maps (`{ key: val, ... }`) both work through the same string port."
+            }
+          ]
+        },
+        {
+          "id": "ReadYamlList",
+          "node_type": "Action",
+          "subcategory": "YAML Operations",
+          "description": "Reads a list from a YAML file as a vector of strings using nested keys",
+          "ports": [
+            {
+              "name": "case_sensitive",
+              "direction": "input",
+              "type": "bool",
+              "default": "true",
+              "description": "Match YAML keys exactly (default). Set false to ignore case."
+            },
+            {
+              "name": "key1",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "First key to traverse YAML structure (mandatory)"
+            },
+            {
+              "name": "key2",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Second key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "key3",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Third key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "key4",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Fourth key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "key5",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Fifth key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "package_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Name of the ROS2 package containing the YAML file"
+            },
+            {
+              "name": "relative_file_path",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Relative path from the package root to the YAML file"
+            },
+            {
+              "name": "value_list",
+              "direction": "output",
+              "type": "std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >",
+              "default": null,
+              "description": "The extracted list as a vector of strings"
+            }
+          ]
+        },
+        {
+          "id": "ReadYamlValue",
+          "node_type": "Action",
+          "subcategory": "YAML Operations",
+          "description": "Reads a string value from a YAML file using nested keys",
+          "ports": [
+            {
+              "name": "case_sensitive",
+              "direction": "input",
+              "type": "bool",
+              "default": "true",
+              "description": "Match YAML keys exactly (default). Set false to ignore case."
+            },
+            {
+              "name": "key1",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "First key to traverse YAML structure (mandatory)"
+            },
+            {
+              "name": "key2",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Second key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "key3",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Third key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "key4",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Fourth key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "key5",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Fifth key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "key6",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "Sixth key to traverse YAML structure (optional)"
+            },
+            {
+              "name": "optional",
+              "direction": "input",
+              "type": "bool",
+              "default": "false",
+              "description": "Treat an absent key as a valid answer rather than a failure: SUCCESS with an empty `value`, logged at debug. Lets a caller read a key that may not be configured without a Fallback, so that every OTHER lookup failure - missing package, missing file, unparsable YAML, non-scalar value - still FAILS the caller instead of being indistinguishable from 'not configured'."
+            },
+            {
+              "name": "package_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Name of the ROS2 package containing the YAML file"
+            },
+            {
+              "name": "relative_file_path",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Relative path from the package root to the YAML file"
+            },
+            {
+              "name": "value",
+              "direction": "output",
+              "type": "std::string",
+              "default": null,
+              "description": "The extracted string value from the YAML file"
+            }
+          ]
+        },
+        {
+          "id": "SavePathToYaml",
+          "node_type": "Action",
+          "subcategory": "YAML Handling",
+          "description": "<p>Accepts a ROS message object, a namespace, and a file name. Converts and saves the message as a YAML file in the Objectives directory at the provided file name and under the provided namespace within the file.</p>",
+          "ports": [
+            {
+              "name": "message",
+              "direction": "input",
+              "type": "nav_msgs::msg::Path_<std::allocator<void> >",
+              "default": null,
+              "description": "Message to serialize and save to the YAML file."
+            },
+            {
+              "name": "namespace",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Top-level YAML key the message is written under within the file."
+            },
+            {
+              "name": "overwrite",
+              "direction": "input",
+              "type": "bool",
+              "default": null,
+              "description": "If true, overwrite the file if it already exists; if false, merge the message into the existing file under the given namespace, which must be non-empty in that case or the Behavior fails."
+            },
+            {
+              "name": "yaml_filename",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Path of the YAML file to write. Relative paths are resolved against the active config's objectives source directory."
+            }
+          ]
+        },
+        {
+          "id": "SavePointStampedVectorToYaml",
+          "node_type": "Action",
+          "subcategory": "YAML Handling",
+          "description": "\n    <p>Saves a vector of <code>geometry_msgs::msg::PointStamped</code> messages to a multi-document\n    YAML file in the objectives directory. Each message is written as a separate YAML document,\n    compatible with <code>LoadPointStampedVectorFromYaml</code>.</p>\n",
+          "ports": [
+            {
+              "name": "message",
+              "direction": "input",
+              "type": "std::vector<geometry_msgs::msg::PointStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PointStamped_<std::allocator<void> > > >",
+              "default": "{point_stamped_vector}",
+              "description": "A vector of geometry_msgs::msg::PointStamped messages to write to the file."
+            },
+            {
+              "name": "overwrite",
+              "direction": "input",
+              "type": "bool",
+              "default": "true",
+              "description": "Overwrite the file if it already exists."
+            },
+            {
+              "name": "yaml_filename",
+              "direction": "input",
+              "type": "std::string",
+              "default": "point_stamped_vector",
+              "description": "The name of the YAML file to save."
+            }
+          ]
+        },
+        {
+          "id": "SavePoseStampedVectorToYaml",
+          "node_type": "Action",
+          "subcategory": "User Created Behaviors",
+          "description": "Save a PoseStamped vector (coverage path) to a multi-document YAML file that round-trips with the built-in LoadPoseStampedVectorFromYaml. Fills the missing vector-save so a captured path can be replayed deterministically.",
+          "ports": [
+            {
+              "name": "file_path",
+              "direction": "input",
+              "type": "std::string",
+              "default": "/tmp/coverage_path.yaml",
+              "description": "Absolute path of the YAML file to write (multi-document: one pose per '---' doc, so it loads back with LoadPoseStampedVectorFromYaml)."
+            },
+            {
+              "name": "input",
+              "direction": "input",
+              "type": "std::vector<geometry_msgs::msg::PoseStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PoseStamped_<std::allocator<void> > > >",
+              "default": "{surface_path}",
+              "description": "The vector of PoseStamped (coverage/surface path) to save."
             }
           ]
         },

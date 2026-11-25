@@ -4,7 +4,7 @@ window.BEHAVIOR_INDEX = {
   "categories": [
     {
       "folder": "ros_messaging_behaviors",
-      "summary": "Wait for a ROS message on a topic and copy it to the blackboard.",
+      "summary": "Wait for a ROS message on a topic and copy it to the blackboard, or publish a message on a topic.",
       "behaviors": [
         {
           "id": "GetPoseStampedFromTopic",
@@ -32,6 +32,71 @@ window.BEHAVIOR_INDEX = {
               "type": "std::string",
               "default": "",
               "description": "PoseStamped topic name."
+            }
+          ]
+        },
+        {
+          "id": "GetStringFromTopic",
+          "node_type": "Action",
+          "subcategory": "",
+          "description": "",
+          "ports": [
+            {
+              "name": "message_out",
+              "direction": "output",
+              "type": "std_msgs::msg::String_<std::allocator<void> >",
+              "default": null,
+              "description": "String message."
+            },
+            {
+              "name": "message_timeout_sec",
+              "direction": "input",
+              "type": "double",
+              "default": "-1.000000",
+              "description": "Maximum duration in seconds to wait for string message to be published before failing. Set to -1.0 to wait indefinitely."
+            },
+            {
+              "name": "topic_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "String topic name."
+            }
+          ]
+        },
+        {
+          "id": "PublishTwistStamped",
+          "node_type": "Action",
+          "subcategory": "ROS Messaging",
+          "description": "\n                <p>\n                    Publish a <code>geometry_msgs::msg::TwistStamped</code> message to a topic.\n                </p>\n            ",
+          "ports": [
+            {
+              "name": "message",
+              "direction": "input",
+              "type": "geometry_msgs::msg::TwistStamped_<std::allocator<void> >",
+              "default": null,
+              "description": "The TwistStamped message to publish."
+            },
+            {
+              "name": "queue_size",
+              "direction": "input",
+              "type": "unsigned long",
+              "default": "1",
+              "description": "The queue size for the publisher."
+            },
+            {
+              "name": "topic",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "The topic the message should be published to."
+            },
+            {
+              "name": "use_best_effort",
+              "direction": "input",
+              "type": "bool",
+              "default": "false",
+              "description": "Whether the publisher's reliability should be best effort (true) or reliable (false)."
             }
           ]
         }

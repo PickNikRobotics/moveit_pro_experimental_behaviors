@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    mtc_behaviors:
+      - "mtc_behaviors::MtcBehaviorsLoader"

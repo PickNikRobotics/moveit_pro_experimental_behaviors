@@ -2,7 +2,7 @@
 
 **`ros_messaging_behaviors` is a standalone ROS 2 package of MoveIt Pro Behaviors.**
 
-Wait for a ROS message on a topic and copy it to the blackboard.
+Wait for a ROS message on a topic and copy it to the blackboard, or publish a message on a topic.
 
 
 ## Use this package
@@ -33,6 +33,8 @@ objectives:
 | Behavior ID | What it does |
 | ----------- | ------------ |
 | `GetPoseStampedFromTopic` | Waits for a `geometry_msgs/PoseStamped` message on a topic and writes it to the blackboard. |
+| `GetStringFromTopic` | Waits for a `std_msgs/String` message on a topic and writes it to the blackboard. |
+| `PublishTwistStamped` | Publishes a `geometry_msgs/TwistStamped` message on a topic, for example a velocity command to a mobile base. |
 
 Every port is documented in the [offline behavior index](docs/behavior_index/index.html).
 
@@ -68,5 +70,5 @@ then [regenerate the index](docs/behavior_index/README.md).
 
 ## Notes
 
-- This folder has one Behavior now. Other generic topic and service Behaviors go here too.
+- Other generic topic and service Behaviors go here too.
 - `GetDynamicInterfaceGroupValues` also reads a topic, but it is in `control_interface_behaviors` because it is only useful with the other interface value Behaviors.

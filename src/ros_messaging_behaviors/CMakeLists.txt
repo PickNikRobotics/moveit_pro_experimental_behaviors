@@ -9,7 +9,8 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
     geometry_msgs
     moveit_pro_behavior_interface
     pluginlib
-    rclcpp)
+    rclcpp
+    std_msgs)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -17,6 +18,8 @@ endforeach()
 add_library(
   ${PROJECT_NAME} SHARED
   src/get_pose_stamped_from_topic.cpp
+  src/get_string_from_topic.cpp
+  src/publish_twist_stamped.cpp
   src/register_ros_messaging_behaviors.cpp
   src/register_behaviors.cpp)
 target_include_directories(

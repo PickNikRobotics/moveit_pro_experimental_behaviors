@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    geometry_behaviors:
+      - "geometry_behaviors::GeometryBehaviorsLoader"

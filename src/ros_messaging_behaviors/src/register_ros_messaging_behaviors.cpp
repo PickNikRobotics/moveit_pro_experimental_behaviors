@@ -9,6 +9,8 @@
 #include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
 
 #include "ros_messaging_behaviors/get_pose_stamped_from_topic.hpp"
+#include "ros_messaging_behaviors/get_string_from_topic.hpp"
+#include "ros_messaging_behaviors/publish_twist_stamped.hpp"
 
 namespace ros_messaging_behaviors
 {
@@ -16,5 +18,7 @@ void registerRosMessagingBehaviors(BT::BehaviorTreeFactory& factory,
                                    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
 {
   moveit_pro::behaviors::registerBehavior<GetPoseStampedFromTopic>(factory, "GetPoseStampedFromTopic", shared_resources);
+  moveit_pro::behaviors::registerBehavior<GetStringFromTopic>(factory, "GetStringFromTopic", shared_resources);
+  moveit_pro::behaviors::registerBehavior<PublishTwistStamped>(factory, "PublishTwistStamped", shared_resources);
 }
 }  // namespace ros_messaging_behaviors
