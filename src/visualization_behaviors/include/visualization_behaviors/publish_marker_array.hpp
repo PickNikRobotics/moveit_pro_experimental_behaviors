@@ -11,8 +11,8 @@ namespace visualization_behaviors
  * @brief Publishes a pre-built visualization_msgs::msg::MarkerArray to /visual_markers.
  * @details Unlike PublishModifyMarkers, which constructs markers from pose/scale/color ports, this
  * behavior publishes a MarkerArray that already exists on the blackboard verbatim. It is used to
- * republish cached marker arrays (e.g. the per-pass contour-planning slabs produced by
- * GenerateWashPaths) at execution time so the visualization tracks the pass being run.
+ * republish cached marker arrays (e.g. per-pass path-planning slabs made earlier in the
+ * Objective) at execution time so the visualization tracks the pass being run.
  */
 class PublishMarkerArray : public BT::SyncActionNode
 {

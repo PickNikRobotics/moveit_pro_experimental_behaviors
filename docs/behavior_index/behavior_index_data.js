@@ -790,7 +790,7 @@ window.BEHAVIOR_INDEX = {
     },
     {
       "folder": "grasping_behaviors",
-      "summary": "Filter graspable objects, read their shape, label the pick direction and make grasp candidates.",
+      "summary": "Filter graspable objects, read their shape, label the pick direction, and make grasp and place candidates.",
       "behaviors": [
         {
           "id": "DeterminePickAlignment",
@@ -942,6 +942,84 @@ window.BEHAVIOR_INDEX = {
               "description": "Tilt angle in degrees from the vertical for the sphere ring candidates."
             }
           ]
+        },
+        {
+          "id": "GeneratePlaceCandidates",
+          "node_type": "Action",
+          "subcategory": "Grasping",
+          "description": "Computes grasp-link poses that place a held object at a target pose, from the object and grasp-link poses at pick time. Optional extra candidates turn the object about the target Z axis or place it upside down.",
+          "ports": [
+            {
+              "name": "include_flipped",
+              "direction": "input",
+              "type": "bool",
+              "default": "false",
+              "description": "Also output candidates with the object upside down (a half turn about the target X axis). Use it only when the object may be placed upside down."
+            },
+            {
+              "name": "include_upright",
+              "direction": "input",
+              "type": "bool",
+              "default": "true",
+              "description": "Output candidates that keep the object as target_pose orients it."
+            },
+            {
+              "name": "object_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{object_pose}",
+              "description": "Pose of the object when it was picked, for example from detection. Must be in the same frame as pick_pose."
+            },
+            {
+              "name": "pick_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{pick_pose}",
+              "description": "Pose of the grasp link when the object was picked."
+            },
+            {
+              "name": "place_poses",
+              "direction": "output",
+              "type": "std::vector<geometry_msgs::msg::PoseStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PoseStamped_<std::allocator<void> > > >",
+              "default": "{place_poses}",
+              "description": "Grasp-link poses that place the object, in the frame of target_pose. Upright candidates first, nominal orientation first."
+            },
+            {
+              "name": "predicted_object_pose",
+              "direction": "output",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{predicted_object_pose}",
+              "description": "Object pose for the first candidate, for visualization."
+            },
+            {
+              "name": "target_offset_xyz",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "0;0;0",
+              "description": "Offset \"x;y;z\" of the object frame from target_pose, in the target frame, for example half the object height along Z."
+            },
+            {
+              "name": "target_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{target_pose}",
+              "description": "Pose that the object frame must have after the place."
+            },
+            {
+              "name": "yaw_increment_deg",
+              "direction": "input",
+              "type": "double",
+              "default": "20.000000",
+              "description": "Step, in degrees, between the turns inside the yaw window."
+            },
+            {
+              "name": "yaw_range_deg",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Half width, in degrees, of a window of turns about the target Z axis. Zero gives only the nominal orientation."
+            }
+          ]
         }
       ]
     },
@@ -989,7 +1067,7 @@ window.BEHAVIOR_INDEX = {
     },
     {
       "folder": "image_behaviors",
-      "summary": "Work with 2D masks and images: find points in masks, pick the best mask, draw points, save depth images.",
+      "summary": "Work with 2D masks and images: find points in masks, pick the best mask, draw points, save depth images, project pixels onto a plane, crop an object.",
       "behaviors": [
         {
           "id": "FindMaskIndexForPoint",
@@ -1107,6 +1185,63 @@ window.BEHAVIOR_INDEX = {
           ]
         },
         {
+          "id": "IntersectPixelRaysWithPlane",
+          "node_type": "Action",
+          "subcategory": "Perception - 2D Image",
+          "description": "Projects pixels onto a plane by intersecting their camera rays with it, instead of reading a depth value at each pixel. On a handle, a label or a thin or shiny feature the depth is that of the feature or it is missing; the ray meets the plane where the plane is.",
+          "ports": [
+            {
+              "name": "camera_info",
+              "direction": "input",
+              "type": "sensor_msgs::msg::CameraInfo_<std::allocator<void> >",
+              "default": "{camera_info}",
+              "description": "Camera the pixels were measured in. Its frame_id is where the rays start. The image must be rectified."
+            },
+            {
+              "name": "hit_count",
+              "direction": "output",
+              "type": "int",
+              "default": "{hit_count}",
+              "description": "Number of pixels whose ray met the plane."
+            },
+            {
+              "name": "output_poses",
+              "direction": "output",
+              "type": "std::vector<geometry_msgs::msg::PoseStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PoseStamped_<std::allocator<void> > > >",
+              "default": "{output_poses}",
+              "description": "Intersections in the frame of plane_pose, each with the orientation of plane_pose. Rays that miss are dropped, so this can be shorter than pixel_coords and is not index-aligned with it."
+            },
+            {
+              "name": "pixel_coords",
+              "direction": "input",
+              "type": "std::vector<geometry_msgs::msg::PointStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PointStamped_<std::allocator<void> > > >",
+              "default": "{pixel_coords}",
+              "description": "Pixels as fractions of the image width (x) and height (y), as GetCenterFromMask2D outputs them."
+            },
+            {
+              "name": "plane_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{plane_pose}",
+              "description": "Plane to project onto: its position is on the plane and its Z axis is the plane normal."
+            },
+            {
+              "name": "reference_pixel",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "",
+              "description": "Optional extra pixel as \"u;v\", in the same fractional units, projected with the others. Use it to get a reference point on the plane. Empty means none."
+            },
+            {
+              "name": "reference_pose",
+              "direction": "output",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{reference_pose}",
+              "description": "Where reference_pixel met the plane. Not set when reference_pixel is empty."
+            }
+          ]
+        },
+        {
           "id": "MarkPointsOnImage",
           "node_type": "Action",
           "subcategory": "Visualization",
@@ -1143,6 +1278,63 @@ window.BEHAVIOR_INDEX = {
           ]
         },
         {
+          "id": "RotateAndCropObjectImage",
+          "node_type": "Action",
+          "subcategory": "Perception - 2D Image",
+          "description": "Crops one object out of an image by its mask, and rotates the crop so that the +Z axis of the object frame points up. Use it to give a model a view of the object in a known orientation.",
+          "ports": [
+            {
+              "name": "camera_info",
+              "direction": "input",
+              "type": "sensor_msgs::msg::CameraInfo_<std::allocator<void> >",
+              "default": "{camera_info}",
+              "description": "Intrinsics of the camera that took the image. Its frame_id is the camera optical frame."
+            },
+            {
+              "name": "image",
+              "direction": "input",
+              "type": "sensor_msgs::msg::Image_<std::allocator<void> >",
+              "default": "{image}",
+              "description": "Color image that shows the object."
+            },
+            {
+              "name": "mask",
+              "direction": "input",
+              "type": "moveit_studio_vision_msgs::msg::Mask2D_<std::allocator<void> >",
+              "default": "{mask2d}",
+              "description": "Mask of the object in the image. x and y are the top-left corner of the mask in the image, and pixels is the mask sub-image. Non-zero pixels are kept; the others become black."
+            },
+            {
+              "name": "object_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{object_pose}",
+              "description": "Pose of the object. Its +Z axis is the axis that points up in the output."
+            },
+            {
+              "name": "padding_factor",
+              "direction": "input",
+              "type": "double",
+              "default": "1.500000",
+              "description": "The crop side is the larger side of the mask bounding box times this factor, so the rotation does not cut the corners of the object."
+            },
+            {
+              "name": "rotated_image",
+              "direction": "output",
+              "type": "sensor_msgs::msg::Image_<std::allocator<void> >",
+              "default": "{rotated_image}",
+              "description": "Cropped, masked and rotated BGR8 image, with the object +Z axis pointing up."
+            },
+            {
+              "name": "save_image_dir",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "If not empty, the output image is also saved to this directory as a timestamped JPEG. A leading '~' is your home directory. Empty means do not save."
+            }
+          ]
+        },
+        {
           "id": "SaveDepthImageToFile",
           "node_type": "Action",
           "subcategory": "Perception - 2D Image",
@@ -1175,8 +1367,51 @@ window.BEHAVIOR_INDEX = {
     },
     {
       "folder": "joint_state_behaviors",
-      "summary": "Read and edit joint values in JointState, RobotState and RobotState messages.",
+      "summary": "Read, edit and compare joint values in JointState, RobotState and RobotState messages.",
       "behaviors": [
+        {
+          "id": "ComputeJointStateDistance",
+          "node_type": "Action",
+          "subcategory": "Robot State",
+          "description": "Computes the joint-space distance between two joint states over the joints you name: the Euclidean norm of the position differences and the largest difference of one joint.",
+          "ports": [
+            {
+              "name": "distance",
+              "direction": "output",
+              "type": "double",
+              "default": "{joint_state_distance}",
+              "description": "Euclidean norm of the position differences, in the units of the joints."
+            },
+            {
+              "name": "joint_names",
+              "direction": "input",
+              "type": "std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >",
+              "default": "",
+              "description": "Joints to compare, separated by ';'. Empty means every joint named in joint_state_target."
+            },
+            {
+              "name": "joint_state_current",
+              "direction": "input",
+              "type": "sensor_msgs::msg::JointState_<std::allocator<void> >",
+              "default": "{joint_state_current}",
+              "description": "First joint state, for example the current state."
+            },
+            {
+              "name": "joint_state_target",
+              "direction": "input",
+              "type": "sensor_msgs::msg::JointState_<std::allocator<void> >",
+              "default": "{joint_state_target}",
+              "description": "Second joint state, for example the goal."
+            },
+            {
+              "name": "max_joint_distance",
+              "direction": "output",
+              "type": "double",
+              "default": "{max_joint_distance}",
+              "description": "Largest absolute position difference of one joint."
+            }
+          ]
+        },
         {
           "id": "CreateEmptyMultiDOFJointState",
           "node_type": "Action",
@@ -1346,7 +1581,7 @@ window.BEHAVIOR_INDEX = {
               "name": "joint_name",
               "direction": "input",
               "type": "std::string",
-              "default": "linear_x_joint",
+              "default": null,
               "description": "The single joint the goal names."
             },
             {
@@ -1869,7 +2104,7 @@ window.BEHAVIOR_INDEX = {
     },
     {
       "folder": "point_cloud_behaviors",
-      "summary": "Filter, count, mirror and reconstruct point clouds, and find the closest point to a pose.",
+      "summary": "Filter, count, mirror, crop, load and reconstruct point clouds, and find the closest point to a pose.",
       "behaviors": [
         {
           "id": "ClearPointCloudTimestamp",
@@ -1944,6 +2179,63 @@ window.BEHAVIOR_INDEX = {
           ]
         },
         {
+          "id": "CropPointCloudToCameraFrustum",
+          "node_type": "Action",
+          "subcategory": "Perception - 3D Point Cloud",
+          "description": "Keeps only the points inside the view volume of a camera: between a near and a far limit along the optical Z axis, and inside the image bounds. The limits are planes, not spheres, so the kept region is a true frustum. The output is unordered.",
+          "ports": [
+            {
+              "name": "camera_info",
+              "direction": "input",
+              "type": "sensor_msgs::msg::CameraInfo_<std::allocator<void> >",
+              "default": "{camera_info}",
+              "description": "Camera whose view volume defines the crop. Its frame_id is the optical frame the test is done in; the cloud is transformed into it when the two frames differ."
+            },
+            {
+              "name": "kept_count",
+              "direction": "output",
+              "type": "int",
+              "default": "{kept_count}",
+              "description": "Number of points kept."
+            },
+            {
+              "name": "max_range",
+              "direction": "input",
+              "type": "double",
+              "default": "10.000000",
+              "description": "Far limit, in meters along the optical Z axis. Further points are dropped."
+            },
+            {
+              "name": "min_range",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Near limit, in meters along the optical Z axis. Closer points are dropped."
+            },
+            {
+              "name": "pixel_margin",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Inset from all four image edges, in pixels. Depth at the image edge is often the least reliable."
+            },
+            {
+              "name": "point_cloud",
+              "direction": "input",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{point_cloud}",
+              "description": "Input point cloud with FLOAT32 x, y and z fields."
+            },
+            {
+              "name": "point_cloud_cropped",
+              "direction": "output",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{point_cloud_cropped}",
+              "description": "The kept points, in the frame of the input cloud. Unordered, with every field kept."
+            }
+          ]
+        },
+        {
           "id": "ExcludeMask3DFromPointCloud",
           "node_type": "Action",
           "subcategory": "Perception - 3D Point Cloud",
@@ -2005,6 +2297,49 @@ window.BEHAVIOR_INDEX = {
               "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
               "default": null,
               "description": "Input point cloud."
+            }
+          ]
+        },
+        {
+          "id": "LoadLatestPointCloudFromFile",
+          "node_type": "Action",
+          "subcategory": "Perception - 3D Point Cloud",
+          "description": "Loads the newest .pcd file in a directory whose name starts with a prefix, so you do not need the exact file name that SavePointCloudToFile made. The defaults match SavePointCloudToFile.",
+          "ports": [
+            {
+              "name": "directory",
+              "direction": "input",
+              "type": "std::string",
+              "default": "~/.config/moveit_pro/saved_behavior_data",
+              "description": "Directory to search. A leading '~' is your home directory."
+            },
+            {
+              "name": "file_path",
+              "direction": "output",
+              "type": "std::string",
+              "default": "{loaded_file_path}",
+              "description": "Full path of the file that was loaded."
+            },
+            {
+              "name": "file_prefix",
+              "direction": "input",
+              "type": "std::string",
+              "default": "pointcloud",
+              "description": "File name prefix to match. The newest matching .pcd file is loaded. Empty matches every .pcd file."
+            },
+            {
+              "name": "frame_id",
+              "direction": "input",
+              "type": "std::string",
+              "default": "world",
+              "description": "Frame ID to set on the loaded point cloud."
+            },
+            {
+              "name": "point_cloud",
+              "direction": "output",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{point_cloud}",
+              "description": "The newest matching point cloud."
             }
           ]
         },
@@ -2269,7 +2604,7 @@ window.BEHAVIOR_INDEX = {
     },
     {
       "folder": "ros_messaging_behaviors",
-      "summary": "Wait for a ROS message on a topic and copy it to the blackboard, or publish a message on a topic.",
+      "summary": "Wait for a ROS message on a topic and copy it to the blackboard, publish a message on a topic, or keep topics subscribed.",
       "behaviors": [
         {
           "id": "GetPoseStampedFromTopic",
@@ -2326,6 +2661,43 @@ window.BEHAVIOR_INDEX = {
               "type": "std::string",
               "default": "",
               "description": "String topic name."
+            }
+          ]
+        },
+        {
+          "id": "MaintainTopicSubscription",
+          "node_type": "Action",
+          "subcategory": "ROS Messaging",
+          "description": "\n                <p>Holds subscriptions to one or more topics, of any message type, open while this Behavior is RUNNING, and drops them when it is halted.</p>\n                <p>Some drivers publish a stream only while it has a subscriber, for example a depth camera that computes depth only on demand. Run this Behavior in a Parallel next to the steps that read the stream, such as GetPointCloud or GetCameraInfo. When those steps finish, the Parallel halts this Behavior and the driver can stop the stream again.</p>\n                <p>The message type of each topic is read from the ROS graph, so you do not set it. A topic that has no publisher yet is retried on every tick.</p>\n            ",
+          "ports": [
+            {
+              "name": "topic_names",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Semicolon-separated list of topics to keep a subscription open on while this Behavior runs."
+            }
+          ]
+        },
+        {
+          "id": "PublishPoseStamped",
+          "node_type": "Action",
+          "subcategory": "ROS Messaging",
+          "description": "\n                <p>Publishes a <code>geometry_msgs/PoseStamped</code> from the blackboard to a latched topic, so other tools can show a pose the Objective computed, for example as a camera overlay.</p>\n                <p>The publisher is transient-local and keeps the last pose, so a subscriber that starts after the tick still receives it. Exits with FAILURE when either port is unset, having published nothing.</p>\n            ",
+          "ports": [
+            {
+              "name": "pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": null,
+              "description": "Pose to publish. Its header is kept as it is."
+            },
+            {
+              "name": "topic_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Topic to publish on. The topic is latched (transient-local)."
             }
           ]
         },

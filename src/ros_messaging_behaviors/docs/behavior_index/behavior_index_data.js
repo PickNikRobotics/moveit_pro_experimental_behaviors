@@ -4,7 +4,7 @@ window.BEHAVIOR_INDEX = {
   "categories": [
     {
       "folder": "ros_messaging_behaviors",
-      "summary": "Wait for a ROS message on a topic and copy it to the blackboard, or publish a message on a topic.",
+      "summary": "Wait for a ROS message on a topic and copy it to the blackboard, publish a message on a topic, or keep topics subscribed.",
       "behaviors": [
         {
           "id": "GetPoseStampedFromTopic",
@@ -61,6 +61,43 @@ window.BEHAVIOR_INDEX = {
               "type": "std::string",
               "default": "",
               "description": "String topic name."
+            }
+          ]
+        },
+        {
+          "id": "MaintainTopicSubscription",
+          "node_type": "Action",
+          "subcategory": "ROS Messaging",
+          "description": "\n                <p>Holds subscriptions to one or more topics, of any message type, open while this Behavior is RUNNING, and drops them when it is halted.</p>\n                <p>Some drivers publish a stream only while it has a subscriber, for example a depth camera that computes depth only on demand. Run this Behavior in a Parallel next to the steps that read the stream, such as GetPointCloud or GetCameraInfo. When those steps finish, the Parallel halts this Behavior and the driver can stop the stream again.</p>\n                <p>The message type of each topic is read from the ROS graph, so you do not set it. A topic that has no publisher yet is retried on every tick.</p>\n            ",
+          "ports": [
+            {
+              "name": "topic_names",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Semicolon-separated list of topics to keep a subscription open on while this Behavior runs."
+            }
+          ]
+        },
+        {
+          "id": "PublishPoseStamped",
+          "node_type": "Action",
+          "subcategory": "ROS Messaging",
+          "description": "\n                <p>Publishes a <code>geometry_msgs/PoseStamped</code> from the blackboard to a latched topic, so other tools can show a pose the Objective computed, for example as a camera overlay.</p>\n                <p>The publisher is transient-local and keeps the last pose, so a subscriber that starts after the tick still receives it. Exits with FAILURE when either port is unset, having published nothing.</p>\n            ",
+          "ports": [
+            {
+              "name": "pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": null,
+              "description": "Pose to publish. Its header is kept as it is."
+            },
+            {
+              "name": "topic_name",
+              "direction": "input",
+              "type": "std::string",
+              "default": null,
+              "description": "Topic to publish on. The topic is latched (transient-local)."
             }
           ]
         },

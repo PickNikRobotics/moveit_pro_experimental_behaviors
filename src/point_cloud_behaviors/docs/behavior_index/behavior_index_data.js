@@ -4,7 +4,7 @@ window.BEHAVIOR_INDEX = {
   "categories": [
     {
       "folder": "point_cloud_behaviors",
-      "summary": "Filter, count, mirror and reconstruct point clouds, and find the closest point to a pose.",
+      "summary": "Filter, count, mirror, crop, load and reconstruct point clouds, and find the closest point to a pose.",
       "behaviors": [
         {
           "id": "ClearPointCloudTimestamp",
@@ -79,6 +79,63 @@ window.BEHAVIOR_INDEX = {
           ]
         },
         {
+          "id": "CropPointCloudToCameraFrustum",
+          "node_type": "Action",
+          "subcategory": "Perception - 3D Point Cloud",
+          "description": "Keeps only the points inside the view volume of a camera: between a near and a far limit along the optical Z axis, and inside the image bounds. The limits are planes, not spheres, so the kept region is a true frustum. The output is unordered.",
+          "ports": [
+            {
+              "name": "camera_info",
+              "direction": "input",
+              "type": "sensor_msgs::msg::CameraInfo_<std::allocator<void> >",
+              "default": "{camera_info}",
+              "description": "Camera whose view volume defines the crop. Its frame_id is the optical frame the test is done in; the cloud is transformed into it when the two frames differ."
+            },
+            {
+              "name": "kept_count",
+              "direction": "output",
+              "type": "int",
+              "default": "{kept_count}",
+              "description": "Number of points kept."
+            },
+            {
+              "name": "max_range",
+              "direction": "input",
+              "type": "double",
+              "default": "10.000000",
+              "description": "Far limit, in meters along the optical Z axis. Further points are dropped."
+            },
+            {
+              "name": "min_range",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Near limit, in meters along the optical Z axis. Closer points are dropped."
+            },
+            {
+              "name": "pixel_margin",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Inset from all four image edges, in pixels. Depth at the image edge is often the least reliable."
+            },
+            {
+              "name": "point_cloud",
+              "direction": "input",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{point_cloud}",
+              "description": "Input point cloud with FLOAT32 x, y and z fields."
+            },
+            {
+              "name": "point_cloud_cropped",
+              "direction": "output",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{point_cloud_cropped}",
+              "description": "The kept points, in the frame of the input cloud. Unordered, with every field kept."
+            }
+          ]
+        },
+        {
           "id": "ExcludeMask3DFromPointCloud",
           "node_type": "Action",
           "subcategory": "Perception - 3D Point Cloud",
@@ -140,6 +197,49 @@ window.BEHAVIOR_INDEX = {
               "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
               "default": null,
               "description": "Input point cloud."
+            }
+          ]
+        },
+        {
+          "id": "LoadLatestPointCloudFromFile",
+          "node_type": "Action",
+          "subcategory": "Perception - 3D Point Cloud",
+          "description": "Loads the newest .pcd file in a directory whose name starts with a prefix, so you do not need the exact file name that SavePointCloudToFile made. The defaults match SavePointCloudToFile.",
+          "ports": [
+            {
+              "name": "directory",
+              "direction": "input",
+              "type": "std::string",
+              "default": "~/.config/moveit_pro/saved_behavior_data",
+              "description": "Directory to search. A leading '~' is your home directory."
+            },
+            {
+              "name": "file_path",
+              "direction": "output",
+              "type": "std::string",
+              "default": "{loaded_file_path}",
+              "description": "Full path of the file that was loaded."
+            },
+            {
+              "name": "file_prefix",
+              "direction": "input",
+              "type": "std::string",
+              "default": "pointcloud",
+              "description": "File name prefix to match. The newest matching .pcd file is loaded. Empty matches every .pcd file."
+            },
+            {
+              "name": "frame_id",
+              "direction": "input",
+              "type": "std::string",
+              "default": "world",
+              "description": "Frame ID to set on the loaded point cloud."
+            },
+            {
+              "name": "point_cloud",
+              "direction": "output",
+              "type": "sensor_msgs::msg::PointCloud2_<std::allocator<void> >",
+              "default": "{point_cloud}",
+              "description": "The newest matching point cloud."
             }
           ]
         },

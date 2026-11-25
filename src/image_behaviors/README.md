@@ -2,7 +2,7 @@
 
 **`image_behaviors` is a standalone ROS 2 package of MoveIt Pro Behaviors.**
 
-Work with 2D segmentation masks (`moveit_studio_vision_msgs/Mask2D`) and `sensor_msgs/Image` images: find which mask holds a point, which points fall inside masks, pick the highest-score mask, draw points on an image, and save a depth image to a 16-bit PNG file.
+Work with 2D segmentation masks (`moveit_studio_vision_msgs/Mask2D`) and `sensor_msgs/Image` images: find which mask holds a point, which points fall inside masks, pick the highest-score mask, draw points on an image, save a depth image to a 16-bit PNG file, project pixels onto a plane, and crop an object out of an image in a known orientation.
 
 
 ## Use this package
@@ -35,7 +35,9 @@ objectives:
 | `FindMaskIndexForPoint` | Outputs the index of the first `Mask2D` that contains a 2D point. |
 | `FindPointsInMasks` | Outputs the indices of the 2D points that are inside any of a list of `Mask2D` masks. |
 | `GetHighestConfidenceMask` | Picks the `Mask2D` with the highest confidence score from a list. |
+| `IntersectPixelRaysWithPlane` | Projects pixels onto a plane through their camera rays, instead of reading the depth at each pixel. |
 | `MarkPointsOnImage` | Draws a list of points on an image and publishes the result, for a quick visual check. |
+| `RotateAndCropObjectImage` | Crops one object out of an image by its mask and rotates the crop so the object +Z axis points up. |
 | `SaveDepthImageToFile` | Saves a depth image to a 16-bit PNG file and keeps the depth encoding, unlike `SaveImageToFile`. |
 
 Every port is documented in the [offline behavior index](docs/behavior_index/index.html).
@@ -69,3 +71,8 @@ test checks that its documented IDs and ports match the code. These tests need n
 
 When adding a Behavior, update this package's sources, dependencies and registration function, add tests,
 then [regenerate the index](docs/behavior_index/README.md).
+
+## Notes
+
+- `src/pixel_ray.hpp` holds its own copy of the camera intrinsics struct, because a package does not include headers of another package.
+- `test/` tests the ray and plane math and runs `IntersectPixelRaysWithPlane` with the camera and the plane in one frame.

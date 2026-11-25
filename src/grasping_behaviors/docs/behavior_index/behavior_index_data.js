@@ -4,7 +4,7 @@ window.BEHAVIOR_INDEX = {
   "categories": [
     {
       "folder": "grasping_behaviors",
-      "summary": "Filter graspable objects, read their shape, label the pick direction and make grasp candidates.",
+      "summary": "Filter graspable objects, read their shape, label the pick direction, and make grasp and place candidates.",
       "behaviors": [
         {
           "id": "DeterminePickAlignment",
@@ -154,6 +154,84 @@ window.BEHAVIOR_INDEX = {
               "type": "double",
               "default": "22.500000",
               "description": "Tilt angle in degrees from the vertical for the sphere ring candidates."
+            }
+          ]
+        },
+        {
+          "id": "GeneratePlaceCandidates",
+          "node_type": "Action",
+          "subcategory": "Grasping",
+          "description": "Computes grasp-link poses that place a held object at a target pose, from the object and grasp-link poses at pick time. Optional extra candidates turn the object about the target Z axis or place it upside down.",
+          "ports": [
+            {
+              "name": "include_flipped",
+              "direction": "input",
+              "type": "bool",
+              "default": "false",
+              "description": "Also output candidates with the object upside down (a half turn about the target X axis). Use it only when the object may be placed upside down."
+            },
+            {
+              "name": "include_upright",
+              "direction": "input",
+              "type": "bool",
+              "default": "true",
+              "description": "Output candidates that keep the object as target_pose orients it."
+            },
+            {
+              "name": "object_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{object_pose}",
+              "description": "Pose of the object when it was picked, for example from detection. Must be in the same frame as pick_pose."
+            },
+            {
+              "name": "pick_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{pick_pose}",
+              "description": "Pose of the grasp link when the object was picked."
+            },
+            {
+              "name": "place_poses",
+              "direction": "output",
+              "type": "std::vector<geometry_msgs::msg::PoseStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PoseStamped_<std::allocator<void> > > >",
+              "default": "{place_poses}",
+              "description": "Grasp-link poses that place the object, in the frame of target_pose. Upright candidates first, nominal orientation first."
+            },
+            {
+              "name": "predicted_object_pose",
+              "direction": "output",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{predicted_object_pose}",
+              "description": "Object pose for the first candidate, for visualization."
+            },
+            {
+              "name": "target_offset_xyz",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "0;0;0",
+              "description": "Offset \"x;y;z\" of the object frame from target_pose, in the target frame, for example half the object height along Z."
+            },
+            {
+              "name": "target_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{target_pose}",
+              "description": "Pose that the object frame must have after the place."
+            },
+            {
+              "name": "yaw_increment_deg",
+              "direction": "input",
+              "type": "double",
+              "default": "20.000000",
+              "description": "Step, in degrees, between the turns inside the yaw window."
+            },
+            {
+              "name": "yaw_range_deg",
+              "direction": "input",
+              "type": "double",
+              "default": "0.000000",
+              "description": "Half width, in degrees, of a window of turns about the target Z axis. Zero gives only the nominal orientation."
             }
           ]
         }

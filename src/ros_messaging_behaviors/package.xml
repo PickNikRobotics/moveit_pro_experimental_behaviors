@@ -3,8 +3,8 @@
   <name>ros_messaging_behaviors</name>
   <version>0.1.0</version>
   <description>
-    Wait for a ROS message on a topic and copy it to the blackboard, or publish
-    a message on a topic.
+    Wait for a ROS message on a topic and copy it to the blackboard, publish a
+    message on a topic, or keep topics subscribed.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>

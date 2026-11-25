@@ -139,7 +139,9 @@ std::string renderBehaviorIndex()
     out << "    {\n"
         << "      \"folder\": " << quoted("point_cloud_behaviors") << ",\n"
         << "      \"summary\": "
-        << quoted("Filter, count, mirror and reconstruct point clouds, and find the closest point to a pose.") << ",\n"
+        << quoted(
+               "Filter, count, mirror, crop, load and reconstruct point clouds, and find the closest point to a pose.")
+        << ",\n"
         << "      \"behaviors\": [\n";
     std::size_t b = 0;
     for (const auto& [id, manifest] : manifests)

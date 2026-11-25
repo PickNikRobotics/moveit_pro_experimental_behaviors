@@ -19,8 +19,8 @@ namespace joint_state_behaviors
 /**
  * @brief A one-joint RobotState goal whose value is a coordinate of a pose.
  *
- * For driving a prismatic axis to line up with something: "put linear_x_joint at
- * the x of the shelf slot we are about to place in". The tree can pass the pose
+ * For driving a prismatic axis to line up with something: "put the linear axis at
+ * the x of the place pose". The tree can pass the pose
  * around but cannot reach inside it, and CreateRobotState wants its positions up
  * front, so this closes the gap.
  *

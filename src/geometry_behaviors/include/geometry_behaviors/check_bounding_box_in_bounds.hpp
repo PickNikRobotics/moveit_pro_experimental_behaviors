@@ -13,7 +13,7 @@ namespace geometry_behaviors
  *
  * This behavior takes a bounding box center pose and dimensions, and verifies that
  * all corners of the bounding box fall within the specified min/max boundary points
- * in the world frame. This accounts for both the size and position of the vehicle.
+ * in the world frame. This accounts for both the size and position of the object.
  *
  * Data Port Name | Port Type | Object Type
  * -------------- | --------- | -----------

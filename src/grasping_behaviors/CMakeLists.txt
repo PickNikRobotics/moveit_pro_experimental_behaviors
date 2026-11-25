@@ -29,6 +29,7 @@ add_library(
   src/extract_graspable_object_primitive.cpp
   src/filter_graspable_objects.cpp
   src/generate_grasp_candidates.cpp
+  src/generate_place_candidates.cpp
   src/grasp_candidate_generation.cpp
   src/register_grasping_behaviors.cpp
   src/register_behaviors.cpp)

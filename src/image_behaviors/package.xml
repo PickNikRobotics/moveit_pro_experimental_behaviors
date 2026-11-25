@@ -4,7 +4,8 @@
   <version>0.1.0</version>
   <description>
     Work with 2D masks and images: find points in masks, pick the best
-    mask, draw points, save depth images.
+    mask, draw points, save depth images, project pixels onto a plane, crop an
+    object.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
@@ -16,6 +17,7 @@
 
   <depend>behaviortree_cpp_picknik</depend>
   <depend>cv_bridge</depend>
+  <depend>eigen</depend>
   <depend>geometry_msgs</depend>
   <depend>libopencv-dev</depend>
   <depend>moveit_pro_behavior_interface</depend>
@@ -25,6 +27,8 @@
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>spdlog</depend>
+  <depend>tf2_eigen</depend>
+  <depend>tf2_ros</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>

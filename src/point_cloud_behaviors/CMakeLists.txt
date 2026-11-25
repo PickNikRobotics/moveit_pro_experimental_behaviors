@@ -14,6 +14,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
     behaviortree_cpp_picknik
     geometry_msgs
     moveit_pro_behavior_interface
+    moveit_pro_common
     moveit_studio_vision
     moveit_studio_vision_msgs
     pcl_conversions
@@ -21,6 +22,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
     rclcpp
     sensor_msgs
     tf2_eigen
+    tf2_ros
     tl_expected)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
@@ -32,10 +34,13 @@ find_package(PCL REQUIRED COMPONENTS common features filters io kdtree search su
 
 add_library(
   ${PROJECT_NAME} SHARED
+  src/camera_frustum.cpp
   src/clear_point_cloud_timestamp.cpp
   src/count_points_in_cloud.cpp
+  src/crop_point_cloud_to_camera_frustum.cpp
   src/exclude_mask_3d_from_pointcloud.cpp
   src/get_closest_point_pose.cpp
+  src/load_latest_point_cloud_from_file.cpp
   src/mirror_pointcloud.cpp
   src/pcl_nn_filter.cpp
   src/poisson_reconstruct.cpp

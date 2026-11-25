@@ -23,6 +23,7 @@ find_package(spdlog REQUIRED)
 
 add_library(
   ${PROJECT_NAME} SHARED
+  src/compute_joint_state_distance.cpp
   src/create_empty_multi_dof_joint_state.cpp
   src/filter_robot_joint_state.cpp
   src/filter_robot_state_to_joints.cpp

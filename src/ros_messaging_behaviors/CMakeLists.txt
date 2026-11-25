@@ -19,6 +19,8 @@ add_library(
   ${PROJECT_NAME} SHARED
   src/get_pose_stamped_from_topic.cpp
   src/get_string_from_topic.cpp
+  src/maintain_topic_subscription.cpp
+  src/publish_pose_stamped.cpp
   src/publish_twist_stamped.cpp
   src/register_ros_messaging_behaviors.cpp
   src/register_behaviors.cpp)

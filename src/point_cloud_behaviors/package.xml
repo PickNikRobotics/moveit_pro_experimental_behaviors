@@ -3,8 +3,8 @@
   <name>point_cloud_behaviors</name>
   <version>0.1.0</version>
   <description>
-    Filter, count, mirror and reconstruct point clouds, and find the closest
-    point to a pose.
+    Filter, count, mirror, crop, load and reconstruct point clouds, and find the
+    closest point to a pose.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
@@ -19,6 +19,7 @@
   <depend>geometry_msgs</depend>
   <depend>libpcl-all-dev</depend>
   <depend>moveit_pro_behavior_interface</depend>
+  <depend>moveit_pro_common</depend>
   <depend>moveit_studio_vision</depend>
   <depend>moveit_studio_vision_msgs</depend>
   <depend>pcl_conversions</depend>
@@ -27,6 +28,7 @@
   <depend>sensor_msgs</depend>
   <depend>spdlog</depend>
   <depend>tf2_eigen</depend>
+  <depend>tf2_ros</depend>
   <depend>tl_expected</depend>
 
   <test_depend>ament_lint_auto</test_depend>

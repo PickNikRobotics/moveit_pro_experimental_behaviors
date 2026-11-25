@@ -13,11 +13,14 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
     moveit_studio_vision_msgs
     pluginlib
     rclcpp
-    sensor_msgs)
+    sensor_msgs
+    tf2_eigen
+    tf2_ros)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
 
+find_package(Eigen3 REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(OpenCV REQUIRED COMPONENTS core imgcodecs imgproc)
 
@@ -26,7 +29,10 @@ add_library(
   src/find_mask_index_for_point.cpp
   src/find_points_in_masks.cpp
   src/get_highest_confidence_mask.cpp
+  src/intersect_pixel_rays_with_plane.cpp
   src/mark_points_on_image.cpp
+  src/pixel_ray.cpp
+  src/rotate_and_crop_object_image.cpp
   src/save_depth_image_to_file.cpp
   src/register_image_behaviors.cpp
   src/register_behaviors.cpp)
@@ -36,6 +42,7 @@ target_include_directories(
          $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(${PROJECT_NAME} PUBLIC ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
+target_link_libraries(${PROJECT_NAME} PRIVATE Eigen3::Eigen)
 target_link_libraries(${PROJECT_NAME} PRIVATE spdlog::spdlog)
 target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${OpenCV_LIBRARIES})
