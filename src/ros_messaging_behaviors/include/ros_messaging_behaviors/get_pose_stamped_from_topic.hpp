@@ -1,0 +1,37 @@
+// Copyright 2026 PickNik Inc.
+// All rights reserved.
+//
+// Unauthorized copying of this code base via any medium is strictly prohibited.
+// Proprietary and confidential.
+
+#pragma once
+
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <moveit_pro_behavior_interface/get_message_from_topic.hpp>
+
+namespace ros_messaging_behaviors
+{
+/**
+ * @brief Subscribe to PoseStamped message and write received message to the blackboard.
+ */
+class GetPoseStampedFromTopic final
+  : public moveit_pro::behaviors::GetMessageFromTopicBehaviorBase<geometry_msgs::msg::PoseStamped>
+{
+public:
+  GetPoseStampedFromTopic(const std::string& name, const BT::NodeConfiguration& config,
+                          const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
+
+  static BT::PortsList providedPorts();
+  tl::expected<std::chrono::duration<double>, std::string> getWaitForMessageTimeout() override;
+
+private:
+  /** @brief Classes derived from AsyncBehaviorBase must implement getFuture() so that it returns a shared_future class member */
+  std::shared_future<tl::expected<bool, std::string>>& getFuture() override
+  {
+    return future_;
+  }
+
+  /** @brief Classes derived from AsyncBehaviorBase must have this shared_future as a class member */
+  std::shared_future<tl::expected<bool, std::string>> future_;
+};
+}  // namespace ros_messaging_behaviors

@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    ros_messaging_behaviors:
+      - "ros_messaging_behaviors::RosMessagingBehaviorsLoader"

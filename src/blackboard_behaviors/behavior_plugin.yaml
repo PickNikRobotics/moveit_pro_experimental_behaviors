@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    blackboard_behaviors:
+      - "blackboard_behaviors::BlackboardBehaviorsLoader"

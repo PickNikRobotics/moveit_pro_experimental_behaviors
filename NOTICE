@@ -1,0 +1,8 @@
+moveit_pro_experimental_behaviors
+Copyright (c) 2023 PickNik Inc.
+Licensed under the BSD 3-Clause License. See LICENSE.
+
+Explicitly included external dependencies: none.
+
+Each standalone Behavior package links MoveIt Pro, ROS 2 and system libraries installed in the MoveIt Pro
+image. None are vendored or redistributed here. Source files retain their existing copyright notices.

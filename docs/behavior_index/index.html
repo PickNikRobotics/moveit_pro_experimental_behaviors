@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Experimental Behaviors Index</title>
+    <meta
+      name="description"
+      content="MoveIt Pro Behavior packages: descriptions and ports."
+    />
+    <style>
+      :root,
+      :root[data-theme="dark"] {
+        --bg: #080c11;
+        --surface: #0f161f;
+        --surface-2: #151e2a;
+        --border: #263445;
+        --text: #e6edf5;
+        --muted: #9fadbf;
+        --accent: #52e49e;
+        --accent-strong: #35df8d;
+        --link: #6fb0ff;
+        --button-bg: #0b57f6;
+        --button-text: #f2f6fa;
+        --chip-active-bg: #0b57f6;
+        --chip-active-text: #f2f6fa;
+        --in-bg: rgba(11, 119, 246, 0.22);
+        --in-text: #8fc2ff;
+        --out-bg: rgba(82, 228, 158, 0.18);
+        --out-text: #6ff0b0;
+        --inout-bg: rgba(255, 159, 67, 0.2);
+        --inout-text: #ffbf80;
+        --code-bg: #0b1118;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        color-scheme: dark;
+      }
+      :root[data-theme="light"] {
+        --bg: #d7dee9;
+        --surface: #e9eef5;
+        --surface-2: #f3f6fa;
+        --border: #b4c0d0;
+        --text: #0f1722;
+        --muted: #3d4b5e;
+        --accent: #0b57f6;
+        --accent-strong: #0b57f6;
+        --link: #0b57f6;
+        --button-bg: #0b57f6;
+        --button-text: #f2f6fa;
+        --chip-active-bg: #0b57f6;
+        --chip-active-text: #f2f6fa;
+        --in-bg: #c4dbff;
+        --in-text: #0a3a9e;
+        --out-bg: #52e49e;
+        --out-text: #0f1722;
+        --inout-bg: #ffd2a6;
+        --inout-text: #5a2d00;
+        --code-bg: #dde4ee;
+        --shadow: 0 1px 2px rgba(15, 23, 34, 0.12);
+        color-scheme: light;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial, sans-serif;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      code,
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+        font-size: 0.92em;
+      }
+      a {
+        color: var(--link);
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 16px;
+      }
+      header.site {
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+      }
+      header.site .wrap {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 18px;
+        padding-bottom: 18px;
+        flex-wrap: wrap;
+      }
+      header.site h1 {
+        margin: 0;
+        font-size: 1.45rem;
+        letter-spacing: -0.01em;
+      }
+      header.site h1 span {
+        color: var(--accent);
+      }
+      header.site p {
+        margin: 2px 0 0;
+        color: var(--muted);
+      }
+      button.theme {
+        background: var(--button-bg);
+        color: var(--button-text);
+        border: 0;
+        border-radius: 8px;
+        padding: 8px 14px;
+        font: inherit;
+        cursor: pointer;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      summary:focus-visible,
+      a:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      .controls {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        padding: 12px 0;
+      }
+      .controls input[type="search"] {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        color: var(--text);
+        font: inherit;
+      }
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .chip {
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 4px 12px;
+        font: inherit;
+        font-size: 0.88rem;
+        cursor: pointer;
+      }
+      .chip[aria-pressed="true"] {
+        background: var(--chip-active-bg);
+        color: var(--chip-active-text);
+        border-color: var(--chip-active-bg);
+      }
+      .chip .count {
+        opacity: 0.8;
+        margin-left: 4px;
+      }
+      .status {
+        color: var(--muted);
+        font-size: 0.88rem;
+        margin-top: 8px;
+      }
+      details.layout {
+        margin: 18px 0 0;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 14px;
+      }
+      details.layout summary {
+        cursor: pointer;
+        font-weight: 600;
+      }
+      pre.tree {
+        margin: 10px 0 4px;
+        overflow-x: auto;
+        background: var(--code-bg);
+        border-radius: 8px;
+        padding: 12px;
+        font-size: 0.85rem;
+        line-height: 1.45;
+      }
+      section.category {
+        margin: 28px 0;
+      }
+      section.category > h2 {
+        margin: 0;
+        font-size: 1.2rem;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        color: var(--accent-strong);
+        overflow-wrap: anywhere;
+      }
+      section.category > p {
+        overflow-wrap: anywhere;
+        margin: 4px 0 12px;
+        color: var(--muted);
+      }
+      article.behavior {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin: 12px 0;
+        box-shadow: var(--shadow);
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      article.behavior h3 {
+        margin: 0;
+        font-size: 1.08rem;
+        overflow-wrap: anywhere;
+      }
+      article.behavior h3 a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 6px 0;
+      }
+      .badge {
+        font-size: 0.75rem;
+        padding: 1px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        background: var(--surface-2);
+      }
+      .summary {
+        margin: 6px 0 8px;
+      }
+      details.full {
+        margin: 6px 0 10px;
+      }
+      details.full summary {
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      details.full .body {
+        margin-top: 6px;
+        padding: 4px 12px;
+        border-left: 3px solid var(--border);
+      }
+      details.full .body code,
+      td code {
+        background: var(--code-bg);
+        padding: 0 4px;
+        border-radius: 4px;
+        overflow-wrap: anywhere;
+      }
+      .ports-title {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        margin: 10px 0 4px;
+      }
+      table.ports {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+        table-layout: fixed;
+      }
+      table.ports th,
+      table.ports td {
+        text-align: left;
+        vertical-align: top;
+        padding: 6px 8px;
+        border-top: 1px solid var(--border);
+        overflow-wrap: anywhere;
+      }
+      table.ports th {
+        color: var(--muted);
+        font-weight: 600;
+        border-top: 0;
+      }
+      table.ports col.c-name {
+        width: 19%;
+      }
+      table.ports col.c-dir {
+        width: 10%;
+      }
+      table.ports col.c-type {
+        width: 21%;
+      }
+      table.ports col.c-default {
+        width: 14%;
+      }
+      .dir {
+        display: inline-block;
+        font-size: 0.75rem;
+        padding: 1px 7px;
+        border-radius: 999px;
+        font-weight: 600;
+      }
+      .dir.input {
+        background: var(--in-bg);
+        color: var(--in-text);
+      }
+      .dir.output {
+        background: var(--out-bg);
+        color: var(--out-text);
+      }
+      .dir.inout {
+        background: var(--inout-bg);
+        color: var(--inout-text);
+      }
+      .none {
+        color: var(--muted);
+        font-style: italic;
+      }
+      .empty {
+        padding: 30px 0;
+        color: var(--muted);
+        text-align: center;
+      }
+      footer {
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 0.88rem;
+        padding: 18px 0 40px;
+        margin-top: 30px;
+      }
+      @media (max-width: 680px) {
+        table.ports,
+        table.ports tbody,
+        table.ports tr,
+        table.ports td {
+          display: block;
+          width: 100%;
+        }
+        table.ports colgroup,
+        table.ports thead {
+          display: none;
+        }
+        table.ports tr {
+          border-top: 1px solid var(--border);
+          padding: 6px 0;
+        }
+        table.ports td {
+          border: 0;
+          padding: 2px 0;
+        }
+        table.ports td::before {
+          content: attr(data-label) ": ";
+          color: var(--muted);
+          font-size: 0.8rem;
+        }
+        table.ports td.port-name::before {
+          content: "";
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site">
+      <div class="wrap">
+        <div>
+          <h1>Experimental Behaviors <span>Index</span></h1>
+          <p id="headline">Loading the Behavior list.</p>
+        </div>
+        <button class="theme" id="theme-toggle" type="button">Light mode</button>
+      </div>
+    </header>
+
+    <div class="controls">
+      <div class="wrap">
+        <input
+          id="search"
+          type="search"
+          placeholder="Search Behavior IDs, descriptions and ports"
+          aria-label="Search Behaviors"
+          autocomplete="off"
+        />
+        <div class="chips" id="chips" role="group" aria-label="Filter by category"></div>
+        <div class="status" id="status" aria-live="polite"></div>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <details class="layout">
+        <summary>Folder layout</summary>
+        <pre class="tree" id="tree"></pre>
+      </details>
+      <main id="list"></main>
+      <footer>
+        Built from <code>behavior_index_data.js</code>, which a test writes from the Behaviors the package registers.
+        To update it after you add or change a Behavior, see <a href="README.md">docs/behavior_index/README.md</a>.
+      </footer>
+    </div>
+
+    <noscript>This page needs JavaScript to list the Behaviors.</noscript>
+    <script src="behavior_index_data.js"></script>
+    <script>
+      "use strict";
+
+      // Used only when a Behavior has no description metadata of its own.
+      const DESCRIPTION_FALLBACK = {
+        GetPoseStampedFromTopic:
+          "Waits for a geometry_msgs/PoseStamped message on a topic and writes it to the blackboard.",
+        GetDynamicInterfaceGroupValues:
+          "Waits for a control_msgs/DynamicInterfaceGroupValues message on a topic and writes it to the blackboard.",
+        GetStringFromTopic: "Waits for a std_msgs/String message on a topic and writes it to the blackboard.",
+      };
+      const ALLOWED_TAGS = new Set(["P", "CODE", "BR", "B", "I", "EM", "STRONG", "UL", "OL", "LI"]);
+
+      const data = window.BEHAVIOR_INDEX || { categories: [] };
+      const state = { query: "", category: "all" };
+
+      function el(tag, attrs, ...children) {
+        const node = document.createElement(tag);
+        for (const [key, value] of Object.entries(attrs || {})) {
+          if (key === "class") node.className = value;
+          else node.setAttribute(key, value);
+        }
+        for (const child of children) {
+          if (child === null || child === undefined) continue;
+          node.append(child instanceof Node ? child : document.createTextNode(String(child)));
+        }
+        return node;
+      }
+
+      // Copies only simple text tags out of a description, so the page never runs markup from the data.
+      function safeFragment(html) {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const out = document.createDocumentFragment();
+        const copy = (source, target) => {
+          for (const child of source.childNodes) {
+            if (child.nodeType === Node.TEXT_NODE) {
+              target.append(document.createTextNode(child.textContent.replace(/\s+/g, " ")));
+            } else if (child.nodeType === Node.ELEMENT_NODE) {
+              if (ALLOWED_TAGS.has(child.tagName)) {
+                const copyNode = document.createElement(child.tagName.toLowerCase());
+                copy(child, copyNode);
+                target.append(copyNode);
+              } else {
+                copy(child, target);
+              }
+            }
+          }
+        };
+        copy(doc.body, out);
+        return out;
+      }
+
+      function plainText(html) {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        return (doc.body.textContent || "").replace(/\s+/g, " ").trim();
+      }
+
+      function firstSentence(text) {
+        const match = text.match(/^.*?[.!?](?=\s+[A-Z(<`]|\s*$)/);
+        return match ? match[0] : text;
+      }
+
+      // Shortens demangled C++ type names for reading; the raw name stays in the tooltip.
+      function readableType(type) {
+        let out = type
+          .replace(/std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >/g, "std::string")
+          .replace(/_<std::allocator<void> >/g, "");
+        let previous;
+        do {
+          previous = out;
+          out = out.replace(/, std::allocator<[^<>]*(?:<[^<>]*>[^<>]*)*> ?>/g, ">");
+        } while (out !== previous);
+        return out;
+      }
+
+      function behaviorSummary(behavior) {
+        const text = plainText(behavior.description || "");
+        return text ? firstSentence(text) : DESCRIPTION_FALLBACK[behavior.id] || "No description in the Behavior metadata.";
+      }
+
+      // Flattens the data once, with the text that the search box matches against.
+      const behaviors = [];
+      for (const category of data.categories) {
+        for (const behavior of category.behaviors) {
+          const summary = behaviorSummary(behavior);
+          const haystack = [
+            behavior.id,
+            category.folder,
+            behavior.subcategory,
+            summary,
+            plainText(behavior.description || ""),
+            ...behavior.ports.flatMap((p) => [p.name, p.type, readableType(p.type), p.description]),
+          ]
+            .join(" ")
+            .toLowerCase();
+          behaviors.push({ behavior, category, summary, haystack });
+        }
+      }
+
+      function renderPorts(ports) {
+        if (ports.length === 0) return el("p", { class: "none" }, "This Behavior has no ports.");
+        const table = el(
+          "table",
+          { class: "ports" },
+          el(
+            "colgroup",
+            {},
+            el("col", { class: "c-name" }),
+            el("col", { class: "c-dir" }),
+            el("col", { class: "c-type" }),
+            el("col", { class: "c-default" }),
+            el("col", {}),
+          ),
+          el(
+            "thead",
+            {},
+            el(
+              "tr",
+              {},
+              el("th", { scope: "col" }, "Port"),
+              el("th", { scope: "col" }, "Direction"),
+              el("th", { scope: "col" }, "Type"),
+              el("th", { scope: "col" }, "Default"),
+              el("th", { scope: "col" }, "Description"),
+            ),
+          ),
+        );
+        const body = el("tbody");
+        for (const port of ports) {
+          const defaultCell =
+            port.default === null
+              ? el("span", { class: "none" }, "none")
+              : port.default === ""
+                ? el("span", { class: "none" }, "empty")
+                : el("code", {}, port.default);
+          body.append(
+            el(
+              "tr",
+              {},
+              el("td", { class: "port-name", "data-label": "Port" }, el("code", {}, port.name)),
+              el("td", { "data-label": "Direction" }, el("span", { class: "dir " + port.direction }, port.direction)),
+              el("td", { "data-label": "Type", title: port.type }, el("code", {}, readableType(port.type))),
+              el("td", { "data-label": "Default" }, defaultCell),
+              el("td", { "data-label": "Description" }, port.description || el("span", { class: "none" }, "none")),
+            ),
+          );
+        }
+        table.append(body);
+        return table;
+      }
+
+      function renderBehavior(entry) {
+        const { behavior, summary } = entry;
+        const badges = el("div", { class: "badges" });
+        if (behavior.subcategory) badges.append(el("span", { class: "badge" }, "UI group: " + behavior.subcategory));
+        badges.append(el("span", { class: "badge" }, behavior.node_type));
+        badges.append(el("span", { class: "badge" }, behavior.ports.length + " ports"));
+        const article = el(
+          "article",
+          { class: "behavior", id: behavior.id },
+          el("h3", {}, el("a", { href: "#" + behavior.id, class: "mono" }, behavior.id)),
+          badges,
+          el("p", { class: "summary" }, summary),
+        );
+        if (behavior.description && plainText(behavior.description) !== summary) {
+          article.append(
+            el(
+              "details",
+              { class: "full" },
+              el("summary", {}, "Full description"),
+              el("div", { class: "body" }, safeFragment(behavior.description)),
+            ),
+          );
+        }
+        article.append(el("div", { class: "ports-title" }, "Ports"), renderPorts(behavior.ports));
+        return article;
+      }
+
+      function renderChips() {
+        const chips = document.getElementById("chips");
+        const make = (value, label, count) => {
+          const button = el(
+            "button",
+            { class: "chip", type: "button", "aria-pressed": String(state.category === value) },
+            label,
+            el("span", { class: "count" }, "(" + count + ")"),
+          );
+          button.addEventListener("click", () => {
+            state.category = value;
+            renderChips();
+            renderList();
+          });
+          return button;
+        };
+        chips.replaceChildren(make("all", "All", behaviors.length));
+        for (const category of data.categories) {
+          chips.append(make(category.folder, category.folder, category.behaviors.length));
+        }
+      }
+
+      function renderTree() {
+        const lines = [];
+        data.categories.forEach((category) => {
+          lines.push(category.folder + "/");
+          lines.push("├── README.md, CMakeLists.txt, package.xml, LICENSE, NOTICE");
+          lines.push("├── behavior_plugin.yaml, " + category.folder + "_plugin_description.xml");
+          lines.push("├── include/" + category.folder + "/");
+          lines.push("├── src/   (Behaviors and this package's loader)");
+          lines.push("├── test/   (plugin, index and unit tests)");
+          lines.push("└── docs/behavior_index/   (offline ports page)");
+          lines.push("    Behaviors: " + category.behaviors.map((b) => b.id).join(", "));
+          lines.push("");
+        });
+        document.getElementById("tree").textContent = lines.join("\n");
+      }
+
+      function renderList() {
+        const list = document.getElementById("list");
+        const query = state.query.trim().toLowerCase();
+        const terms = query ? query.split(/\s+/) : [];
+        let shown = 0;
+        list.replaceChildren();
+        for (const category of data.categories) {
+          if (state.category !== "all" && state.category !== category.folder) continue;
+          const matches = behaviors.filter(
+            (entry) => entry.category === category && terms.every((term) => entry.haystack.includes(term)),
+          );
+          if (matches.length === 0) continue;
+          shown += matches.length;
+          const readme = data.categories.length === 1 ? "../../README.md" : "../../src/" + category.folder + "/README.md";
+          const section = el(
+            "section",
+            { class: "category", "aria-label": category.folder },
+            el("h2", {}, category.folder),
+            el("p", {}, category.summary, " ", el("a", { href: readme }, "How to use this package")),
+          );
+          for (const entry of matches) section.append(renderBehavior(entry));
+          list.append(section);
+        }
+        if (shown === 0) list.append(el("p", { class: "empty" }, "No Behavior matches this search."));
+        document.getElementById("status").textContent =
+          "Showing " + shown + " of " + behaviors.length + " Behaviors.";
+      }
+
+      function applyTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        document.getElementById("theme-toggle").textContent = theme === "dark" ? "Light mode" : "Dark mode";
+      }
+
+      let theme = "dark";
+      try {
+        theme = localStorage.getItem("behavior-index-theme") || "dark";
+      } catch (e) {
+        theme = "dark";
+      }
+      applyTheme(theme);
+      document.getElementById("theme-toggle").addEventListener("click", () => {
+        theme = theme === "dark" ? "light" : "dark";
+        applyTheme(theme);
+        try {
+          localStorage.setItem("behavior-index-theme", theme);
+        } catch (e) {
+          // Storage can be blocked for file:// pages; the toggle still works for this visit.
+        }
+      });
+
+      document.getElementById("search").addEventListener("input", (event) => {
+        state.query = event.target.value;
+        renderList();
+      });
+
+      document.getElementById("headline").textContent =
+        behaviors.length + " Behaviors in " + data.categories.length + " independent packages. Search, filter, and read each port.";
+      renderChips();
+      renderTree();
+      renderList();
+      if (location.hash) {
+        const target = document.getElementById(location.hash.slice(1));
+        if (target) target.scrollIntoView();
+      }
+    </script>
+  </body>
+</html>
