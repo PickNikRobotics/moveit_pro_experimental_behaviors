@@ -4,8 +4,51 @@ window.BEHAVIOR_INDEX = {
   "categories": [
     {
       "folder": "joint_state_behaviors",
-      "summary": "Read and edit joint values in JointState, RobotState and RobotState messages.",
+      "summary": "Read, edit and compare joint values in JointState, RobotState and RobotState messages.",
       "behaviors": [
+        {
+          "id": "ComputeJointStateDistance",
+          "node_type": "Action",
+          "subcategory": "Robot State",
+          "description": "Computes the joint-space distance between two joint states over the joints you name: the Euclidean norm of the position differences and the largest difference of one joint.",
+          "ports": [
+            {
+              "name": "distance",
+              "direction": "output",
+              "type": "double",
+              "default": "{joint_state_distance}",
+              "description": "Euclidean norm of the position differences, in the units of the joints."
+            },
+            {
+              "name": "joint_names",
+              "direction": "input",
+              "type": "std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >",
+              "default": "",
+              "description": "Joints to compare, separated by ';'. Empty means every joint named in joint_state_target."
+            },
+            {
+              "name": "joint_state_current",
+              "direction": "input",
+              "type": "sensor_msgs::msg::JointState_<std::allocator<void> >",
+              "default": "{joint_state_current}",
+              "description": "First joint state, for example the current state."
+            },
+            {
+              "name": "joint_state_target",
+              "direction": "input",
+              "type": "sensor_msgs::msg::JointState_<std::allocator<void> >",
+              "default": "{joint_state_target}",
+              "description": "Second joint state, for example the goal."
+            },
+            {
+              "name": "max_joint_distance",
+              "direction": "output",
+              "type": "double",
+              "default": "{max_joint_distance}",
+              "description": "Largest absolute position difference of one joint."
+            }
+          ]
+        },
         {
           "id": "CreateEmptyMultiDOFJointState",
           "node_type": "Action",
@@ -175,7 +218,7 @@ window.BEHAVIOR_INDEX = {
               "name": "joint_name",
               "direction": "input",
               "type": "std::string",
-              "default": "linear_x_joint",
+              "default": null,
               "description": "The single joint the goal names."
             },
             {

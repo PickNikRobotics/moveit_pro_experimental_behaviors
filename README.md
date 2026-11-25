@@ -30,16 +30,16 @@ To use all packages, clone this repository under `src/`; colcon discovers the pa
 | [control_interface_behaviors](src/control_interface_behaviors/README.md) | 6 | Build, read and publish ros2_control interface values, such as GPIO commands and states. |
 | [conversion_behaviors](src/conversion_behaviors/README.md) | 3 | Convert between strings, numbers and vectors of numbers. |
 | [geometry_behaviors](src/geometry_behaviors/README.md) | 10 | Pose, axis and box math: orient, rotate, grid and test poses against boxes. |
-| [grasping_behaviors](src/grasping_behaviors/README.md) | 4 | Filter graspable objects, read their shape, label the pick direction and make grasp candidates. |
+| [grasping_behaviors](src/grasping_behaviors/README.md) | 5 | Filter graspable objects, read their shape, label the pick direction, and make grasp and place candidates. |
 | [hardware_behaviors](src/hardware_behaviors/README.md) | 1 | Activate or deactivate a ros2_control hardware component, for example to recover a driver after an error. |
-| [image_behaviors](src/image_behaviors/README.md) | 5 | Work with 2D masks and images: find points in masks, pick the best mask, draw points, save depth images. |
-| [joint_state_behaviors](src/joint_state_behaviors/README.md) | 8 | Read and edit joint values in JointState, RobotJointState and RobotState messages. |
+| [image_behaviors](src/image_behaviors/README.md) | 7 | Work with 2D masks and images: find points in masks, pick the best mask, draw points, save depth images, project pixels onto a plane, crop an object. |
+| [joint_state_behaviors](src/joint_state_behaviors/README.md) | 9 | Read, edit and compare joint values in JointState, RobotJointState and RobotState messages. |
 | [mobile_base_behaviors](src/mobile_base_behaviors/README.md) | 1 | Drive a differential mobile base from the MoveIt Pro jog commands. |
 | [mtc_behaviors](src/mtc_behaviors/README.md) | 2 | MoveIt Task Constructor helpers: read the cost of a solution, allow or forbid collisions between two groups. |
 | [planning_scene_behaviors](src/planning_scene_behaviors/README.md) | 8 | Edit planning scene messages and octomaps, add colored objects, and check a joint state for collision. |
-| [point_cloud_behaviors](src/point_cloud_behaviors/README.md) | 8 | Filter, count, mirror and reconstruct point clouds, and find the closest point to a pose. |
+| [point_cloud_behaviors](src/point_cloud_behaviors/README.md) | 10 | Filter, count, mirror, crop, load and reconstruct point clouds, and find the closest point to a pose. |
 | [robot_model_behaviors](src/robot_model_behaviors/README.md) | 2 | Query the loaded robot model: joint limits and forward kinematics of a trajectory. |
-| [ros_messaging_behaviors](src/ros_messaging_behaviors/README.md) | 3 | Wait for a ROS message on a topic and copy it to the blackboard, or publish a message on a topic. |
+| [ros_messaging_behaviors](src/ros_messaging_behaviors/README.md) | 5 | Wait for a ROS message on a topic and copy it to the blackboard, publish a message on a topic, or keep topics subscribed. |
 | [tf_behaviors](src/tf_behaviors/README.md) | 2 | Publish a static transform and watch the height of a TF frame. |
 | [trajectory_behaviors](src/trajectory_behaviors/README.md) | 2 | Check and clean up joint trajectories: blend deviation and back-and-forth points. |
 | [utility_behaviors](src/utility_behaviors/README.md) | 3 | Small helpers: elapsed-time checks after StopwatchBegin, and a random pick from a list. |

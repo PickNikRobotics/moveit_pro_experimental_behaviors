@@ -14,3 +14,7 @@ find_package(ament_cmake_gmock REQUIRED)
 # jointPosition is a free function over a JointState, so the test needs no executor.
 ament_add_gmock(test_is_joint_position_in_range test_is_joint_position_in_range.cpp TIMEOUT 10)
 target_link_libraries(test_is_joint_position_in_range ${PROJECT_NAME})
+
+# jointStateDistance is a free function over two JointStates, so the test needs no executor.
+ament_add_gtest(test_compute_joint_state_distance test_compute_joint_state_distance.cpp TIMEOUT 10)
+target_link_libraries(test_compute_joint_state_distance ${PROJECT_NAME})

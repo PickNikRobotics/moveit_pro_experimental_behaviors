@@ -139,7 +139,8 @@ std::string renderBehaviorIndex()
     out << "    {\n"
         << "      \"folder\": " << quoted("ros_messaging_behaviors") << ",\n"
         << "      \"summary\": "
-        << quoted("Wait for a ROS message on a topic and copy it to the blackboard, or publish a message on a topic.")
+        << quoted("Wait for a ROS message on a topic and copy it to the blackboard, publish a message on a topic, or "
+                  "keep topics subscribed.")
         << ",\n"
         << "      \"behaviors\": [\n";
     std::size_t b = 0;

@@ -2,7 +2,7 @@
 
 **`point_cloud_behaviors` is a standalone ROS 2 package of MoveIt Pro Behaviors.**
 
-Work on `sensor_msgs/PointCloud2` clouds with PCL: remove outliers or the points inside a 3D mask, count points and voxels, mirror a cloud across a plane, rebuild a surface, find the closest point to a pose, and clear the time stamp so TF uses the latest transforms.
+Work on `sensor_msgs/PointCloud2` clouds with PCL: remove outliers or the points inside a 3D mask, count points and voxels, mirror a cloud across a plane, rebuild a surface, find the closest point to a pose, clear the time stamp so TF uses the latest transforms, crop a cloud to a camera view, and load the newest saved cloud.
 
 
 ## Use this package
@@ -34,8 +34,10 @@ objectives:
 | ----------- | ------------ |
 | `ClearPointCloudTimestamp` | Sets the header stamp of a cloud to zero, so TF lookups use the latest transforms. Use it before an octomap update of a cloud that is not new. |
 | `CountPointsInCloud` | Counts the finite points of a cloud and the voxels they fill. It only measures; it applies no threshold. |
+| `CropPointCloudToCameraFrustum` | Keeps only the points inside the view volume of a camera, between a near and a far limit along the optical axis. |
 | `ExcludeMask3DFromPointCloud` | Removes the points that are inside a `Mask3D` from a cloud. |
 | `GetClosestPointPose` | Finds the cloud point closest to a pose and outputs a pose there, oriented by the local surface normal. |
+| `LoadLatestPointCloudFromFile` | Loads the newest `.pcd` file in a directory whose name starts with a prefix, for example the last file of `SavePointCloudToFile`. |
 | `MirrorPointCloud` | Reflects a cloud across a plane, for example to complete a scan of a symmetric object. |
 | `PclNnFilter` | Removes the points that have fewer than N neighbors inside a radius (radius outlier filter). |
 | `PoissonReconstruct` | Rebuilds a closed surface from a cloud with Poisson reconstruction, and colors measured and filled points differently. |
@@ -78,3 +80,5 @@ then [regenerate the index](docs/behavior_index/README.md).
 - `PclNnFilter` is the Behavior ID; its C++ class is `ExampleRadiusNeighborsFilter`.
 - `CountPointsInCloud` and `PclNnFilter` use point helpers from the MoveIt Pro `moveit_studio_vision` library.
 - `CMakeLists.txt` enables the C language and finds MPI. PCL links the VTK of Ubuntu, and VTK needs the `MPI::MPI_C` target. See this package's `docs/AGENT_COMMENTS.md`.
+- `CropPointCloudToCameraFrustum` reads the x, y and z fields straight from the `PointCloud2` message (private helper `src/point_cloud_xyz.hpp`), so every other field is kept.
+- `test/` tests `CropPointCloudToCameraFrustum` on a small cloud and `LoadLatestPointCloudFromFile` on files in a temporary directory.

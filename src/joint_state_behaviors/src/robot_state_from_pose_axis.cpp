@@ -32,7 +32,7 @@ BT::PortsList RobotStateFromPoseAxis::providedPorts()
   return { BT::InputPort<geometry_msgs::msg::PoseStamped>("input_pose", "{input_pose}",
                                                           "Pose whose translation supplies the joint value."),
            BT::InputPort<std::string>("axis", "X", "Which translation component to take: X, Y or Z."),
-           BT::InputPort<std::string>("joint_name", "linear_x_joint", "The single joint the goal names."),
+           BT::InputPort<std::string>("joint_name", "The single joint the goal names."),
            BT::InputPort<double>("offset", "0.0", "Added to the coordinate before it becomes the joint value."),
            BT::OutputPort<moveit_msgs::msg::RobotState>(
                "robot_state", "{robot_state}", "One-joint goal, ready for Move to Joint State's target_joint_state.") };

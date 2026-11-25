@@ -12,6 +12,7 @@
 #include "grasping_behaviors/extract_graspable_object_primitive.hpp"
 #include "grasping_behaviors/filter_graspable_objects.hpp"
 #include "grasping_behaviors/generate_grasp_candidates.hpp"
+#include "grasping_behaviors/generate_place_candidates.hpp"
 
 namespace grasping_behaviors
 {
@@ -22,5 +23,6 @@ void registerGraspingBehaviors(BT::BehaviorTreeFactory& factory,
   moveit_pro::behaviors::registerBehavior<ExtractGraspableObjectPrimitive>(factory, "ExtractGraspableObjectPrimitive");
   moveit_pro::behaviors::registerBehavior<FilterGraspableObjects>(factory, "FilterGraspableObjects", shared_resources);
   moveit_pro::behaviors::registerBehavior<GenerateGraspCandidates>(factory, "GenerateGraspCandidates", shared_resources);
+  moveit_pro::behaviors::registerBehavior<GeneratePlaceCandidates>(factory, "GeneratePlaceCandidates", shared_resources);
 }
 }  // namespace grasping_behaviors

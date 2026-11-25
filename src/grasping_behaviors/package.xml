@@ -3,8 +3,8 @@
   <name>grasping_behaviors</name>
   <version>0.1.0</version>
   <description>
-    Filter graspable objects, read their shape, label the pick direction and
-    make grasp candidates.
+    Filter graspable objects, read their shape, label the pick direction, and
+    make grasp and place candidates.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>

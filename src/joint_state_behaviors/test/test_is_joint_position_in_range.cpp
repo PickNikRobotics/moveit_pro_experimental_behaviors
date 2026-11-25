@@ -18,7 +18,7 @@ namespace
 sensor_msgs::msg::JointState state()
 {
   sensor_msgs::msg::JointState s;
-  s.name = { "left_joint1", "left_robotiq_85_left_knuckle_joint", "right_robotiq_85_left_knuckle_joint" };
+  s.name = { "arm_joint1", "gripper_a_finger_joint", "gripper_b_finger_joint" };
   s.position = { 0.3, 0.46, 0.80 };
   return s;
 }
@@ -26,7 +26,7 @@ sensor_msgs::msg::JointState state()
 
 TEST(IsJointPositionInRange, FindsTheNamedJoint)
 {
-  const auto p = jointPosition(state(), "left_robotiq_85_left_knuckle_joint");
+  const auto p = jointPosition(state(), "gripper_a_finger_joint");
   ASSERT_TRUE(p.has_value());
   EXPECT_DOUBLE_EQ(*p, 0.46);
 }
@@ -40,12 +40,12 @@ TEST(IsJointPositionInRange, JointWithoutPositionFails)
 {
   auto s = state();
   s.position.resize(1);
-  EXPECT_FALSE(jointPosition(s, "right_robotiq_85_left_knuckle_joint").has_value());
+  EXPECT_FALSE(jointPosition(s, "gripper_b_finger_joint").has_value());
 }
 
 TEST(IsJointPositionInRange, NonFinitePositionFails)
 {
   auto s = state();
   s.position[1] = std::numeric_limits<double>::quiet_NaN();
-  EXPECT_FALSE(jointPosition(s, "left_robotiq_85_left_knuckle_joint").has_value());
+  EXPECT_FALSE(jointPosition(s, "gripper_a_finger_joint").has_value());
 }

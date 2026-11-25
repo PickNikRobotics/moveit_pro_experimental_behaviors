@@ -8,6 +8,7 @@
 
 #include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
 
+#include "joint_state_behaviors/compute_joint_state_distance.hpp"
 #include "joint_state_behaviors/create_empty_multi_dof_joint_state.hpp"
 #include "joint_state_behaviors/filter_robot_joint_state.hpp"
 #include "joint_state_behaviors/filter_robot_state_to_joints.hpp"
@@ -22,6 +23,8 @@ namespace joint_state_behaviors
 void registerJointStateBehaviors(BT::BehaviorTreeFactory& factory,
                                  const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
 {
+  moveit_pro::behaviors::registerBehavior<ComputeJointStateDistance>(factory, "ComputeJointStateDistance",
+                                                                     shared_resources);
   moveit_pro::behaviors::registerBehavior<CreateEmptyMultiDOFJointState>(factory, "CreateEmptyMultiDOFJointState",
                                                                          shared_resources);
   moveit_pro::behaviors::registerBehavior<FilterRobotJointState>(factory, "FilterRobotJointState", shared_resources);

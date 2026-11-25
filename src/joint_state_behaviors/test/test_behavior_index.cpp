@@ -139,7 +139,7 @@ std::string renderBehaviorIndex()
     out << "    {\n"
         << "      \"folder\": " << quoted("joint_state_behaviors") << ",\n"
         << "      \"summary\": "
-        << quoted("Read and edit joint values in JointState, RobotState and RobotState messages.") << ",\n"
+        << quoted("Read, edit and compare joint values in JointState, RobotState and RobotState messages.") << ",\n"
         << "      \"behaviors\": [\n";
     std::size_t b = 0;
     for (const auto& [id, manifest] : manifests)

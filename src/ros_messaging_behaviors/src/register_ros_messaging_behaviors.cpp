@@ -10,6 +10,8 @@
 
 #include "ros_messaging_behaviors/get_pose_stamped_from_topic.hpp"
 #include "ros_messaging_behaviors/get_string_from_topic.hpp"
+#include "ros_messaging_behaviors/maintain_topic_subscription.hpp"
+#include "ros_messaging_behaviors/publish_pose_stamped.hpp"
 #include "ros_messaging_behaviors/publish_twist_stamped.hpp"
 
 namespace ros_messaging_behaviors
@@ -19,6 +21,9 @@ void registerRosMessagingBehaviors(BT::BehaviorTreeFactory& factory,
 {
   moveit_pro::behaviors::registerBehavior<GetPoseStampedFromTopic>(factory, "GetPoseStampedFromTopic", shared_resources);
   moveit_pro::behaviors::registerBehavior<GetStringFromTopic>(factory, "GetStringFromTopic", shared_resources);
+  moveit_pro::behaviors::registerBehavior<MaintainTopicSubscription>(factory, "MaintainTopicSubscription",
+                                                                     shared_resources);
+  moveit_pro::behaviors::registerBehavior<PublishPoseStamped>(factory, "PublishPoseStamped", shared_resources);
   moveit_pro::behaviors::registerBehavior<PublishTwistStamped>(factory, "PublishTwistStamped", shared_resources);
 }
 }  // namespace ros_messaging_behaviors

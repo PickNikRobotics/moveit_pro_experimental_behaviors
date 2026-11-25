@@ -2,7 +2,7 @@
 
 **`joint_state_behaviors` is a standalone ROS 2 package of MoveIt Pro Behaviors.**
 
-Read, set and filter joint values in `sensor_msgs/JointState`, `moveit_studio_agent_msgs/RobotState` and `moveit_msgs/RobotState` messages, and check that one joint is inside a range.
+Read, set and filter joint values in `sensor_msgs/JointState`, `moveit_studio_agent_msgs/RobotState` and `moveit_msgs/RobotState` messages, check that one joint is inside a range, and measure the distance between two joint states.
 
 
 ## Use this package
@@ -32,6 +32,7 @@ objectives:
 
 | Behavior ID | What it does |
 | ----------- | ------------ |
+| `ComputeJointStateDistance` | Computes the joint-space distance between two joint states over the joints you name: Euclidean norm and largest single-joint difference. |
 | `CreateEmptyMultiDOFJointState` | Outputs an empty `MultiDOFJointState` message, for ports that need one. |
 | `FilterRobotJointState` | Keeps only the joints of one planning group in a `RobotJointState` message. |
 | `FilterRobotStateToJoints` | Keeps only the named joints in a `RobotState` message. |
@@ -76,3 +77,4 @@ then [regenerate the index](docs/behavior_index/README.md).
 ## Notes
 
 - `test/test_is_joint_position_in_range.cpp` tests the joint lookup that `IsJointPositionInRange` uses.
+- `test/test_compute_joint_state_distance.cpp` tests the distance math of `ComputeJointStateDistance`.

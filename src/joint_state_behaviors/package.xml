@@ -3,7 +3,7 @@
   <name>joint_state_behaviors</name>
   <version>0.1.0</version>
   <description>
-    Read and edit joint values in JointState, RobotState and RobotState
+    Read, edit and compare joint values in JointState, RobotState and RobotState
     messages.
   </description>
 

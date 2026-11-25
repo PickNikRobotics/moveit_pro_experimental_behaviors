@@ -140,7 +140,7 @@ std::string renderBehaviorIndex()
         << "      \"folder\": " << quoted("image_behaviors") << ",\n"
         << "      \"summary\": "
         << quoted("Work with 2D masks and images: find points in masks, pick the best mask, draw points, save depth "
-                  "images.")
+                  "images, project pixels onto a plane, crop an object.")
         << ",\n"
         << "      \"behaviors\": [\n";
     std::size_t b = 0;

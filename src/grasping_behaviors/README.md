@@ -2,7 +2,7 @@
 
 **`grasping_behaviors` is a standalone ROS 2 package of MoveIt Pro Behaviors.**
 
-Work with `moveit_studio_vision_msgs/GraspableObject` messages: filter them by size, read their fitted shape primitive, label a grasp as vertical or horizontal, and make grasp pose candidates for cylinders and spheres.
+Work with `moveit_studio_vision_msgs/GraspableObject` messages: filter them by size, read their fitted shape primitive, label a grasp as vertical or horizontal, make grasp pose candidates for cylinders and spheres, and make place pose candidates for a held object.
 
 
 ## Use this package
@@ -36,6 +36,7 @@ objectives:
 | `ExtractGraspableObjectPrimitive` | Outputs the `SolidPrimitive` of a `GraspableObject`. |
 | `FilterGraspableObjects` | Keeps the `GraspableObject` messages under a maximum size and volume, sorts them highest first, and shows markers. |
 | `GenerateGraspCandidates` | Makes grasp pose candidates for a `GraspableObject` that is a cylinder or a sphere. |
+| `GeneratePlaceCandidates` | Computes grasp-link poses that place a held object at a target pose, with optional turns about the target Z axis and upside-down candidates. |
 
 Every port is documented in the [offline behavior index](docs/behavior_index/index.html).
 
@@ -68,3 +69,7 @@ test checks that its documented IDs and ports match the code. These tests need n
 
 When adding a Behavior, update this package's sources, dependencies and registration function, add tests,
 then [regenerate the index](docs/behavior_index/README.md).
+
+## Notes
+
+- `test/test_generate_place_candidates.cpp` tests the place pose math of `GeneratePlaceCandidates`.

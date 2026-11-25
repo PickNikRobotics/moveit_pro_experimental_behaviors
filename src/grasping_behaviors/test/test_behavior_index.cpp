@@ -139,7 +139,8 @@ std::string renderBehaviorIndex()
     out << "    {\n"
         << "      \"folder\": " << quoted("grasping_behaviors") << ",\n"
         << "      \"summary\": "
-        << quoted("Filter graspable objects, read their shape, label the pick direction and make grasp candidates.")
+        << quoted("Filter graspable objects, read their shape, label the pick direction, and make grasp and place "
+                  "candidates.")
         << ",\n"
         << "      \"behaviors\": [\n";
     std::size_t b = 0;

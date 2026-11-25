@@ -4,7 +4,7 @@ window.BEHAVIOR_INDEX = {
   "categories": [
     {
       "folder": "image_behaviors",
-      "summary": "Work with 2D masks and images: find points in masks, pick the best mask, draw points, save depth images.",
+      "summary": "Work with 2D masks and images: find points in masks, pick the best mask, draw points, save depth images, project pixels onto a plane, crop an object.",
       "behaviors": [
         {
           "id": "FindMaskIndexForPoint",
@@ -122,6 +122,63 @@ window.BEHAVIOR_INDEX = {
           ]
         },
         {
+          "id": "IntersectPixelRaysWithPlane",
+          "node_type": "Action",
+          "subcategory": "Perception - 2D Image",
+          "description": "Projects pixels onto a plane by intersecting their camera rays with it, instead of reading a depth value at each pixel. On a handle, a label or a thin or shiny feature the depth is that of the feature or it is missing; the ray meets the plane where the plane is.",
+          "ports": [
+            {
+              "name": "camera_info",
+              "direction": "input",
+              "type": "sensor_msgs::msg::CameraInfo_<std::allocator<void> >",
+              "default": "{camera_info}",
+              "description": "Camera the pixels were measured in. Its frame_id is where the rays start. The image must be rectified."
+            },
+            {
+              "name": "hit_count",
+              "direction": "output",
+              "type": "int",
+              "default": "{hit_count}",
+              "description": "Number of pixels whose ray met the plane."
+            },
+            {
+              "name": "output_poses",
+              "direction": "output",
+              "type": "std::vector<geometry_msgs::msg::PoseStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PoseStamped_<std::allocator<void> > > >",
+              "default": "{output_poses}",
+              "description": "Intersections in the frame of plane_pose, each with the orientation of plane_pose. Rays that miss are dropped, so this can be shorter than pixel_coords and is not index-aligned with it."
+            },
+            {
+              "name": "pixel_coords",
+              "direction": "input",
+              "type": "std::vector<geometry_msgs::msg::PointStamped_<std::allocator<void> >, std::allocator<geometry_msgs::msg::PointStamped_<std::allocator<void> > > >",
+              "default": "{pixel_coords}",
+              "description": "Pixels as fractions of the image width (x) and height (y), as GetCenterFromMask2D outputs them."
+            },
+            {
+              "name": "plane_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{plane_pose}",
+              "description": "Plane to project onto: its position is on the plane and its Z axis is the plane normal."
+            },
+            {
+              "name": "reference_pixel",
+              "direction": "input",
+              "type": "std::vector<double, std::allocator<double> >",
+              "default": "",
+              "description": "Optional extra pixel as \"u;v\", in the same fractional units, projected with the others. Use it to get a reference point on the plane. Empty means none."
+            },
+            {
+              "name": "reference_pose",
+              "direction": "output",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{reference_pose}",
+              "description": "Where reference_pixel met the plane. Not set when reference_pixel is empty."
+            }
+          ]
+        },
+        {
           "id": "MarkPointsOnImage",
           "node_type": "Action",
           "subcategory": "Visualization",
@@ -154,6 +211,63 @@ window.BEHAVIOR_INDEX = {
               "type": "std::string",
               "default": "/marked_image",
               "description": "Topic to publish the annotated image to."
+            }
+          ]
+        },
+        {
+          "id": "RotateAndCropObjectImage",
+          "node_type": "Action",
+          "subcategory": "Perception - 2D Image",
+          "description": "Crops one object out of an image by its mask, and rotates the crop so that the +Z axis of the object frame points up. Use it to give a model a view of the object in a known orientation.",
+          "ports": [
+            {
+              "name": "camera_info",
+              "direction": "input",
+              "type": "sensor_msgs::msg::CameraInfo_<std::allocator<void> >",
+              "default": "{camera_info}",
+              "description": "Intrinsics of the camera that took the image. Its frame_id is the camera optical frame."
+            },
+            {
+              "name": "image",
+              "direction": "input",
+              "type": "sensor_msgs::msg::Image_<std::allocator<void> >",
+              "default": "{image}",
+              "description": "Color image that shows the object."
+            },
+            {
+              "name": "mask",
+              "direction": "input",
+              "type": "moveit_studio_vision_msgs::msg::Mask2D_<std::allocator<void> >",
+              "default": "{mask2d}",
+              "description": "Mask of the object in the image. x and y are the top-left corner of the mask in the image, and pixels is the mask sub-image. Non-zero pixels are kept; the others become black."
+            },
+            {
+              "name": "object_pose",
+              "direction": "input",
+              "type": "geometry_msgs::msg::PoseStamped_<std::allocator<void> >",
+              "default": "{object_pose}",
+              "description": "Pose of the object. Its +Z axis is the axis that points up in the output."
+            },
+            {
+              "name": "padding_factor",
+              "direction": "input",
+              "type": "double",
+              "default": "1.500000",
+              "description": "The crop side is the larger side of the mask bounding box times this factor, so the rotation does not cut the corners of the object."
+            },
+            {
+              "name": "rotated_image",
+              "direction": "output",
+              "type": "sensor_msgs::msg::Image_<std::allocator<void> >",
+              "default": "{rotated_image}",
+              "description": "Cropped, masked and rotated BGR8 image, with the object +Z axis pointing up."
+            },
+            {
+              "name": "save_image_dir",
+              "direction": "input",
+              "type": "std::string",
+              "default": "",
+              "description": "If not empty, the output image is also saved to this directory as a timestamped JPEG. A leading '~' is your home directory. Empty means do not save."
             }
           ]
         },

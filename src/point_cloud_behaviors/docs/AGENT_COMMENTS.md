@@ -20,11 +20,24 @@ Detailed comments by package-relative file and line. Keep entries short.
   "nothing seen", also count the uncropped cloud. Two outputs per count: BT.CPP fixes an entry type at tree
   creation, and its script language has no number-to-string conversion.
 
+## include/point_cloud_behaviors/crop_point_cloud_to_camera_frustum.hpp
+
+- line 37 (`CropPointCloudToCameraFrustum`): Why the range limits are planes along the optical Z axis and not
+  spheres: a radial band cuts the image corners at a different depth than the center, which biases a plane that is
+  later fitted through the kept points. The pixel margin exists because a stereo camera computes the least reliable
+  depth at the image edge. The test runs in the camera optical frame, but the kept points stay in the frame of the
+  input cloud. Only little-endian FLOAT32 x, y and z fields are read; row padding is handled through row_step.
+
 ## include/point_cloud_behaviors/poisson_reconstruct.hpp
 
 - line 33 (`PoissonReconstruct`): Why trim: the trim removes the closed underside and webbing that Poisson guesses
   where there is no data, so the result follows the real surface instead of ballooning, which is what a convex hull
   or MLS dilation does.
+
+## src/camera_frustum.hpp
+
+- line 18 (`CameraIntrinsics`): A second copy of this struct is in `image_behaviors/src/pixel_ray.hpp`,
+  on purpose, so that each folder stays copyable on its own. Change both if you change one.
 
 ## src/count_points_in_cloud.cpp
 
