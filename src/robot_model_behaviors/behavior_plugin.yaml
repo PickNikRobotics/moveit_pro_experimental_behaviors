@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    robot_model_behaviors:
+      - "robot_model_behaviors::RobotModelBehaviorsLoader"
